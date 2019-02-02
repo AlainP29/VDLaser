@@ -11,7 +11,9 @@
 
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
-using Microsoft.Practices.ServiceLocation;
+//using Microsoft.Practices.ServiceLocation;with nugget v1.3.0/5.3.0
+using CommonServiceLocator;
+
 using VDGrbl.Model;
 
 namespace VDGrbl.ViewModel

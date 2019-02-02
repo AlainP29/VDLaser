@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="VDGrbl.View.SendDataView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDGrbl.View"
+             mc:Ignorable="d" Height="80" Width="300">
+    <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <GroupBox Header="Send data" Style="{StaticResource GroupBoxStyleVD}">
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" Text="{Binding Main.TXLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Main.SendCommand}" Key="Return"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Grid.Column="1" Content="Send" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="75" Command="{Binding Main.SendCommand, Mode=OneWay}"/>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

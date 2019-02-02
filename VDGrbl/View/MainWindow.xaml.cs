@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using VDGrbl.ViewModel;
 
-namespace VDGrbl
+namespace VDGrbl.View
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

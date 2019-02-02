@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="VDGrbl.View.SerialPortSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDGrbl.View"
+             mc:Ignorable="d" Width="250" Height="300"
+             DataContext="{Binding Main, Source={StaticResource Locator}}">
+    <Grid>
+        <StackPanel Margin="0">
+            <GroupBox Header="{Binding GroupBoxPortSettingsTitle}" VerticalAlignment="Top" Margin="5" Height="220" Style="{DynamicResource GroupBoxStyleVD}">
+                <Grid Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Label Content="Port COM*" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding ListPortNames}" SelectedValue="{Binding SelectedPortName,Mode=TwoWay}" HorizontalAlignment="Center" Width="75" VerticalContentAlignment="Center" Margin="0" VerticalAlignment="Center"/>
+                    <Label Grid.Row="1" Content="Baud rate" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding ListBaudRates}"  Width="75" Margin="0" SelectedValue="{Binding SelectedBaudRate, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <Label Grid.Row="2" Content="Data bits" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding ListDataBits}"  Width="75" Margin="0" SelectedValue="{Binding SelectedDataBits, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <Label Grid.Row="3" Content="Parity" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding ListParities}"  Width="75" Margin="0" SelectedValue="{Binding SelectedParity, Mode=TwoWay}" SelectedValuePath="ParityValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="ParityName"/>
+                    <Label Grid.Row="4" Content="Stop bits" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding ListStopBits}"  Width="75" Margin="0" SelectedValue="{Binding SelectedStopBits, Mode=Default}" SelectedValuePath="StopBitsValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="StopBitsName"/>
+                    <Label Grid.Row="5" Content="Handshake" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding ListHandshake}"  Width="75" Margin="0" SelectedValue="{Binding SelectedHandshake, Mode=TwoWay}" SelectedValuePath="HandshakingValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="HandshakingName"/>
+                </Grid>
+            </GroupBox>
+            <Grid Margin="5" Width="Auto" Height="40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Content="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="75" HorizontalContentAlignment="Center" Margin="0" Style="{DynamicResource ControlStyleVD}"/>
+                <Button Grid.Column="1" Content="Disconnect" Command="{Binding DisconnectCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="75" HorizontalContentAlignment="Center" Margin="0" Style="{DynamicResource ControlStyleVD}"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

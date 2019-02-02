@@ -1,0 +1,24 @@
+﻿<Window x:Class="VDGrbl.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:local="clr-namespace:VDGrbl.View"
+        mc:Ignorable="d ignore"
+        Height="400"
+        Width="600"
+        Title="VDGrbl" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
+    <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <local:SerialPortSettingsView Margin="26,10,20.8,70.4"/>
+        <local:SendDataView Margin="10.2,10,9.6,280.4" 
+                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Width="277" Grid.Column="1"/>
+        <local:ReceiveDataView Grid.Column="1" Margin="10,95,10,9.8"/>
+    </Grid>
+</Window>
