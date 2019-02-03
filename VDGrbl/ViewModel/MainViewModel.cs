@@ -634,7 +634,7 @@ namespace VDGrbl.ViewModel
             {
                 string line = _serialPort.ReadLine().ToLower().Trim().TrimEnd(trimArray);
                 RXLine += line + Environment.NewLine;
-                logger.Info("Data {0} received2", line);
+                logger.Info("Data RX: {0}", line);
                 if(line.Length > 0)
                 {
                     if(line.StartsWith("ok"))
