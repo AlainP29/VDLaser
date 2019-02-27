@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="VDGrbl.View.GrblInfoView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDGrbl.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="65
+             " d:DesignWidth="300">
+    <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <GroupBox Header="Infos" Style="{DynamicResource GroupBoxStyleVD}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="1.5*"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Version:" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                <Label Grid.Column="2" Content="Build:" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                <Label Grid.Column="1" Content="{Binding Main.VersionGrbl}" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                <Label Grid.Column="3" Grid.Row="1" Content="{Binding Main.BuildInfo}" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

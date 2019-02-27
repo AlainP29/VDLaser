@@ -6,19 +6,30 @@
         xmlns:ignore="http://www.galasoft.ch/ignore"
         xmlns:local="clr-namespace:VDGrbl.View"
         mc:Ignorable="d ignore"
-        Height="400"
-        Width="600"
+        Height="550"
+        Width="900"
         Title="VDGrbl" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <local:SerialPortSettingsView Margin="26,10,20.8,70.4"/>
-        <local:SendDataView Margin="10.2,10,9.6,280.4" 
-                        VerticalAlignment="Center" HorizontalAlignment="Center"
-                        Width="277" Grid.Column="1"/>
-        <local:ReceiveDataView Grid.Column="1" Margin="10,95,10,9.8"/>
+        <StackPanel>
+            <local:SerialPortSettingsView Margin="5" Width="Auto" Height="Auto"/>
+            <local:CoordinateView Margin="5" Width="Auto" Height="Auto"/>
+            <local:GrblInfoView Margin="5"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1">
+            <local:SendDataView Margin="5" 
+                        VerticalAlignment="Center"
+                        Width="Auto" Height="Auto"/>
+            <local:ReceiveDataView Margin="5" Height="200"/>
+            <local:CommandsView Margin="5" Height="Auto" Width="Auto"/>
+        </StackPanel>
+        <StackPanel Grid.Column="2">
+            <local:LoadSettingsView Margin="5" Height="500" Width="Auto"/>
+        </StackPanel>
     </Grid>
 </Window>

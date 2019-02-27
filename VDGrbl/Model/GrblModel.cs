@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GalaSoft.MvvmLight;
+using System.Windows.Media;
 
 namespace VDGrbl.Model
 {
-    class GrblModel
+    public class GrblModel:ObservableObject
     {
         #region private Members
-        public enum Status { Disconnected, Connecting, Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
+        public enum MachStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
         #endregion
 
         #region public Properties
-        public string RXLine { get; private set; }
-        public string TXLine { get; private set; }
-        public Status MachineStatus {get; private set;}//dans view model car une seule tram reçue...?
-        public string Coordinate { get; private set; }
-        #endregion
-
-        #region Constructors
+        public string RXLine { get; set; }
+        public string TXLine { get; set; }
+        public MachStatus MachinStatus { get; set; }
+        public SolidColorBrush MachinStatusColor { get; set; }
+        public string VersionGrbl { get; set; }
+        public string BuildInfo { get; set; }
+        public string PosX { get; set; }
+        public string PosY { get; set; }
+        public string PosZ { get; set; }
         #endregion
     }
 }

@@ -3,11 +3,11 @@
 namespace VDGrbl.View
 {
     /// <summary>
-    /// Logique d'interaction pour JogView.xaml
+    /// Logique d'interaction pour CoordinateView.xaml
     /// </summary>
-    public partial class JogView : UserControl
+    public partial class CoordinateView : UserControl
     {
-        public JogView()
+        public CoordinateView()
         {
             InitializeComponent();
         }

@@ -93,16 +93,29 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Codes\AlarmCodes.cs" />
+    <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
+    <Compile Include="Codes\ErrorCodes.cs" />
     <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\SerialPortSettingsModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
+    <Compile Include="Model\SettingModel.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="View\CommandsView.xaml.cs">
+      <DependentUpon>CommandsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\GrblInfoView.xaml.cs">
+      <DependentUpon>GrblInfoView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
-    <Compile Include="View\JogView.xaml.cs">
-      <DependentUpon>JogView.xaml</DependentUpon>
+    <Compile Include="View\CoordinateView.xaml.cs">
+      <DependentUpon>CoordinateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\LoadSettingsView.xaml.cs">
+      <DependentUpon>LoadSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ReceiveDataView.xaml.cs">
       <DependentUpon>ReceiveDataView.xaml</DependentUpon>
@@ -113,12 +126,21 @@
     <Compile Include="View\SerialPortSettingsView.xaml.cs">
       <DependentUpon>SerialPortSettingsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\StatusBarView.xaml.cs">
-      <DependentUpon>StatusBarView.xaml</DependentUpon>
-    </Compile>
-    <Page Include="View\JogView.xaml">
+    <Page Include="View\CommandsView.xaml">
       <SubType>Designer</SubType>
-      <Generator>XamlIntelliSenseFileGenerator</Generator>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\GrblInfoView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\CoordinateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\LoadSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -147,10 +169,6 @@
     <Page Include="View\SerialPortSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\StatusBarView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>XamlIntelliSenseFileGenerator</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

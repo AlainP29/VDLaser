@@ -11,5 +11,6 @@ namespace VDGrbl.Model
             var item = new SerialPortSettingsModel("Port settings");
             callback(item, null);
         }
+
     }
 }

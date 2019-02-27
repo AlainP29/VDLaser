@@ -18,7 +18,6 @@ namespace VDGrbl.Model
         public int DataBitsValue { get; private set; }
         public Handshake HandshakingValue { get; private set; }
         public string HandshakingName { get; private set; }
-
         public string[] ListPortNames = SerialPort.GetPortNames();
         public int[] ListBaudRates = {1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
         public int[] ListDataBits = { 5, 6, 7, 8, 9 };
@@ -63,6 +62,7 @@ namespace VDGrbl.Model
         public SerialPortSettingsModel()
         {
         }
+
         public SerialPortSettingsModel(string portSettingsHeader)
         {
             PortSettingsHeader = portSettingsHeader;

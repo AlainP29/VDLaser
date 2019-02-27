@@ -22,18 +22,18 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Label Content="Port COM*" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <Label Content="Port COM" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
                     <ComboBox Grid.Column="1" ItemsSource="{Binding ListPortNames}" SelectedValue="{Binding SelectedPortName,Mode=TwoWay}" HorizontalAlignment="Center" Width="75" VerticalContentAlignment="Center" Margin="0" VerticalAlignment="Center"/>
                     <Label Grid.Row="1" Content="Baud rate" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
                     <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding ListBaudRates}"  Width="75" Margin="0" SelectedValue="{Binding SelectedBaudRate, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
                     <Label Grid.Row="2" Content="Data bits" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding ListDataBits}"  Width="75" Margin="0" SelectedValue="{Binding SelectedDataBits, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding ListDataBits}"  Width="75" Margin="0" SelectedValue="{Binding SelectedDataBits, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center" IsEnabled="False"/>
                     <Label Grid.Row="3" Content="Parity" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding ListParities}"  Width="75" Margin="0" SelectedValue="{Binding SelectedParity, Mode=TwoWay}" SelectedValuePath="ParityValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="ParityName"/>
+                    <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding ListParities}"  Width="75" Margin="0" SelectedValue="{Binding SelectedParity, Mode=TwoWay}" SelectedValuePath="ParityValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="ParityName" IsEnabled="False"/>
                     <Label Grid.Row="4" Content="Stop bits" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding ListStopBits}"  Width="75" Margin="0" SelectedValue="{Binding SelectedStopBits, Mode=Default}" SelectedValuePath="StopBitsValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="StopBitsName"/>
+                    <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding ListStopBits}"  Width="75" Margin="0" SelectedValue="{Binding SelectedStopBits, Mode=Default}" SelectedValuePath="StopBitsValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="StopBitsName" IsEnabled="False"/>
                     <Label Grid.Row="5" Content="Handshake" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding ListHandshake}"  Width="75" Margin="0" SelectedValue="{Binding SelectedHandshake, Mode=TwoWay}" SelectedValuePath="HandshakingValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="HandshakingName"/>
+                    <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding ListHandshake}"  Width="75" Margin="0" SelectedValue="{Binding SelectedHandshake, Mode=TwoWay}" SelectedValuePath="HandshakingValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="HandshakingName" IsEnabled="False"/>
                 </Grid>
             </GroupBox>
             <Grid Margin="5" Width="Auto" Height="40">

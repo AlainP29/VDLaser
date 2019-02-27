@@ -8,5 +8,6 @@ namespace VDGrbl.Model
     public interface IDataService
     {
         void GetData(Action<SerialPortSettingsModel, Exception> callback);
+
     }
 }
