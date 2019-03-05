@@ -3,11 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:VDGrbl.View"
+             xmlns:local="clr-namespace:VDGrbl.Tools"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <local:InverseBooleanConverter x:Key="ConvertBool"/>
+    </UserControl.Resources>
+    <!--It shows data received from the Arduino. No stack, new data erases old data-->
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="Data received" Style="{DynamicResource GroupBoxStyleVD}">
+        <GroupBox Header="Data received" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
             <Grid Margin="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>

@@ -3,10 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:VDGrbl.View"
+             xmlns:local="clr-namespace:VDGrbl.Tools"
              mc:Ignorable="d" Height="80" Width="300">
+    <UserControl.Resources>
+        <local:InverseBooleanConverter x:Key="ConvertBool"/>
+    </UserControl.Resources>
+    <!--It shows all the data sent manually/Jog/buttons to the Arduino. no stack, new data erase old data -->
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="Send data" Style="{StaticResource GroupBoxStyleVD}">
+        <GroupBox Header="Send data" Style="{StaticResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
                 <StackPanel Orientation="Horizontal">
                 <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" Text="{Binding Main.TXLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120">
                     <TextBox.InputBindings>

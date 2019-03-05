@@ -3,12 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:VDGrbl.View"
-             mc:Ignorable="d" Height="180" Width="270">
+             xmlns:local="clr-namespace:VDGrbl.Tools"
+             mc:Ignorable="d" Height="200" Width="270">
+    <UserControl.Resources>
+        <local:InverseBooleanConverter x:Key="ConvertBool"/>
+    </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="Grbl commands" Margin="0" Style="{DynamicResource GroupBoxStyleVD}">
+        <!--Grbl commands: some are disabled for safety and test button is for development purpose-->
+        <GroupBox Header="Grbl commands" Margin="0" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
             <Grid Margin="5">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
@@ -36,6 +41,12 @@
                     <Button Content="$RST=$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" ToolTip="Restore Grbl settings and data to defaults" IsEnabled="False"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="3">
+                    <Button Content="ResetX" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAxisXCommand, Mode=OneWay}"/>
+                    <Button Content="ResetY" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAxisYCommand, Mode=OneWay}"/>
+                    <Button Content="ResetZ" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAxisZCommand, Mode=OneWay}"/>
+                    <Button Content="ResetAll" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAllAxisCommand, Mode=OneWay}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="4">
                     <Button Content="TEST" HorizontalAlignment="Center" Margin="95, 0, 0, 0" VerticalAlignment="Center" Width="60" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblTestCommand, Mode=OneWay}" IsEnabled="False"/>
                 </StackPanel>
             </Grid>

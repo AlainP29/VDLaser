@@ -97,12 +97,15 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
+    <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\SerialPortSettingsModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\SettingModel.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Tools\Gcode.cs" />
+    <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="View\CommandsView.xaml.cs">
       <DependentUpon>CommandsView.xaml</DependentUpon>
     </Compile>
@@ -113,6 +116,9 @@
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="View\CoordinateView.xaml.cs">
       <DependentUpon>CoordinateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\JoggingView.xaml.cs">
+      <DependentUpon>JoggingView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\LoadSettingsView.xaml.cs">
       <DependentUpon>LoadSettingsView.xaml</DependentUpon>
@@ -137,6 +143,10 @@
     <Page Include="View\CoordinateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\JoggingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\LoadSettingsView.xaml">
       <SubType>Designer</SubType>

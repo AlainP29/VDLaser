@@ -7,7 +7,8 @@
              xmlns:ViewModel="clr-namespace:VDGrbl.ViewModel" x:Class="VDGrbl.View.CoordinateView"
              mc:Ignorable="d" Height="140" Width="250">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="Machin coordinates" Style="{DynamicResource GroupBoxStyleVD}">
+        <!--It displays the report state: current machine status and positions-->
+        <GroupBox Header="Machine coordinate" Style="{DynamicResource GroupBoxStyleVD}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -19,7 +20,7 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <TextBox Name="TextBoxMachinStatus" Grid.Column="1" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding Main.MachinStatusColor}" Text="{Binding Main.MachinStatus, StringFormat={}{0}}"/>
+                <TextBox Name="TextBoxMachineStatus" Grid.Column="1" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="{Binding Main.MachineStatusColor}" Text="{Binding Main.MachineStatus, StringFormat={}{0}}"/>
                 <Label Grid.Row="1" Content="X" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                 <Label Grid.Column="1" Grid.Row="1" Content="Y" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                 <Label Grid.Column="2" Grid.Row="1" Content="Z" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="29" VerticalAlignment="Top"/>

@@ -10,7 +10,7 @@ namespace VDGrbl.Model
 {
     class GCodeModel : ObservableObject
     {
-        #region private Members
+        #region private field
 
         #endregion
 
@@ -20,10 +20,10 @@ namespace VDGrbl.Model
         public string XGCode { get; private set; }
         public string YGCode { get; private set; }
         public string ZGCode { get; private set; }
-        public double IGCode { get; set; }
-        public double JGCode { get; set; }
-        public double SGCode { get; set; }
-        public double FGCode { get; set; }
+        public string IGCode { get; set; }
+        public string JGCode { get; set; }
+        public string SGCode { get; set; }
+        public string FGCode { get; set; }
         public string UnitMode { get; private set; }
         public bool InBuffer { get; private set; }
         public bool IsProssed { get; private set; }

@@ -16,10 +16,5 @@ namespace VDGrbl.View
             InitializeComponent();
             Closing += (s, e) => ViewModelLocator.Cleanup();
         }
-
-        private void LoadSettingsView_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }

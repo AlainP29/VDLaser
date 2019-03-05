@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:VDGrbl.View"
              mc:Ignorable="d" Height="500" Width="230" ScrollViewer.HorizontalScrollBarVisibility="Auto">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <!--It populates the grid with setting informations from the Arduino-->
         <GroupBox Header="Grbl settings" Margin="5" Style="{DynamicResource GroupBoxStyleVD}">
             <Grid>
                 <Grid.RowDefinitions>

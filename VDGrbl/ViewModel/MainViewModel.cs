@@ -11,6 +11,9 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using VDGrbl.Codes;
 using VDGrbl.Model;
+using VDGrbl.Tools;
+using System.Windows.Data;
+using System.Globalization;
 
 namespace VDGrbl.ViewModel
 {
@@ -27,7 +30,7 @@ namespace VDGrbl.ViewModel
         private SerialPort _serialPort;
         private static Logger logger = LogManager.GetCurrentClassLogger();
         //private readonly SerialPortSettingsModel DeviceComPort = new SerialPortSettingsModel();
-        private string _selectedDevicePortName=string.Empty;
+        private string _selectedDevicePortName = string.Empty;
         private string[] _listPortNames;
         private int _selectedBaudRate;
         private int[] _listBaudRates;
@@ -43,17 +46,21 @@ namespace VDGrbl.ViewModel
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
         private readonly char[] trimArray = new char[] { '\r', '\n', ' ' };
-        private RespStatus _responseStatus=RespStatus.Ok;//TODO softwareStatus, responseStatus tobe check depending on what we want to include in checking...
-        private MachStatus _machinStatus=MachStatus.Idle;
-        private SolidColorBrush _machinStatusColor = new SolidColorBrush(Colors.LightGray);
-        private string _versionGrbl="-";
-        private string _buildInfo="-";
-        private string _posX="0.000";
-        private string _posY="0.000";
-        private string _posZ="0.000";
+        private RespStatus _responseStatus = RespStatus.Ok;//TODO softwareStatus, responseStatus tobe check depending on what we want to include in checking...
+        private MachStatus _machineStatus = MachStatus.Idle;
+        private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
+        private string _versionGrbl = "-";
+        private string _buildInfo = "-";
+        private string _posX = "0.000";
+        private string _posY = "0.000";
+        private string _posZ = "0.000";
         private ObservableCollection<SettingModel> _settingCollection;
-        private List<SettingModel> _listSettingModel=new List<SettingModel>();
+        private List<SettingModel> _listSettingModel = new List<SettingModel>();
         private SettingModel _settingModel;
+        private double _feedRate = 300;
+        private string _step = "1";
+        private bool _isSelectedKeyboard=false;
+        private bool _isJogEnabled=true;
         #endregion
 
         #region public Properties
@@ -82,6 +89,24 @@ namespace VDGrbl.ViewModel
         public RelayCommand GrblSleepCommand { get; private set; }
         public RelayCommand GrblTestCommand { get; private set; }
         public RelayCommand GrblHelpCommand { get; private set; }
+        public RelayCommand<bool> JogHCommand { get; private set; }
+        public RelayCommand<bool> JogNCommand { get; private set; }
+        public RelayCommand<bool> JogSCommand { get; private set; }
+        public RelayCommand<bool> JogECommand { get; private set; }
+        public RelayCommand<bool> JogWCommand { get; private set; }
+        public RelayCommand<bool> JogNWCommand { get; private set; }
+        public RelayCommand<bool> JogNECommand { get; private set; }
+        public RelayCommand<bool> JogSWCommand { get; private set; }
+        public RelayCommand<bool> JogSECommand { get; private set; }
+        public RelayCommand<bool> JogUpCommand { get; private set; }
+        public RelayCommand<bool> JogDownCommand { get; private set; }
+        public RelayCommand<string> StepCommand { get; private set; }
+        public RelayCommand<bool> IncreaseFeedRateCommand { get; private set; }
+        public RelayCommand<bool> DecreaseFeedRateCommand { get; private set; }
+        public RelayCommand ResetAxisXCommand { get; private set; }
+        public RelayCommand ResetAxisYCommand { get; private set; }
+        public RelayCommand ResetAxisZCommand { get; private set; }
+        public RelayCommand ResetAllAxisCommand { get; private set; }
 
         #endregion
 
@@ -380,7 +405,7 @@ namespace VDGrbl.ViewModel
                 Set(ref _txLine, value);
             }
         }
-        
+
         /// <summary>
         /// The <see cref="RXLine" /> property's name.
         /// </summary>
@@ -441,31 +466,138 @@ namespace VDGrbl.ViewModel
             }
         }
 
-        
+
+        #endregion
+
+        #region subregion G-code
+        /// <summary>
+        /// The <see cref="FeedRate" /> property's name.
+        /// </summary>
+        public const string FeedRatePropertyName = "FeedRate";
+        /// <summary>
+        /// Gets the FeedRate property. FeedRate is the motion speed F
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double FeedRate
+        {
+            get
+            {
+                return _feedRate;
+            }
+            set
+            {
+                Set(ref _feedRate, value);
+                if (_feedRate < 0)
+                {
+                    _feedRate = 0;
+                }
+                if (_feedRate > MaxFeedRate)
+                {
+                    _feedRate = MaxFeedRate;
+                }
+                logger.Info("Manual speed rate value is {0}", _feedRate);
+            }
+        }
+
+        /// <summary>
+        /// Sets the maximum feed rate allowed
+        /// </summary>
+        public double MaxFeedRate { get; private set; } = 1000;
+
+        /// <summary>
+        /// The <see cref="Step" /> property's name.
+        /// </summary>
+        public const string StepPropertyName = "Step";
+        /// <summary>
+        /// Gets the Step property. Step is the motion step
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Step
+        {
+            get
+            {
+                return _step;
+            }
+            set
+            {
+                Set(ref _step, value);
+                logger.Info("Manual step value is {0}",value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="IsSelectedKeyboard" /> property's name.
+        /// </summary>
+        public const string IsSelectedKeyboardPropertyName = "IsSelectedKeyboard";
+        /// <summary>
+        /// Gets the IsSelectedKeyboard property. IsSelectedKeyboard is checkbox Keyboard checked.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsSelectedKeyboard
+        {
+            get
+            {
+                return _isSelectedKeyboard;
+            }
+            set
+            {
+
+                Set(ref _isSelectedKeyboard, value);
+                if (_isSelectedKeyboard == true)
+                {
+                    logger.Info("Keyboard is selected");
+
+                }
+                else
+                {
+                logger.Info("Keyboard is not selected");
+            }
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="IsJogEnabled" /> property's name.
+        /// </summary>
+        public const string IsJogEnabledPropertyName = "IsJogEnabled";
+        /// <summary>
+        /// Gets the IsJogEnabled property. IsJogEnabled allows/disallows jogging button and keypad.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsJogEnabled
+        {
+            get
+            {
+                return _isJogEnabled;
+            }
+            set
+            {
+                Set(ref _isJogEnabled, value);
+            }
+        }
         #endregion
 
         #region subregion machine status, coordinate and version
-       
+
         /// <summary>
-        /// The <see cref="MachinStatus" /> property's name.
+        /// The <see cref="MachineStatus" /> property's name.
         /// </summary>
-        public const string MachinStatusPropertyName = "MachinStatus";
+        public const string MachineStatusPropertyName = "MachineStatus";
         /// <summary>
         /// Gets the MachineStatus property. This is the current state of the machine (Idle, Run, Hold, Alarm...)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public MachStatus MachinStatus
+        public MachStatus MachineStatus
         {
             get
             {
-                return _machinStatus;
+                return _machineStatus;
             }
             set
             {
-                Set(ref _machinStatus, value);
+                Set(ref _machineStatus, value);
             }
         }
-        
+
         /// <summary>
         /// The <see cref="ResponseStatus" /> property's name.
         /// </summary>
@@ -481,22 +613,22 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="MachinStatusColor" /> property's name.
+        /// The <see cref="MachineStatusColor" /> property's name.
         /// </summary>
-        public const string MachinStatusColorPropertyName = "MachinStatusColor";
+        public const string MachineStatusColorPropertyName = "MachineStatusColor";
         /// <summary>
         /// Gets the MachineStatusColor property. The color change depending of the current state of the machin (Idle=Beige, Run=Light Green...)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public SolidColorBrush MachinStatusColor
+        public SolidColorBrush MachineStatusColor
         {
             get
             {
-                return _machinStatusColor;
+                return _machineStatusColor;
             }
             set
             {
-                Set(ref _machinStatusColor, value);
+                Set(ref _machineStatusColor, value);
             }
         }
 
@@ -596,7 +728,7 @@ namespace VDGrbl.ViewModel
             }
             set
             {
-                Set("PosZ",ref _posZ, value);
+                Set("PosZ", ref _posZ, value);
             }
         }
         #endregion
@@ -630,11 +762,11 @@ namespace VDGrbl.ViewModel
                         logger.Info("Main MainWindow initialized");
                     });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error("Exception MainViewModel raised: " + ex.ToString());
             }
-}
+        }
         #endregion
 
         #region Methods
@@ -662,7 +794,25 @@ namespace VDGrbl.ViewModel
             GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteGrblHoming);
             GrblSleepCommand = new RelayCommand(GrblSleep, CanExecuteGrblSleep);
             GrblTestCommand = new RelayCommand(GrblTest, CanExecuteGrblTest);
-            GrblHelpCommand = new RelayCommand(GrblTest, CanExecuteGrblTest);
+            GrblHelpCommand = new RelayCommand(GrblHelp, CanExecuteGrblHelp);
+            JogHCommand = new RelayCommand<bool>(JogH, CanExecuteJog);//Not update with keyboard
+            JogNCommand = new RelayCommand<bool>(JogN, CanExecuteJog);
+            JogSCommand = new RelayCommand<bool>(JogS, CanExecuteJog);
+            JogECommand = new RelayCommand<bool>(JogE, CanExecuteJog);
+            JogWCommand = new RelayCommand<bool>(JogW, CanExecuteJog);
+            JogNWCommand = new RelayCommand<bool>(JogNW, CanExecuteJog);
+            JogNECommand = new RelayCommand<bool>(JogNE, CanExecuteJog);
+            JogSWCommand = new RelayCommand<bool>(JogSW, CanExecuteJog);
+            JogSECommand = new RelayCommand<bool>(JogSE, CanExecuteJog);
+            JogUpCommand = new RelayCommand<bool>(JogUp, CanExecuteJog);
+            JogDownCommand = new RelayCommand<bool>(JogDown, CanExecuteJog);
+            StepCommand = new RelayCommand<string>(GetStep,CanExecuteGetStep);
+            IncreaseFeedRateCommand = new RelayCommand<bool>(IncreaseFeedRate, CanExecuteFeedRate);
+            DecreaseFeedRateCommand = new RelayCommand<bool>(DecreaseFeedRate, CanExecuteFeedRate);
+            ResetAxisXCommand = new RelayCommand(ResetAxisX, CanExecuteResetAxis);
+            ResetAxisYCommand = new RelayCommand(ResetAxisX, CanExecuteResetAxis);
+            ResetAxisZCommand = new RelayCommand(ResetAxisY, CanExecuteResetAxis);
+            ResetAllAxisCommand = new RelayCommand(ResetAxisZ, CanExecuteResetAxis);
             logger.Info("All RelayCommands loaded");
         }
 
@@ -688,7 +838,7 @@ namespace VDGrbl.ViewModel
             {
                 logger.Error("Exception GetSerialPortSettings raised: " + ex.ToString());
             }
-}
+        }
 
         /// <summary>
         /// Set default settings for serial port
@@ -697,7 +847,7 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                if (ListPortNames != null&&ListPortNames.Length>0)
+                if (ListPortNames != null && ListPortNames.Length > 0)
                 {
                     _selectedDevicePortName = ListPortNames[0];
                     _selectedBaudRate = 115200;
@@ -707,7 +857,7 @@ namespace VDGrbl.ViewModel
                     _selectedHandshake = Handshake.None;
                     logger.Info("Default settings loaded");
                 }
-               else
+                else
                 {
                     logger.Info("No port COM available");
                 }
@@ -718,7 +868,7 @@ namespace VDGrbl.ViewModel
                 logger.Log(LogLevel.Error, "Exception DefaultPortSettings raised: " + ex.ToString());
             }
         }
-        
+
         /// <summary>
         /// Starts serial port communication
         /// </summary>
@@ -749,7 +899,7 @@ namespace VDGrbl.ViewModel
                     logger.Info("Port COM open");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error("Exception OpenSerialPort raised: " + ex.ToString());
             }
@@ -760,7 +910,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteOpenSerialPort()
         {
-                return !_serialPort.IsOpen;
+            return !_serialPort.IsOpen;
         }
 
         /// <summary>
@@ -798,14 +948,14 @@ namespace VDGrbl.ViewModel
             try
             {
                 _serialPort.WriteLine(TXLine);
-                logger.Info("Data TX: {0}",TXLine);
+                logger.Info("Data TX: {0}", TXLine);
 
             }
             catch (Exception ex)
             {
                 logger.Error("Exception SendData raised: " + ex.ToString());
             }
-}
+        }
         /// <summary>
         /// Allow/Disallow the Senddata method to be executed
         /// </summary>
@@ -816,7 +966,7 @@ namespace VDGrbl.ViewModel
             {
                 return true;
             }
-                return false;
+            return false;
         }
 
         /// <summary>
@@ -836,7 +986,7 @@ namespace VDGrbl.ViewModel
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error("Exception WriteByte raised: " + ex.ToString());
             }
@@ -889,7 +1039,7 @@ namespace VDGrbl.ViewModel
         public void ClearData()
         {
             try
-            { 
+            {
                 if (_serialPort.IsOpen)
                 {
                     GrblReset();
@@ -905,7 +1055,7 @@ namespace VDGrbl.ViewModel
             {
                 logger.Error("Exception ClearData raised: " + ex.ToString());
             }
-}
+        }
         /// <summary>
         /// Allow/Disallow the cleardata method to be executed
         /// </summary>
@@ -1089,6 +1239,258 @@ namespace VDGrbl.ViewModel
         }
         #endregion
 
+        #region subregion G-code commands
+        /// <summary>
+        /// Rapid move to home position.
+        /// </summary>
+        public void JogH(bool parameter)
+        {
+            string line = Gcode.FormatGcode(0,0, 0, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogH: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step Y+
+        /// </summary>
+        public void JogN(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,1, 0, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogN: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step Y-
+        /// </summary>
+        public void JogS(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,1, 0, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogS: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step X+
+        /// </summary>
+        public void JogE(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,1, 1, 0, 0, FeedRate, Double.Parse(Step.Replace('.',',')));
+            WriteString(line);
+            logger.Info("JogE: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step X-
+        /// </summary>
+        public void JogW(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,1, -1, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogW: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step X- Y+
+        /// </summary>
+        public void JogNW(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,1, -1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogNW: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step X+ Y+
+        /// </summary>
+        public void JogNE(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,1, 1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogNE: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step X- Y-
+        /// </summary>
+        public void JogSW(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,1, -1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogSW: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step X+ Y-
+        /// </summary>
+        public void JogSE(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,1, 1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogSE: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step Z+
+        /// </summary>
+        public void JogUp(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,0, 0, 0, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogUp: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Move one step Z-
+        /// </summary>
+        public void JogDown(bool parameter)
+        {
+            string line = Gcode.FormatGcode(1,0, 0, 0, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            WriteString(line);
+            logger.Info("JogDown: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Allows jogging mode if keyboard is not checked.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanExecuteJog(bool parameter)
+        {
+            if(parameter) //&&_serialPort.IsOpen;
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the move step value
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void GetStep(string parameter)
+        {
+            Step = (string)parameter;
+        }
+
+        /// <summary>
+        /// Allows/Disallows GetStep method.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanExecuteGetStep(string parameter)
+        {
+            if(parameter!=null)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the move feed rate value
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void IncreaseFeedRate(bool parameter)
+        {
+            FeedRate+=10;
+        }
+
+        /// <summary>
+        /// Gets the move feed rate value
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void DecreaseFeedRate(bool parameter)
+        {
+            FeedRate-=10;
+        }
+
+        /// <summary>
+        /// Allows/Disallows GetFeedRate method.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanExecuteFeedRate(bool parameter)
+        {
+            if (!parameter&&FeedRate<0&&FeedRate>MaxFeedRate)
+            {
+                RXLine = "false";
+                return false;
+            }
+            RXLine = "true";
+            return true;
+        }
+
+        /// <summary>
+        /// Sets current axis X to 0.
+        /// </summary>
+        public void ResetAxisX()
+        {
+            //string line = "G10 P0 L20 X0";
+            string line = "G10 P0 L2 X0";
+            WriteString(line);
+            logger.Info("Reset X: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Sets current axis Y to 0.
+        /// </summary>
+        public void ResetAxisY()
+        {
+            string line = "G10 P0 L20 Y0";
+            WriteString(line);
+            logger.Info("Reset Y: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Sets current axis Z to 0.
+        /// </summary>
+        public void ResetAxisZ()
+        {
+            string line = "G10 P0 L20 Z0";
+            WriteString(line);
+            logger.Info("Reset Z: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Sets all current axis to 0.
+        /// </summary>
+        public void ResetAllAxis()
+        {
+            string line = "G10 P0 L20 X0 Y0 Z0";
+            WriteString(line);
+            logger.Info("Reset All axis: {0}", line);
+            TXLine = line;
+        }
+
+        /// <summary>
+        /// Allows/Disallows Reset axis. G10 command only available w/ 0.9j and above?
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteResetAxis()
+        {
+            if (VersionGrbl.Contains("1"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        #endregion
+
         /// <summary>
         /// This is a test command bind to TEST button for development purpose only.
         /// </summary>
@@ -1139,7 +1541,7 @@ namespace VDGrbl.ViewModel
                     else
                     {
                         ResponseStatus = RespStatus.Q;
-                        logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", line, ResponseStatus.ToString(), MachinStatus.ToString());
+                        logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", line, ResponseStatus.ToString(), MachineStatus.ToString());
                     }
                 }
             }
@@ -1163,7 +1565,7 @@ namespace VDGrbl.ViewModel
                     VersionGrbl = _data.Substring(1, 4);
                     BuildInfo = _data.Substring(6, 8);
                     ResponseStatus = RespStatus.Ok;
-                    logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachinStatus.ToString());
+                    logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
                 }
             }
             /*List of [] message
@@ -1191,7 +1593,7 @@ namespace VDGrbl.ViewModel
         public void ProcessResponse(string _data)
         {
             ResponseStatus = RespStatus.Ok;
-            logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachinStatus.ToString());
+            logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
         }
 
         /// <summary>
@@ -1236,7 +1638,7 @@ namespace VDGrbl.ViewModel
         {
             //TODO: what to do before setting ResponseStatus to Ok...
             ResponseStatus = RespStatus.NOk;
-            logger.Info("Data:{0}|RespStatus:{1}|MachStatus{2}", _data, ResponseStatus.ToString(), MachinStatus.ToString());
+            logger.Info("Data:{0}|RespStatus:{1}|MachStatus{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
             try
             {
                 AlarmCodes ac = new AlarmCodes();
@@ -1271,7 +1673,7 @@ namespace VDGrbl.ViewModel
                     ListSettingModel.Add(_settingModel);
                     ResponseStatus = RespStatus.Ok;
                 }
-                logger.Info("Setting Value:{0}|RespStatus:{1}|MachStatus{2}", _data, ResponseStatus.ToString(), MachinStatus.ToString());
+                logger.Info("Setting Value:{0}|RespStatus:{1}|MachStatus{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
             }
             catch (Exception ex)
             {
@@ -1294,40 +1696,40 @@ namespace VDGrbl.ViewModel
                 switch (arr[1])
                 {
                     case "idle":
-                        MachinStatus = MachStatus.Idle;
-                        MachinStatusColor = Brushes.Beige;
+                        MachineStatus = MachStatus.Idle;
+                        MachineStatusColor = Brushes.Beige;
                         break;
                     case "run":
-                        MachinStatus = MachStatus.Run;
-                        MachinStatusColor = Brushes.LightGreen;
+                        MachineStatus = MachStatus.Run;
+                        MachineStatusColor = Brushes.LightGreen;
                         break;
                     case "hold":
-                        MachinStatus = MachStatus.Hold;
-                        MachinStatusColor = Brushes.LightBlue;
+                        MachineStatus = MachStatus.Hold;
+                        MachineStatusColor = Brushes.LightBlue;
                         break;
                     case "alarm":
-                        MachinStatus = MachStatus.Alarm;
-                        MachinStatusColor = Brushes.Red;
+                        MachineStatus = MachStatus.Alarm;
+                        MachineStatusColor = Brushes.Red;
                         break;
                     case "jog":
-                        MachinStatus = MachStatus.Jog;
-                        MachinStatusColor = Brushes.LightSeaGreen;
+                        MachineStatus = MachStatus.Jog;
+                        MachineStatusColor = Brushes.LightSeaGreen;
                         break;
                     case "door":
-                        MachinStatus = MachStatus.Door;
-                        MachinStatusColor = Brushes.LightYellow;
+                        MachineStatus = MachStatus.Door;
+                        MachineStatusColor = Brushes.LightYellow;
                         break;
                     case "check":
-                        MachinStatus = MachStatus.Check;
-                        MachinStatusColor = Brushes.LightCyan;
+                        MachineStatus = MachStatus.Check;
+                        MachineStatusColor = Brushes.LightCyan;
                         break;
                     case "home":
-                        MachinStatus = MachStatus.Home;
-                        MachinStatusColor = Brushes.LightPink;
+                        MachineStatus = MachStatus.Home;
+                        MachineStatusColor = Brushes.LightPink;
                         break;
                     case "sleep":
-                        MachinStatus = MachStatus.Sleep;
-                        MachinStatusColor = Brushes.LightGray;
+                        MachineStatus = MachStatus.Sleep;
+                        MachineStatusColor = Brushes.LightGray;
                         break;
                 }
             }
@@ -1340,32 +1742,32 @@ namespace VDGrbl.ViewModel
                 switch (arr[1])
                 {
                     case "idle":
-                        MachinStatus = MachStatus.Idle;
-                        MachinStatusColor = Brushes.Beige;
+                        MachineStatus = MachStatus.Idle;
+                        MachineStatusColor = Brushes.Beige;
                         break;
                     case "run":
-                        MachinStatus = MachStatus.Run;
-                        MachinStatusColor = Brushes.LightGreen;
+                        MachineStatus = MachStatus.Run;
+                        MachineStatusColor = Brushes.LightGreen;
                         break;
                     case "hold":
-                        MachinStatus = MachStatus.Hold;
-                        MachinStatusColor = Brushes.LightBlue;
+                        MachineStatus = MachStatus.Hold;
+                        MachineStatusColor = Brushes.LightBlue;
                         break;
                     case "alarm":
-                        MachinStatus = MachStatus.Alarm;
-                        MachinStatusColor = Brushes.Red;
+                        MachineStatus = MachStatus.Alarm;
+                        MachineStatusColor = Brushes.Red;
                         break;
                     case "door":
-                        MachinStatus = MachStatus.Door;
-                        MachinStatusColor = Brushes.LightYellow;
+                        MachineStatus = MachStatus.Door;
+                        MachineStatusColor = Brushes.LightYellow;
                         break;
                     case "check":
-                        MachinStatus = MachStatus.Check;
-                        MachinStatusColor = Brushes.LightCyan;
+                        MachineStatus = MachStatus.Check;
+                        MachineStatusColor = Brushes.LightCyan;
                         break;
                     case "home":
-                        MachinStatus = MachStatus.Home;
-                        MachinStatusColor = Brushes.LightPink;
+                        MachineStatus = MachStatus.Home;
+                        MachineStatusColor = Brushes.LightPink;
                         break;
                 }
             }
@@ -1482,13 +1884,6 @@ namespace VDGrbl.ViewModel
             // TODO: supprimer les marques de commentaire pour la ligne suivante si le finaliseur est remplacé ci-dessus.
             GC.SuppressFinalize(this);
         }
-        /*void IDisposable.Dispose()
-        {
-            // Ne modifiez pas ce code. Placez le code de nettoyage dans Dispose(bool disposing) ci-dessus.
-            Dispose(true);
-            // TODO: supprimer les marques de commentaire pour la ligne suivante si le finaliseur est remplacé ci-dessus.
-            GC.SuppressFinalize(this);
-        }*/
         #endregion
     }
 }

@@ -43,7 +43,7 @@ namespace VDGrbl.ViewModel.Tests
         {
             mvm = new MainViewModel(_dataService);
             mvm.DataGrblSorter(currentStatus);
-            Assert.AreEqual("Run", mvm.MachinStatus.ToString());
+            Assert.AreEqual("Run", mvm.MachineStatus.ToString());
         }
 
         [TestMethod()]
@@ -124,6 +124,24 @@ namespace VDGrbl.ViewModel.Tests
             mvm = new MainViewModel(_dataService);
             mvm.ProcessCurrentStatusResponse(currentStatus);
             Assert.AreEqual("-7.000", mvm.PosZ);
+        }
+
+        [TestMethod()]
+        public void JogWTest()
+        {
+            mvm = new MainViewModel(_dataService);
+            mvm.Step = "0.5";
+            mvm.FeedRate = 200;
+            mvm.JogW(true);
+            Assert.AreEqual("G0 X-0.5 Y0 Z0 F200", mvm.TXLine);
+        }
+
+        [TestMethod()]
+        public void FormatGrblLineTest()
+        {
+            mvm = new MainViewModel(_dataService);
+            string formatLine=mvm.FormatGrblLine(" <Run|MPos:5.529,30.860,-7.000,> ");
+            Assert.AreEqual("<run|mpos:5.529,30.860,-7.000,>", formatLine);
         }
     }
 }
