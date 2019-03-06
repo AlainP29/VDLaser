@@ -12,8 +12,11 @@ namespace VDGrbl.ViewModel.Tests
     public class MainViewModelTests : ViewModelBase
     {
         private readonly IDataService _dataService;
-        private readonly string info = "[0.9i.20150620:]";
-        private readonly string currentStatus = "<Run,MPos:5.529,30.860,-7.000,WPos:1.529,-5.440,-0.000>";//For Grbl version 0.9 and lower
+        private readonly string infoBuild = "[0.9i.20150620:]";
+        private readonly string infoGrbl = "Grbl 0.9i ['$' for help]";
+        //private readonly string currentStatus = "<Run,MPos:5.529,30.860,-7.000,WPos:1.529,-5.440,-0.000>";//For Grbl version 0.9 and lower
+        private readonly string currentStatus = "<Run,MPos:5.529,30.860,-7.000,WPos:1.529,-5.440,-0.000,Buf:5>";//For Grbl version 0.9 and lower w/ buffers
+
         //private readonly string currentStatus = "<Run|MPos:5.529,30.860,-7.000,>";//For Grbl version 1.1 and higher
         private readonly string err11 = "error:17";
         private readonly string err09 = "error: bad number format";
@@ -26,7 +29,7 @@ namespace VDGrbl.ViewModel.Tests
         public void ProcessInfoResponseVersionTest()
         {
             mvm = new MainViewModel(_dataService);
-            mvm.ProcessInfoResponse(info);
+            mvm.ProcessInfoResponse(infoBuild);
             Assert.AreEqual("0.9i", mvm.VersionGrbl);
         }
 
@@ -34,8 +37,16 @@ namespace VDGrbl.ViewModel.Tests
         public void ProcessInfoResponseBuildTest()
         {
             mvm = new MainViewModel(_dataService);
-            mvm.ProcessInfoResponse(info);
+            mvm.ProcessInfoResponse(infoBuild);
             Assert.AreEqual("20150620", mvm.BuildInfo);
+        }
+
+        [TestMethod()]
+        public void ProcessInfoResponseGrblTest()
+        {
+            mvm = new MainViewModel(_dataService);
+            mvm.ProcessInfoResponse(infoGrbl);
+            Assert.AreEqual("View startup blocks", mvm.InfoMessage);
         }
 
         [TestMethod()]
@@ -61,8 +72,8 @@ namespace VDGrbl.ViewModel.Tests
             {
                 VersionGrbl = "1.1"
             };
-            string response = mvm.ProcessErrorResponse(err11);
-            Assert.AreEqual("Laser mode requires PWM output.", response);
+            mvm.ProcessErrorResponse(err11);
+            Assert.AreEqual("Laser mode requires PWM output.", mvm.ErrorMessage);
         }
 
         [TestMethod()]
@@ -72,8 +83,8 @@ namespace VDGrbl.ViewModel.Tests
             {
                 VersionGrbl = "0.9"
             };
-            string response = mvm.ProcessErrorResponse(err09);
-            Assert.AreEqual("The number value suffix of a G-code word is missing in the G-code block, or when configuring a $Nx=line or $x=val Grbl setting and the x is not a number value.", response);
+            mvm.ProcessErrorResponse(err09);
+            Assert.AreEqual("The number value suffix of a G-code word is missing in the G-code block, or when configuring a $Nx=line or $x=val Grbl setting and the x is not a number value.", mvm.ErrorMessage);
         }
 
         [TestMethod()]
@@ -83,16 +94,16 @@ namespace VDGrbl.ViewModel.Tests
             {
                 VersionGrbl = "0.9"
             };
-            string response = mvm.ProcessErrorResponse(err09ID);
-            Assert.AreEqual("A G-code word was repeated in the block.", response);
+            mvm.ProcessErrorResponse(err09ID);
+            Assert.AreEqual("A G-code word was repeated in the block.", mvm.ErrorMessage);
         }
 
         [TestMethod()]
         public void ProcessResponseAlarmTest()
         {
             mvm = new MainViewModel(_dataService);
-            string response = mvm.ProcessAlarmResponse(ala);
-            Assert.AreEqual("Homing fail. Reset during active homing cycle.", response);
+            mvm.ProcessAlarmResponse(ala);
+            Assert.AreEqual("Homing fail. Reset during active homing cycle.", mvm.AlarmMessage);
         }
 
         [TestMethod()]
@@ -127,13 +138,23 @@ namespace VDGrbl.ViewModel.Tests
         }
 
         [TestMethod()]
-        public void JogWTest()
+        public void ProcessCurrentStatusResponsePlanneBuffer()
         {
             mvm = new MainViewModel(_dataService);
-            mvm.Step = "0.5";
-            mvm.FeedRate = 200;
+            mvm.ProcessCurrentStatusResponse(currentStatus);
+            Assert.AreEqual("5", mvm.PlannerBuffer);
+        }
+
+        [TestMethod()]
+        public void JogWTest()
+        {
+            mvm = new MainViewModel(_dataService)
+            {
+                Step = "0.5",
+                FeedRate = 200
+            };
             mvm.JogW(true);
-            Assert.AreEqual("G0 X-0.5 Y0 Z0 F200", mvm.TXLine);
+            Assert.AreEqual("G91 G1 X-0.5 Y0 Z0 F200", mvm.TXLine);
         }
 
         [TestMethod()]

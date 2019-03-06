@@ -54,6 +54,9 @@ namespace VDGrbl.ViewModel
         private string _posX = "0.000";
         private string _posY = "0.000";
         private string _posZ = "0.000";
+        private string _wposX = "0.000";
+        private string _wposY = "0.000";
+        private string _wposZ = "0.000";
         private ObservableCollection<SettingModel> _settingCollection;
         private List<SettingModel> _listSettingModel = new List<SettingModel>();
         private SettingModel _settingModel;
@@ -61,6 +64,10 @@ namespace VDGrbl.ViewModel
         private string _step = "1";
         private bool _isSelectedKeyboard=false;
         private bool _isJogEnabled=true;
+        private string _plannerBuffer;
+        private string _errorMessage=string.Empty;
+        private string _alarmMessage=string.Empty;
+        private string _infoMessage = string.Empty;
         #endregion
 
         #region public Properties
@@ -466,7 +473,90 @@ namespace VDGrbl.ViewModel
             }
         }
 
+        /// <summary>
+        /// The <see cref="PlannerBuffer" /> property's name.
+        /// </summary>
+        public const string PlannerBufferPropertyName = "PlannerBuffer";
+        /// <summary>
+        /// Gets the PlannerBuffer property. PlannerBuffer is the Number of motions queued in Grbl's planner buffer.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string PlannerBuffer
+        {
+            get
+            {
+                return _plannerBuffer;
+            }
+            set
+            {
+                Set(ref _plannerBuffer, value);
+            }
+        }
 
+        /// <summary>
+        /// The <see cref="ErrorMessage" /> property's name.
+        /// </summary>
+        public const string ErrorMessagePropertyName = "ErrorMessage";
+        /// <summary>
+        /// Gets the ErrorMessage property. ErrorMessage is got from ErrorCode ID.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string ErrorMessage
+        {
+            get
+            {
+                return _errorMessage;
+            }
+            set
+            {
+                Set(ref _errorMessage, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="AlarmMessage" /> property's name.
+        /// </summary>
+        public const string AlarmMessagePropertyName = "AlarmMessage";
+        /// <summary>
+        /// Gets the AlarmMessage property. AlarmMessage is got from AlarmCode ID.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string AlarmMessage
+        {
+            get
+            {
+                return _alarmMessage;
+            }
+            set
+            {
+                Set(ref _alarmMessage, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="InfoMessage" /> property's name.
+        /// </summary>
+        public const string InfoMessagePropertyName = "InfoMessage";
+        /// <summary>
+        /// Gets the InfoMessage property. InfoMessage is got from the Arduino or the VDGrbl software.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string InfoMessage
+        {
+            get
+            {
+                return _infoMessage;
+            }
+            set
+            {
+                Set(ref _infoMessage, value);
+            }
+        }
+
+        /// <summary>
+        /// Max number of motion commands in planner buffer.
+        /// </summary>
+        public string MaxPlannerBuffer { get; set; } = "20";
         #endregion
 
         #region subregion G-code
@@ -731,6 +821,66 @@ namespace VDGrbl.ViewModel
                 Set("PosZ", ref _posZ, value);
             }
         }
+
+        /// <summary>
+        /// The <see cref="WPosX" /> property's name.
+        /// </summary>
+        public const string WPosXPropertyName = "WPosX";
+        /// <summary>
+        /// Gets the PosX property. PosX is the X coordinate of the machin get w/ '?' Grbl real-time command.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string WPosX
+        {
+            get
+            {
+                return _wposX;
+            }
+            set
+            {
+                Set(ref _wposX, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="WPosY" /> property's name.
+        /// </summary>
+        public const string WPosYPropertyName = "WPosY";
+        /// <summary>
+        /// Gets the PosY property. PosY is the Y coordinate received the machin get w/ '?' Grbl real-time command.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string WPosY
+        {
+            get
+            {
+                return _wposY;
+            }
+            set
+            {
+                Set(ref _wposY, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="WPosZ" /> property's name.
+        /// </summary>
+        public const string WPosZPropertyName = "WPosZ";
+        /// <summary>
+        /// Gets the PosZ property. PosZ is the Z coordinate of the machin get w/ '?' Grbl real-time command.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string WPosZ
+        {
+            get
+            {
+                return _wposZ;
+            }
+            set
+            {
+                Set("PosZ", ref _wposZ, value);
+            }
+        }
         #endregion
         #endregion
 
@@ -780,22 +930,22 @@ namespace VDGrbl.ViewModel
             DisconnectCommand = new RelayCommand(CloseSerialPort, CanExecuteCloseSerialPort);
             SendCommand = new RelayCommand(SendData, CanExecuteSendData);
             ClearCommand = new RelayCommand(ClearData, CanExecuteClearData);
-            GrblResetCommand = new RelayCommand(GrblReset, CanExecuteGrblReset);
-            GrblPauseCommand = new RelayCommand(GrblFeedHold, CanExecuteFeedHold);
-            GrblCurrentStatusCommand = new RelayCommand(GrblCurrentStatus, CanExecuteGrblCurrentStatus);
-            GrblStartCommand = new RelayCommand(GrblStartCycle, CanExecuteGrblStartCycle);
-            GrblSettingsCommand = new RelayCommand(GrblSettings, CanExecuteGrblSettings);
-            GrblParametersCommand = new RelayCommand(GrblParameters, CanExecuteGrblParameters);
-            GrblParserStateCommand = new RelayCommand(GrblParserState, CanExecuteGrblParserState);
-            GrblBuildInfoCommand = new RelayCommand(GrblBuildInfo, CanExecuteGrblBuildInfo);
-            GrblStartupBlocksCommand = new RelayCommand(GrblStartupBlocks, CanExecuteGrblStartupBlocks);
-            GrblCheckCommand = new RelayCommand(GrblCheck, CanExecuteGrblCheck);
-            GrblKillAlarmCommand = new RelayCommand(GrblKillAlarm, CanExecuteGrblKillAlarm);
-            GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteGrblHoming);
-            GrblSleepCommand = new RelayCommand(GrblSleep, CanExecuteGrblSleep);
+            GrblResetCommand = new RelayCommand(GrblReset, CanExecuteRealTimeCommand);
+            GrblPauseCommand = new RelayCommand(GrblFeedHold, CanExecuteRealTimeCommand);
+            GrblCurrentStatusCommand = new RelayCommand(GrblCurrentStatus, CanExecuteRealTimeCommand);
+            GrblStartCommand = new RelayCommand(GrblStartCycle, CanExecuteRealTimeCommand);
+            GrblSettingsCommand = new RelayCommand(GrblSettings, CanExecuteOtherCommand());
+            GrblParametersCommand = new RelayCommand(GrblParameters, CanExecuteOtherCommand());
+            GrblParserStateCommand = new RelayCommand(GrblParserState, CanExecuteOtherCommand());
+            GrblBuildInfoCommand = new RelayCommand(GrblBuildInfo, CanExecuteOtherCommand());
+            GrblStartupBlocksCommand = new RelayCommand(GrblStartupBlocks, CanExecuteOtherCommand());
+            GrblCheckCommand = new RelayCommand(GrblCheck, CanExecuteOtherCommand());
+            GrblKillAlarmCommand = new RelayCommand(GrblKillAlarm, CanExecuteOtherCommand());
+            GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteOtherCommand());
+            GrblSleepCommand = new RelayCommand(GrblSleep, CanExecuteOtherCommand());
             GrblTestCommand = new RelayCommand(GrblTest, CanExecuteGrblTest);
-            GrblHelpCommand = new RelayCommand(GrblHelp, CanExecuteGrblHelp);
-            JogHCommand = new RelayCommand<bool>(JogH, CanExecuteJog);//Not update with keyboard
+            GrblHelpCommand = new RelayCommand(GrblHelp, CanExecuteOtherCommand());
+            JogHCommand = new RelayCommand<bool>(JogH, CanExecuteJog);
             JogNCommand = new RelayCommand<bool>(JogN, CanExecuteJog);
             JogSCommand = new RelayCommand<bool>(JogS, CanExecuteJog);
             JogECommand = new RelayCommand<bool>(JogE, CanExecuteJog);
@@ -879,6 +1029,7 @@ namespace VDGrbl.ViewModel
                 if (String.IsNullOrEmpty(SelectedPortName))
                 {
                     MessageBox.Show("Please select a Port COM");
+                    InfoMessage = "Please select a Port COM";
                     logger.Info("Select a Port COM");
                 }
                 else
@@ -964,7 +1115,10 @@ namespace VDGrbl.ViewModel
         {
             if (_serialPort.IsOpen && !string.IsNullOrEmpty(TXLine))
             {
-                return true;
+                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -1049,6 +1203,7 @@ namespace VDGrbl.ViewModel
                 Thread.Sleep(50);
                 RXLine = string.Empty;
                 TXLine = string.Empty;
+                ListSettingModel.Clear();
                 logger.Info("TXLine/RXLine and buffers erased");
             }
             catch (Exception ex)
@@ -1074,7 +1229,37 @@ namespace VDGrbl.ViewModel
         {
             WriteByte(24);
         }
-        public bool CanExecuteGrblReset()
+       
+        /// <summary>
+        /// Writes Grbl "~" real-time command (ascii dec 126) to start the machine after a pause or 'M0' command.
+        /// </summary>
+        public void GrblStartCycle()
+        {
+            WriteByte(126);
+        }
+        
+        /// <summary>
+        /// Writes Grbl "!" real-time command (ascii dec 33) to pause the machine motion X, Y and Z (not spindle or laser).
+        /// </summary>
+        public void GrblFeedHold()
+        {
+            WriteByte(33);
+        }
+
+        /// <summary>
+        /// Writes Grbl "?" real-time command "?" (Ascii dec 63) to get immadiate status report of the machine.
+        /// </summary>
+        public void GrblCurrentStatus()
+        {
+            WriteByte(63);
+        }
+
+        /// <summary>
+        /// Allows/disallows real-time command. These commands can be sent at anytime,
+        /// anywhere, and Grbl will immediately respond, no matter what it's doing
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteRealTimeCommand()
         {
             return true;
         }
@@ -1089,46 +1274,6 @@ namespace VDGrbl.ViewModel
             Thread.Sleep(100);//Waits for ListSettingModel to populate all setting values
             SettingCollection = new ObservableCollection<SettingModel>(ListSettingModel);
         }
-        public bool CanExecuteGrblSettings()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Writes Grbl "~" real-time command (ascii dec 126) to start the machine after a pause or 'M0' command.
-        /// </summary>
-        public void GrblStartCycle()
-        {
-            WriteByte(126);
-        }
-        public bool CanExecuteGrblStartCycle()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Writes Grbl "!" real-time command (ascii dec 33) to pause the machine motion X, Y and Z (not spindle or laser).
-        /// </summary>
-        public void GrblFeedHold()
-        {
-            WriteByte(33);
-        }
-        public bool CanExecuteFeedHold()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Writes Grbl "?" real-time command "?" (Ascii dec 63) to get immadiate status report of the machine.
-        /// </summary>
-        public void GrblCurrentStatus()
-        {
-            WriteByte(63);
-        }
-        public bool CanExecuteGrblCurrentStatus()
-        {
-            return true;
-        }
 
         /// <summary>
         /// Writes Grbl '$#' command to view parameters [G54:0.000,0.000,0.000].
@@ -1136,10 +1281,6 @@ namespace VDGrbl.ViewModel
         public void GrblParameters()
         {
             WriteString("$#");
-        }
-        public bool CanExecuteGrblParameters()
-        {
-            return true;
         }
 
         /// <summary>
@@ -1149,10 +1290,6 @@ namespace VDGrbl.ViewModel
         {
             WriteString("$G");
         }
-        public bool CanExecuteGrblParserState()
-        {
-            return true;
-        }
 
         /// <summary>
         /// Writes Grbl '$I' command to view version and date of build [0.9i.20150620:].
@@ -1160,10 +1297,6 @@ namespace VDGrbl.ViewModel
         public void GrblBuildInfo()
         {
             WriteString("$I");
-        }
-        public bool CanExecuteGrblBuildInfo()
-        {
-            return true;
         }
 
         /// <summary>
@@ -1173,10 +1306,6 @@ namespace VDGrbl.ViewModel
         {
             WriteString("$N");
         }
-        public bool CanExecuteGrblStartupBlocks()
-        {
-            return true;
-        }
 
         /// <summary>
         /// Write Grbl '$C' command to enable check mode (No motion).
@@ -1184,10 +1313,6 @@ namespace VDGrbl.ViewModel
         public void GrblCheck()
         {
             WriteString("$C");
-        }
-        public bool CanExecuteGrblCheck()
-        {
-            return true;
         }
 
         /// <summary>
@@ -1197,10 +1322,6 @@ namespace VDGrbl.ViewModel
         {
             WriteString("$X");
         }
-        public bool CanExecuteGrblKillAlarm()
-        {
-            return true;
-        }
 
         /// <summary>
         /// Write Grbl '$H' command to run homing cycle.
@@ -1208,10 +1329,6 @@ namespace VDGrbl.ViewModel
         public void GrblHoming()
         {
             WriteString("$H");
-        }
-        public bool CanExecuteGrblHoming()
-        {
-            return true;
         }
 
         /// <summary>
@@ -1221,10 +1338,6 @@ namespace VDGrbl.ViewModel
         {
             WriteString("$SLP");
         }
-        public bool CanExecuteGrblSleep()
-        {
-            return true;
-        }
 
         /// <summary>
         /// Write Grbl '$' command to get help.
@@ -1233,9 +1346,19 @@ namespace VDGrbl.ViewModel
         {
             WriteString("$");
         }
-        public bool CanExecuteGrblHelp()
+
+        /// <summary>
+        /// Allows/disallows Grbl's Other '$' Commands. The other $ commands provide additional controls for the user, 
+        /// such as printing feedback on the current G-code parser modal state or running the homing cycle.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteOtherCommand()
         {
-            return true;
+            if (_serialPort.IsOpen && ResponseStatus==RespStatus.Ok)
+            {
+                return true;
+            }
+            return false;
         }
         #endregion
 
@@ -1367,9 +1490,12 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteJog(bool parameter)
         {
-            if(parameter) //&&_serialPort.IsOpen;
+            if (_serialPort.IsOpen && ResponseStatus == RespStatus.Ok)
             {
-                return true;
+                if (parameter)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -1382,17 +1508,16 @@ namespace VDGrbl.ViewModel
         {
             Step = (string)parameter;
         }
-
         /// <summary>
         /// Allows/Disallows GetStep method.
         /// </summary>
         /// <returns></returns>
         private bool CanExecuteGetStep(string parameter)
         {
-            if(parameter!=null)
-            {
-                return true;
-            }
+                if (!string.IsNullOrEmpty(parameter))
+                {
+                    return true;
+                }
             return false;
         }
 
@@ -1420,12 +1545,10 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteFeedRate(bool parameter)
         {
-            if (!parameter&&FeedRate<0&&FeedRate>MaxFeedRate)
+            if (!parameter && FeedRate<0 && FeedRate>MaxFeedRate)
             {
-                RXLine = "false";
                 return false;
             }
-            RXLine = "true";
             return true;
         }
 
@@ -1449,7 +1572,6 @@ namespace VDGrbl.ViewModel
             string line = "G10 P0 L20 Y0";
             WriteString(line);
             logger.Info("Reset Y: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -1503,6 +1625,7 @@ namespace VDGrbl.ViewModel
             return true;
         }
 
+        #region process methods for DataGrblSorter method
         /// <summary>
         /// Sorts Grbl data received like Grbl informations, response, coordinates, settings...
         /// </summary>
@@ -1510,6 +1633,7 @@ namespace VDGrbl.ViewModel
         public void DataGrblSorter(string _line)
         {
             string line = FormatGrblLine(_line);
+            ResponseStatus = RespStatus.DR;
             try
             {
                 if (!string.IsNullOrEmpty(line))
@@ -1534,50 +1658,79 @@ namespace VDGrbl.ViewModel
                     {
                         ProcessSettingsResponse(line);
                     }
-                    else if(line.StartsWith("[") && line.EndsWith("]"))
+                    else if(line.StartsWith("[") || line.EndsWith("]"))
                     {
                         ProcessInfoResponse(line);
                     }
+                    else if(line.Contains("rbl"))
+                    {
+                        InfoMessage = "View startup blocks"; //Grbl 0.9i ['$' for help] put something like $N0=G20 G54 G17 to get it
+                    }
                     else
                     {
-                        ResponseStatus = RespStatus.Q;
-                        logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", line, ResponseStatus.ToString(), MachineStatus.ToString());
+                        InfoMessage = "Unknown";//TODO
                     }
                 }
+                logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", line, ResponseStatus.ToString(), MachineStatus.ToString());
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error("Exception DataGrblSorter raised: " + ex.ToString());
             }
         }
-
-        #region process methods for DataGrblSorter method
+        
         /// <summary>
         /// Processes Grbl build informations.
         /// </summary>
-        /// <param name="_data"></param>
-        public void ProcessInfoResponse(string _data)
+        /// <param name="data"></param>
+        public void ProcessInfoResponse(string data)
         {
             try
             {
-                if(_data.Length==16)
+                ResponseStatus = RespStatus.Ok;
+                logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
+                switch (data.Length)
                 {
-                    VersionGrbl = _data.Substring(1, 4);
-                    BuildInfo = _data.Substring(6, 8);
-                    ResponseStatus = RespStatus.Ok;
-                    logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
+                    case 9:
+                        InfoMessage = "Check gcode mode";//[Enabled]
+                        break;
+
+                    case 10:
+                        InfoMessage = "Check gcode mode";//[Disabled]
+                        break;
+
+                    case 16:
+                        VersionGrbl = data.Substring(1, 4);//[0.9i.20150620:]
+                        BuildInfo = data.Substring(6, 8);
+                        break;
+
+                    case 19:
+                        InfoMessage = "Kill alarm lock or reset to continue?";//[Caution: Unlocked] [Reset to continue]
+                        break;
+
+                    case 20:
+                        InfoMessage = "Kill alarm lock or homing to continue";//['$H'|'$X' to unlock]
+                        break;
+
+                    case 23 when !data.Contains("PLB")://For C#7 test only :-)
+                        InfoMessage = "View G-code parameters";
+                        break;
+
+                    case 24:
+                        InfoMessage = "View startup blocks"; //Grbl 0.9i ['$' for help] put something like $N0=G20 G54 G17 to get it
+                        break;
+
+                    case 44:
+                        InfoMessage = "View gcode parser state";//[G0 G54 G17 G21 G90 G94 M0 M5 M9 T0 F0. S0.]
+                        break;
+
+                    default:
+                        InfoMessage = "Unknown[]";
+                        break;
                 }
             }
-            /*List of [] message
-             Grbl vX.Xx ['$' for help]
-             [0.9i.20150620:]
-             [Reset to continue]
-             ['$H'|'$X' to unlock]
-             [Caution: Unlocked]
-             [Enabled]
-             [Disabled]
-             [PRB:0.000,0.000,1.492:1]
-             [G0 G54 G17 G21 G90 G94 M0 M5 M9 T0 F0. S0.]*/
+
             catch (Exception ex)
             {
                 logger.Error("Exception ProcessInfoResponse raised: " + ex.ToString());
@@ -1601,32 +1754,37 @@ namespace VDGrbl.ViewModel
         /// </summary>
         /// <param name="_data"></param>
         /// <returns></returns>
-        public string ProcessErrorResponse(string _data)//Should not return a string but update a property TODO.
+        public void ProcessErrorResponse(string _data)
         {
-            //ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command + try/catch
+            try
+            {
+                ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command + try/catch
                 ErrorCodes ec = new ErrorCodes();
                 logger.Info("Error key:{0}", _data.Split(':')[1]);
                 if (VersionGrbl.StartsWith("1"))//In version 1.1 all error codes have ID
                 {
-                    string errorDesc11 = ec.ErrorDict11[_data.Split(':')[1]];
-                    logger.Info("Error key:{0} | description:{1}", _data.Split(':')[1], errorDesc11);
-                    return errorDesc11;
+                    ErrorMessage = ec.ErrorDict11[_data.Split(':')[1]];
+                    logger.Info("Error key:{0} | description:{1}", _data.Split(':')[1], ErrorMessage);
                 }
                 else
                 {
                     if (_data.Contains("ID"))//In version 0.9 only error code from 23 to 37 have ID
                     {
-                        string errorDesc09 = ec.ErrorDict09[_data.Split(':')[2]];
-                        logger.Info("Error key {0} | description:{1}", _data.Split(':')[2], errorDesc09);
-                        return errorDesc09;
+                        ErrorMessage = ec.ErrorDict09[_data.Split(':')[2]];
+                        logger.Info("Error key {0} | description:{1}", _data.Split(':')[2], ErrorMessage);
                     }
                     else//Error codes w/o ID
                     {
-                        string errorDesc09 = ec.ErrorDict09[_data.Split(':')[1]];
-                        logger.Info("Error key {0} | description:{1}", _data.Split(':')[1], errorDesc09);
-                        return errorDesc09;
+                        ErrorMessage = ec.ErrorDict09[_data.Split(':')[1]];
+                        logger.Info("Error key {0} | description:{1}", _data.Split(':')[1], ErrorMessage);
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception ProcessErrorResponse raised: ", ex.ToString());
+                ResponseStatus = RespStatus.NOk;
+            }
         }
 
         /// <summary>
@@ -1634,50 +1792,57 @@ namespace VDGrbl.ViewModel
         /// </summary>
         /// <param name="_data"></param>
         /// <returns></returns>
-        public string ProcessAlarmResponse(string _data)//Should not return a string but update a property TODO.
+        public void ProcessAlarmResponse(string _data)
         {
-            //TODO: what to do before setting ResponseStatus to Ok...
             ResponseStatus = RespStatus.NOk;
-            logger.Info("Data:{0}|RespStatus:{1}|MachStatus{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
+            MachineStatusColor = Brushes.Red;
+            AlarmCodes ac = new AlarmCodes();
             try
             {
-                AlarmCodes ac = new AlarmCodes();
-                return ac.AlarmDict11[_data.Split(':')[1]];
+                AlarmMessage= ac.AlarmDict11[_data.Split(':')[1]];
+                logger.Info("Alarm key {0} | description:{1}", _data.Split(':')[1], AlarmMessage);
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error("Exception ProcessAlarmResponse raised: ", ex.ToString());
-                return "";
+                ResponseStatus = RespStatus.NOk;
             }
         }
 
         /// <summary>
         /// Populates the settingsCollection w/ data received w/ Grbl '$$' command.
         /// </summary>
-        /// <param name="_data"></param>
-        public void ProcessSettingsResponse(string _data)
+        /// <param name="data"></param>
+        public void ProcessSettingsResponse(string data)
         {
             try
             {
-                string[] arr = _data.Split(new Char[] { '=', '(', ')', '\r', '\n' });
-                
-                if (arr.Length > 2)//Grbl version 0.9 (w/ setting description)
+                ResponseStatus = RespStatus.Q;//Wait until we get all settings before sending new line of code
+                string[] arr = data.Split(new Char[] { '=', '(', ')', '\r', '\n' });
+                if (data.Contains("N"))
                 {
-                    _settingModel = new SettingModel(arr[0], arr[1], arr[2]);
-                    ListSettingModel.Add(_settingModel);
-                    ResponseStatus = RespStatus.Ok;
+                    InfoMessage = "Startup block";//$N0=...
                 }
-                else//Grbl version 1.1 (w/o setting description)
+                else
                 {
-                    _settingModel = new SettingModel(arr[0], arr[1], "");
-                    ListSettingModel.Add(_settingModel);
-                    ResponseStatus = RespStatus.Ok;
+                    if (arr.Length > 2)//Grbl version 0.9 (w/ setting description)
+                    {
+                        _settingModel = new SettingModel(arr[0], arr[1], arr[2]);
+                        ListSettingModel.Add(_settingModel);
+                    }
+                    else//Grbl version 1.1 (w/o setting description)
+                    {
+                        _settingModel = new SettingModel(arr[0], arr[1], "");
+                        ListSettingModel.Add(_settingModel);
+                    }
                 }
-                logger.Info("Setting Value:{0}|RespStatus:{1}|MachStatus{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
+                logger.Info("Setting Value:{0}|RespStatus:{1}|MachStatus{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
             }
             catch (Exception ex)
             {
                 logger.Error("Exception ProcessSettingResponse raised: ", ex.ToString());
+                ResponseStatus = RespStatus.NOk;
             }
         }
 
@@ -1687,91 +1852,108 @@ namespace VDGrbl.ViewModel
         /// <param name="_data"></param>
         public void ProcessCurrentStatusResponse(string _data)
         {
-            if (_data.Contains("|") || VersionGrbl.StartsWith("1"))//Report state Grbl v1.1 < Idle|MPos:0.000,0.000,0.000>
+            try
             {
-                string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n', '|' });
-                PosX = arr[3];
-                PosY = arr[4];
-                PosZ = arr[5];
-                switch (arr[1])
+                ResponseStatus = RespStatus.Ok;
+                if (_data.Contains("|") || VersionGrbl.StartsWith("1"))//Report state Grbl v1.1 < Idle|MPos:0.000,0.000,0.000>
                 {
-                    case "idle":
-                        MachineStatus = MachStatus.Idle;
-                        MachineStatusColor = Brushes.Beige;
-                        break;
-                    case "run":
-                        MachineStatus = MachStatus.Run;
-                        MachineStatusColor = Brushes.LightGreen;
-                        break;
-                    case "hold":
-                        MachineStatus = MachStatus.Hold;
-                        MachineStatusColor = Brushes.LightBlue;
-                        break;
-                    case "alarm":
-                        MachineStatus = MachStatus.Alarm;
-                        MachineStatusColor = Brushes.Red;
-                        break;
-                    case "jog":
-                        MachineStatus = MachStatus.Jog;
-                        MachineStatusColor = Brushes.LightSeaGreen;
-                        break;
-                    case "door":
-                        MachineStatus = MachStatus.Door;
-                        MachineStatusColor = Brushes.LightYellow;
-                        break;
-                    case "check":
-                        MachineStatus = MachStatus.Check;
-                        MachineStatusColor = Brushes.LightCyan;
-                        break;
-                    case "home":
-                        MachineStatus = MachStatus.Home;
-                        MachineStatusColor = Brushes.LightPink;
-                        break;
-                    case "sleep":
-                        MachineStatus = MachStatus.Sleep;
-                        MachineStatusColor = Brushes.LightGray;
-                        break;
+                    string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n', '|' });
+                    PosX = arr[3];
+                    PosY = arr[4];
+                    PosZ = arr[5];
+                    //WPosX = arr[7];
+                    //WPosY = arr[8];
+                    //WPosZ = arr[9];
+                    //PlannerBuffer = arr[11];
+                    switch (arr[1])
+                    {
+                        case "idle":
+                            MachineStatus = MachStatus.Idle;
+                            MachineStatusColor = Brushes.Beige;
+                            break;
+                        case "run":
+                            MachineStatus = MachStatus.Run;
+                            MachineStatusColor = Brushes.LightGreen;
+                            break;
+                        case "hold":
+                            MachineStatus = MachStatus.Hold;
+                            MachineStatusColor = Brushes.LightBlue;
+                            break;
+                        case "alarm":
+                            MachineStatus = MachStatus.Alarm;
+                            MachineStatusColor = Brushes.Red;
+                            break;
+                        case "jog":
+                            MachineStatus = MachStatus.Jog;
+                            MachineStatusColor = Brushes.LightSeaGreen;
+                            break;
+                        case "door":
+                            MachineStatus = MachStatus.Door;
+                            MachineStatusColor = Brushes.LightYellow;
+                            break;
+                        case "check":
+                            MachineStatus = MachStatus.Check;
+                            MachineStatusColor = Brushes.LightCyan;
+                            break;
+                        case "home":
+                            MachineStatus = MachStatus.Home;
+                            MachineStatusColor = Brushes.LightPink;
+                            break;
+                        case "sleep":
+                            MachineStatus = MachStatus.Sleep;
+                            MachineStatusColor = Brushes.LightGray;
+                            break;
+                    }
                 }
+                else//Report state Grbl v0.9 <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000,Buf:0>
+                {
+                    string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n' });
+                    PosX = arr[3];
+                    PosY = arr[4];
+                    PosZ = arr[5];
+                    WPosX = arr[7];
+                    WPosY = arr[8];
+                    WPosZ = arr[9];
+                    PlannerBuffer = arr[11];
+                    switch (arr[1])
+                    {
+                        case "idle":
+                            MachineStatus = MachStatus.Idle;
+                            MachineStatusColor = Brushes.Beige;
+                            break;
+                        case "run":
+                            MachineStatus = MachStatus.Run;
+                            MachineStatusColor = Brushes.LightGreen;
+                            break;
+                        case "hold":
+                            MachineStatus = MachStatus.Hold;
+                            MachineStatusColor = Brushes.LightBlue;
+                            break;
+                        case "alarm":
+                            MachineStatus = MachStatus.Alarm;
+                            MachineStatusColor = Brushes.Red;
+                            break;
+                        case "door":
+                            MachineStatus = MachStatus.Door;
+                            MachineStatusColor = Brushes.LightYellow;
+                            break;
+                        case "check":
+                            MachineStatus = MachStatus.Check;
+                            MachineStatusColor = Brushes.LightCyan;
+                            break;
+                        case "home":
+                            MachineStatus = MachStatus.Home;
+                            MachineStatusColor = Brushes.LightPink;
+                            break;
+                    }
+                }
+                //logger.Info("Current state:{0}|RespStatus:{1}|MachStatus:{2}|Color:{3}", _data, ResponseStatus.ToString(), MachinStatus.ToString(), MachinStatusColor.ToString());
             }
-            else//Report state Grbl v0.9 <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>
+            catch (Exception ex)
             {
-                string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n' });
-                PosX = arr[3];
-                PosY = arr[4];
-                PosZ = arr[5];
-                switch (arr[1])
-                {
-                    case "idle":
-                        MachineStatus = MachStatus.Idle;
-                        MachineStatusColor = Brushes.Beige;
-                        break;
-                    case "run":
-                        MachineStatus = MachStatus.Run;
-                        MachineStatusColor = Brushes.LightGreen;
-                        break;
-                    case "hold":
-                        MachineStatus = MachStatus.Hold;
-                        MachineStatusColor = Brushes.LightBlue;
-                        break;
-                    case "alarm":
-                        MachineStatus = MachStatus.Alarm;
-                        MachineStatusColor = Brushes.Red;
-                        break;
-                    case "door":
-                        MachineStatus = MachStatus.Door;
-                        MachineStatusColor = Brushes.LightYellow;
-                        break;
-                    case "check":
-                        MachineStatus = MachStatus.Check;
-                        MachineStatusColor = Brushes.LightCyan;
-                        break;
-                    case "home":
-                        MachineStatus = MachStatus.Home;
-                        MachineStatusColor = Brushes.LightPink;
-                        break;
-                }
+                logger.Error("Exception ProcessCurrentStatusResponse raised: ", ex.ToString());
+                ResponseStatus = RespStatus.NOk;
             }
-            //logger.Info("Current state:{0}|RespStatus:{1}|MachStatus:{2}|Color:{3}", _data, ResponseStatus.ToString(), MachinStatus.ToString(), MachinStatusColor.ToString());
         }
         #endregion
 
@@ -1831,7 +2013,7 @@ namespace VDGrbl.ViewModel
             catch (Exception ex)
                 {
                 logger.Error("Exception data received raised: " + ex.ToString());
-                _responseStatus = RespStatus.Q;
+                ResponseStatus = RespStatus.NOk;
             }
         }
 

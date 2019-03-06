@@ -69,10 +69,12 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -97,15 +99,15 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
-    <Compile Include="Model\GCodeModel.cs" />
-    <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\SerialPortSettingsModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\SettingModel.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Tools\DoubleConverter.cs" />
     <Compile Include="Tools\Gcode.cs" />
     <Compile Include="Tools\InverseBooleanConverter.cs" />
+    <Compile Include="Tools\StringConverter.cs" />
     <Compile Include="View\CommandsView.xaml.cs">
       <DependentUpon>CommandsView.xaml</DependentUpon>
     </Compile>
