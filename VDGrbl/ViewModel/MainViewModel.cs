@@ -45,6 +45,7 @@ namespace VDGrbl.ViewModel
         private List<SerialPortSettingsModel> _listHandshake;
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
+        private string _macro1="G90 G0 X0", _macro2 = "G91 G1 X10 Y-20", _macro3 = "G90 G0 Y0 F2000", _macro4 = "G91 G1 X-20 Y10 F1000", _macro5 = "G90 G0 X25 Y25 F100";
         private readonly char[] trimArray = new char[] { '\r', '\n', ' ' };
         private RespStatus _responseStatus = RespStatus.Ok;//TODO softwareStatus, responseStatus tobe check depending on what we want to include in checking...
         private MachStatus _machineStatus = MachStatus.Idle;
@@ -81,6 +82,11 @@ namespace VDGrbl.ViewModel
         public RelayCommand DisconnectCommand { get; private set; }
         public RelayCommand<SerialPortSettingsModel> RefreshPortCommand { get; private set; }
         public RelayCommand SendCommand { get; private set; }
+        public RelayCommand SendM1Command { get; private set; }
+        public RelayCommand SendM2Command { get; private set; }
+        public RelayCommand SendM3Command { get; private set; }
+        public RelayCommand SendM4Command { get; private set; }
+        public RelayCommand SendM5Command { get; private set; }
         public RelayCommand ClearCommand { get; private set; }
         public RelayCommand GrblResetCommand { get; private set; }
         public RelayCommand GrblPauseCommand { get; private set; }
@@ -411,6 +417,106 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _txLine, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="Macro1" /> property's name.
+        /// </summary>
+        public const string Macro1PropertyName = "Macro1";
+        /// <summary>
+        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Macro1
+        {
+            get
+            {
+                return _macro1;
+            }
+            set
+            {
+                Set(ref _macro1, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="Macro2" /> property's name.
+        /// </summary>
+        public const string Macro2PropertyName = "Macro2";
+        /// <summary>
+        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Macro2
+        {
+            get
+            {
+                return _macro2;
+            }
+            set
+            {
+                Set(ref _macro2, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="Macro3" /> property's name.
+        /// </summary>
+        public const string Macro3PropertyName = "Macro3";
+        /// <summary>
+        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Macro3
+        {
+            get
+            {
+                return _macro3;
+            }
+            set
+            {
+                Set(ref _macro3, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="Macro4" /> property's name.
+        /// </summary>
+        public const string Macro4PropertyName = "Macro4";
+        /// <summary>
+        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Macro4
+        {
+            get
+            {
+                return _macro4;
+            }
+            set
+            {
+                Set(ref _macro4, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="Macro5" /> property's name.
+        /// </summary>
+        public const string Macro5PropertyName = "Macro5";
+        /// <summary>
+        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Macro5
+        {
+            get
+            {
+                return _macro5;
+            }
+            set
+            {
+                Set(ref _macro5, value);
             }
         }
 
@@ -931,6 +1037,11 @@ namespace VDGrbl.ViewModel
             DisconnectCommand = new RelayCommand(CloseSerialPort, CanExecuteCloseSerialPort);
             RefreshPortCommand = new RelayCommand<SerialPortSettingsModel>(RefreshSerialPort, CanExecuteRefreshSerialPort);
             SendCommand = new RelayCommand(SendData, CanExecuteSendData);
+            SendM1Command = new RelayCommand(SendM1Data, CanExecuteSendM1Data);
+            SendM2Command = new RelayCommand(SendM2Data, CanExecuteSendM2Data);
+            SendM3Command = new RelayCommand(SendM3Data, CanExecuteSendM3Data);
+            SendM4Command = new RelayCommand(SendM4Data, CanExecuteSendM4Data);
+            SendM5Command = new RelayCommand(SendM5Data, CanExecuteSendM5Data);
             ClearCommand = new RelayCommand(ClearData, CanExecuteClearData);
             GrblResetCommand = new RelayCommand(GrblReset, CanExecuteRealTimeCommand);
             GrblPauseCommand = new RelayCommand(GrblFeedHold, CanExecuteRealTimeCommand);
@@ -1112,7 +1223,7 @@ namespace VDGrbl.ViewModel
             {
                 _serialPort.WriteLine(TXLine);
                 logger.Info("Data TX: {0}", TXLine);
-
+                TXLine = string.Empty;
             }
             catch (Exception ex)
             {
@@ -1126,6 +1237,104 @@ namespace VDGrbl.ViewModel
         public bool CanExecuteSendData()
         {
             if (_serialPort.IsOpen && !string.IsNullOrEmpty(TXLine))
+            {
+                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Sends Macro1 to serial port.
+        /// </summary>
+        public void SendM1Data()
+        {
+                _serialPort.WriteLine(Macro1);
+                logger.Info("Data TX: {0}", Macro1);
+        }
+        public bool CanExecuteSendM1Data()
+        {
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro1))
+            {
+                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Sends Macro2 to serial port.
+        /// </summary>
+        public void SendM2Data()
+        {
+            _serialPort.WriteLine(Macro2);
+            logger.Info("Data TX: {0}", Macro2);
+        }
+        public bool CanExecuteSendM2Data()
+        {
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro2))
+            {
+                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// Sends Macro3 to serial port.
+        /// </summary>
+        public void SendM3Data()
+        {
+            _serialPort.WriteLine(Macro3);
+            logger.Info("Data TX: {0}", Macro3);
+        }
+        public bool CanExecuteSendM3Data()
+        {
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro3))
+            {
+                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// Sends Macro4 to serial port.
+        /// </summary>
+        public void SendM4Data()
+        {
+            _serialPort.WriteLine(Macro4);
+            logger.Info("Data TX: {0}", Macro4);
+        }
+        public bool CanExecuteSendM4Data()
+        {
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro4))
+            {
+                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Sends Macro5 to serial port.
+        /// </summary>
+        public void SendM5Data()
+        {
+            _serialPort.WriteLine(Macro5);
+            logger.Info("Data TX: {0}", Macro5);
+        }
+        public bool CanExecuteSendM5Data()
+        {
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro5))
             {
                 if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
                 {

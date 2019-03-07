@@ -6,16 +6,15 @@
         xmlns:ignore="http://www.galasoft.ch/ignore"
         xmlns:local="clr-namespace:VDGrbl.View"
         mc:Ignorable="d ignore"
-        Height="500"
-        Width="900"
+        Height="520"
+        Width="850"
         Title="VDGrbl" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <!--Connection and display area-->
         <StackPanel>
@@ -23,30 +22,35 @@
             <local:CoordinateView Margin="1" Width="Auto" Height="Auto"/>
             <local:GrblInfoView Margin="1"/>
         </StackPanel>
-        <!--Send/receive data area + grbl commands-->
-        <StackPanel Grid.Column="1">
-            <local:SendDataView Margin="1,1,0.6,1" 
-                        VerticalAlignment="Center"
-                        Width="Auto" Height="111"/>
-            <local:ReceiveDataView Margin="1" Height="150"/>
-            <local:CommandsView Margin="1" Height="Auto" Width="Auto"/>
-        </StackPanel>
-        <!--Jogging area + setting informations-->
-        <DockPanel Grid.Column="2">
+        <!--Jogging area + settings informations-->
+        <StackPanel Grid.Column="2">
             <TabControl >
                 <TabItem Header="Jogging">
                     <Grid Background="#FFE5E5E5">
-                        <StackPanel>
-                        <local:JoggingView Margin="1" VerticalAlignment="Top"/>
+                        <StackPanel Orientation="Horizontal" Height="300">
+                            <!--Send/receive data area-->
+                            <StackPanel>
+                            <local:SendDataView Margin="1,1,0.6,1"
+                                                Width="Auto" Height="Auto"/>
+                            </StackPanel>
+                            <local:JoggingView Margin="1" VerticalAlignment="Top"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Grbl settings">
-                    <Grid Background="#FFE5E5E5">
+                    <Grid Background="#FFE5E5E5" Height="300" Margin="0,0,-0.4,0">
+                        <!-- Grbl settings and commands-->
+                        <StackPanel Orientation="Horizontal">
+                        <local:CommandsView Margin="1" Height="200" Width="Auto" VerticalAlignment="Top"/>
                         <local:LoadSettingsView Margin="1" Height="500" Width="Auto"/>
+                        </StackPanel>
                     </Grid>
                 </TabItem>
             </TabControl>
-        </DockPanel>
+            <DockPanel>
+                <local:ReceiveDataView Margin="1" Height="150"/>
+
+            </DockPanel>
+        </StackPanel>
     </Grid>
 </Window>
