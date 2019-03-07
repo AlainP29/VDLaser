@@ -4,13 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.View"
-             mc:Ignorable="d" Width="250" Height="300"
+             mc:Ignorable="d" Width="250" Height="150"
              DataContext="{Binding Main, Source={StaticResource Locator}}">
     <Grid>
-        <StackPanel Margin="0">
-            <!--It is the parameters of the serial port. Only COM port and Baud rate are available and usefull for the Arduino-->
-            <GroupBox Header="{Binding GroupBoxPortSettingsTitle}" VerticalAlignment="Top" Margin="5" Height="220" Style="{DynamicResource GroupBoxStyleVD}">
-                <Grid Margin="0">
+            <GroupBox Header="{Binding GroupBoxPortSettingsTitle}" VerticalAlignment="Top" Margin="5" 
+                      Style="{DynamicResource GroupBoxStyleVD}">
+                <StackPanel>
+                <!--Parameters of the serial port. Only COM port and Baud rate are available and usefull to be selected for the Arduino-->
+                <Grid Margin="5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="3*"/>
@@ -18,34 +19,39 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Label Content="Port COM" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Column="1" ItemsSource="{Binding ListPortNames}" SelectedValue="{Binding SelectedPortName,Mode=TwoWay}" HorizontalAlignment="Center" Width="75" VerticalContentAlignment="Center" Margin="0" VerticalAlignment="Center"/>
-                    <Label Grid.Row="1" Content="Baud rate" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding ListBaudRates}"  Width="75" Margin="0" SelectedValue="{Binding SelectedBaudRate, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <Label Grid.Row="2" Content="Data bits" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding ListDataBits}"  Width="75" Margin="0" SelectedValue="{Binding SelectedDataBits, Mode=TwoWay}" VerticalAlignment="Center" VerticalContentAlignment="Center" IsEnabled="False"/>
-                    <Label Grid.Row="3" Content="Parity" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding ListParities}"  Width="75" Margin="0" SelectedValue="{Binding SelectedParity, Mode=TwoWay}" SelectedValuePath="ParityValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="ParityName" IsEnabled="False"/>
-                    <Label Grid.Row="4" Content="Stop bits" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding ListStopBits}"  Width="75" Margin="0" SelectedValue="{Binding SelectedStopBits, Mode=Default}" SelectedValuePath="StopBitsValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="StopBitsName" IsEnabled="False"/>
-                    <Label Grid.Row="5" Content="Handshake" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding ListHandshake}"  Width="75" Margin="0" SelectedValue="{Binding SelectedHandshake, Mode=TwoWay}" SelectedValuePath="HandshakingValue" VerticalAlignment="Center" VerticalContentAlignment="Center" DisplayMemberPath="HandshakingName" IsEnabled="False"/>
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding ListPortNames}" SelectedValue="{Binding SelectedPortName,Mode=TwoWay}" 
+                              HorizontalAlignment="Center" Width="75" VerticalContentAlignment="Center" Margin="0" 
+                              VerticalAlignment="Center"/>
+                    <Label Grid.Row="1" Content="Baud rate" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" 
+                           VerticalContentAlignment="Center"/>
+                    <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding ListBaudRates}"  Width="75" Margin="0" 
+                              SelectedValue="{Binding SelectedBaudRate, Mode=TwoWay}" VerticalAlignment="Center" 
+                              VerticalContentAlignment="Center"/>
                 </Grid>
+                <!--Buttons to connect/disconnect and refresh port COM-->
+                <Grid Margin="5" Width="Auto" Height="40">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="0.5*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                        Width="75" HorizontalContentAlignment="Center" Margin="0" Style="{DynamicResource ControlStyleVD}"/>
+                        <Button Grid.Column="1" Command="{Binding RefreshPortCommand, FallbackValue=true, Mode=OneWay}" HorizontalAlignment="Center" 
+                        VerticalAlignment="Center" HorizontalContentAlignment="Center" 
+                        Style="{DynamicResource ControlStyleVD}" ToolTip="Refresh Port COM">
+                            <StackPanel Height="20" Width="20">
+                                <Image Source="/VDGrbl;component/Skins/Images/iconrefresh40.png"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="2" Content="Disconnect" Command="{Binding DisconnectCommand}" HorizontalAlignment="Center" 
+                        VerticalAlignment="Center" Width="75" HorizontalContentAlignment="Center" Margin="0" 
+                        Style="{DynamicResource ControlStyleVD}"/>
+                    </Grid>
+                </StackPanel>
             </GroupBox>
-            <!--Buttons to connect or disconnect port COM-->
-            <Grid Margin="5" Width="Auto" Height="40">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Button Content="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="75" HorizontalContentAlignment="Center" Margin="0" Style="{DynamicResource ControlStyleVD}"/>
-                <Button Grid.Column="1" Content="Disconnect" Command="{Binding DisconnectCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="75" HorizontalContentAlignment="Center" Margin="0" Style="{DynamicResource ControlStyleVD}"/>
-            </Grid>
-        </StackPanel>
+            
     </Grid>
 </UserControl>

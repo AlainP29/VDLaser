@@ -79,6 +79,7 @@ namespace VDGrbl.ViewModel
         #region subregion Relaycommands
         public RelayCommand ConnectCommand { get; private set; }
         public RelayCommand DisconnectCommand { get; private set; }
+        public RelayCommand<SerialPortSettingsModel> RefreshPortCommand { get; private set; }
         public RelayCommand SendCommand { get; private set; }
         public RelayCommand ClearCommand { get; private set; }
         public RelayCommand GrblResetCommand { get; private set; }
@@ -928,6 +929,7 @@ namespace VDGrbl.ViewModel
         {
             ConnectCommand = new RelayCommand(OpenSerialPort, CanExecuteOpenSerialPort);
             DisconnectCommand = new RelayCommand(CloseSerialPort, CanExecuteCloseSerialPort);
+            RefreshPortCommand = new RelayCommand<SerialPortSettingsModel>(RefreshSerialPort, CanExecuteRefreshSerialPort);
             SendCommand = new RelayCommand(SendData, CanExecuteSendData);
             ClearCommand = new RelayCommand(ClearData, CanExecuteClearData);
             GrblResetCommand = new RelayCommand(GrblReset, CanExecuteRealTimeCommand);
@@ -977,12 +979,7 @@ namespace VDGrbl.ViewModel
             {
                 ListPortNames = settingsInit.ListPortNames;
                 ListBaudRates = settingsInit.ListBaudRates;
-                ListDataBits = settingsInit.ListDataBits;
-                ListParities = settingsInit.ListParities();
-                ListStopBits = settingsInit.ListStopBits();
-                ListHandshake = settingsInit.ListHandshake();
                 logger.Info("All serial port settings loaded");
-
             }
             catch (Exception ex)
             {
@@ -1020,6 +1017,24 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
+        /// Reload serial port settings and sets them to default values.
+        /// </summary>
+        public void RefreshSerialPort(SerialPortSettingsModel settingsInit)
+        {
+            GetSerialPortSettings(settingsInit);
+            DefaultPortSettings();
+            logger.Info("Refresh Port COM");
+        }
+        /// <summary>
+/// Allows/Disallows RefreshSerialPort method to be executed.
+/// </summary>
+/// <returns></returns>
+        public bool CanExecuteRefreshSerialPort(SerialPortSettingsModel settingsInit)
+        {
+                return true;
+        }
+
+        /// <summary>
         /// Starts serial port communication
         /// </summary>
         public void OpenSerialPort()
@@ -1036,9 +1051,6 @@ namespace VDGrbl.ViewModel
                 {
                     _serialPort.PortName = SelectedPortName;
                     _serialPort.BaudRate = SelectedBaudRate;
-                    _serialPort.Parity = SelectedParity;
-                    _serialPort.StopBits = SelectedStopBits;
-                    _serialPort.DataBits = SelectedDataBits;
                     _serialPort.ReadBufferSize = 100;
                     _serialPort.WriteBufferSize = 100;
                     _serialPort.ReceivedBytesThreshold = 10;

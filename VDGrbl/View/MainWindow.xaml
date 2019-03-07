@@ -6,7 +6,7 @@
         xmlns:ignore="http://www.galasoft.ch/ignore"
         xmlns:local="clr-namespace:VDGrbl.View"
         mc:Ignorable="d ignore"
-        Height="550"
+        Height="500"
         Width="900"
         Title="VDGrbl" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
@@ -28,7 +28,7 @@
             <local:SendDataView Margin="1,1,0.6,1" 
                         VerticalAlignment="Center"
                         Width="Auto" Height="111"/>
-            <local:ReceiveDataView Margin="1" Height="200"/>
+            <local:ReceiveDataView Margin="1" Height="150"/>
             <local:CommandsView Margin="1" Height="Auto" Width="Auto"/>
         </StackPanel>
         <!--Jogging area + setting informations-->

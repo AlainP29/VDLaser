@@ -99,6 +99,7 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
+    <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\SerialPortSettingsModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
@@ -133,6 +134,9 @@
     </Compile>
     <Compile Include="View\SerialPortSettingsView.xaml.cs">
       <DependentUpon>SerialPortSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\StatusBarView.xaml.cs">
+      <DependentUpon>StatusBarView.xaml</DependentUpon>
     </Compile>
     <Page Include="View\CommandsView.xaml">
       <SubType>Designer</SubType>
@@ -181,6 +185,10 @@
     <Page Include="View\SerialPortSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\StatusBarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -245,6 +253,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Skins\Images\VDGrbl_V03.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Skins\Images\iconRefresh40.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
