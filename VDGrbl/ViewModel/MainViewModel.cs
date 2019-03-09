@@ -45,11 +45,12 @@ namespace VDGrbl.ViewModel
         private List<SerialPortSettingsModel> _listHandshake;
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
-        private string _macro1="G90 G0 X0", _macro2 = "G91 G1 X10 Y-20", _macro3 = "G90 G0 Y0 F2000", _macro4 = "G91 G1 X-20 Y10 F1000", _macro5 = "G90 G0 X25 Y25 F100";
+        private string _macro1="G90 G0 X0", _macro2 = "G91 G1 X10 Y-20", _macro3 = "G90 G0 Y0 F2000", _macro4 = "G91 G1 X-20 Y10 F1000";
         private readonly char[] trimArray = new char[] { '\r', '\n', ' ' };
         private RespStatus _responseStatus = RespStatus.Ok;//TODO softwareStatus, responseStatus tobe check depending on what we want to include in checking...
         private MachStatus _machineStatus = MachStatus.Idle;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
+        private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
         private string _versionGrbl = "-";
         private string _buildInfo = "-";
         private string _posX = "0.000";
@@ -64,11 +65,13 @@ namespace VDGrbl.ViewModel
         private double _feedRate = 300;
         private string _step = "1";
         private bool _isSelectedKeyboard=false;
+        private bool _isSelectedMetric = true;
         private bool _isJogEnabled=true;
-        private string _plannerBuffer;
+        private string _buf,_rx;
         private string _errorMessage=string.Empty;
         private string _alarmMessage=string.Empty;
         private string _infoMessage = string.Empty;
+        private double _laserPower=0;
         #endregion
 
         #region public Properties
@@ -86,7 +89,6 @@ namespace VDGrbl.ViewModel
         public RelayCommand SendM2Command { get; private set; }
         public RelayCommand SendM3Command { get; private set; }
         public RelayCommand SendM4Command { get; private set; }
-        public RelayCommand SendM5Command { get; private set; }
         public RelayCommand ClearCommand { get; private set; }
         public RelayCommand GrblResetCommand { get; private set; }
         public RelayCommand GrblPauseCommand { get; private set; }
@@ -121,7 +123,10 @@ namespace VDGrbl.ViewModel
         public RelayCommand ResetAxisYCommand { get; private set; }
         public RelayCommand ResetAxisZCommand { get; private set; }
         public RelayCommand ResetAllAxisCommand { get; private set; }
-
+        public RelayCommand IncreaseLaserPowerCommand { get; private set; }
+        public RelayCommand DecreaseLaserPowerCommand { get; private set; }
+        public RelayCommand StartLaserCommand { get; private set; }
+        public RelayCommand StopLaserCommand { get; private set; }
         #endregion
 
         #region subregion port settings
@@ -501,26 +506,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="Macro5" /> property's name.
-        /// </summary>
-        public const string Macro5PropertyName = "Macro5";
-        /// <summary>
-        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string Macro5
-        {
-            get
-            {
-                return _macro5;
-            }
-            set
-            {
-                Set(ref _macro5, value);
-            }
-        }
-
-        /// <summary>
         /// The <see cref="RXLine" /> property's name.
         /// </summary>
         public const string RXLinePropertyName = "RXLine";
@@ -581,22 +566,42 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="PlannerBuffer" /> property's name.
+        /// The <see cref="Buf" /> property's name.
         /// </summary>
-        public const string PlannerBufferPropertyName = "PlannerBuffer";
+        public const string BufPropertyName = "Buf";
         /// <summary>
-        /// Gets the PlannerBuffer property. PlannerBuffer is the Number of motions queued in Grbl's planner buffer.
+        /// Gets the Buf property. Buf is the Number of motions queued in Grbl's planner buffer.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string PlannerBuffer
+        public string Buf
         {
             get
             {
-                return _plannerBuffer;
+                return _buf;
             }
             set
             {
-                Set(ref _plannerBuffer, value);
+                Set(ref _buf, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="RX" /> property's name.
+        /// </summary>
+        public const string RXPropertyName = "RX";
+        /// <summary>
+        /// Gets the RX property. RX is the Number of characters queued in Grbl's serial RX receive buffer.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string RX
+        {
+            get
+            {
+                return _rx;
+            }
+            set
+            {
+                Set(ref _rx, value);
             }
         }
 
@@ -753,6 +758,37 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
+        /// The <see cref="IsSelectedMetric" /> property's name.
+        /// </summary>
+        public const string IsSelectedMetricPropertyName = "IsSelectedMetric";
+        /// <summary>
+        /// Gets the IsSelectedKeyboard property. IsSelectedKeyboard is checkbox Keyboard checked.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsSelectedMetric
+        {
+            get
+            {
+                return _isSelectedMetric;
+            }
+            set
+            {
+
+                Set(ref _isSelectedMetric, value);
+                if (_isSelectedMetric == true && _serialPort.IsOpen)
+                {
+                    WriteString("G21");
+                    logger.Info("Metric is selected");
+                }
+                if(_isSelectedMetric == false && _serialPort.IsOpen)
+                {
+                    WriteString("G20");
+                    logger.Info("Metric is not selected");
+                }
+            }
+        }
+
+        /// <summary>
         /// The <see cref="IsJogEnabled" /> property's name.
         /// </summary>
         public const string IsJogEnabledPropertyName = "IsJogEnabled";
@@ -771,10 +807,63 @@ namespace VDGrbl.ViewModel
                 Set(ref _isJogEnabled, value);
             }
         }
+
+        /// <summary>
+        /// The <see cref="LaserPower" /> property's name.
+        /// </summary>
+        public const string LaserPowerPropertyName = "LaserPower";
+        /// <summary>
+        /// Gets the LaserPower property. LaserPower is the power of the laser.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double LaserPower
+        {
+            get
+            {
+                return _laserPower;
+            }
+            set
+            {
+                Set(ref _laserPower, value);
+                if (_laserPower < 0)
+                {
+                    _laserPower = 0;
+                }
+                if (_laserPower > MaxLaserPower)
+                {
+                    _laserPower = MaxLaserPower;
+                }
+                logger.Info("Manual speed rate value is {0}", _laserPower);
+            }
+        }
+
+        /// <summary>
+        /// Sets the maximum laser power allowed.
+        /// </summary>
+        public double MaxLaserPower { get; private set; } = 100;
+
+        /// <summary>
+        /// The <see cref="MachineStatusColor" /> property's name.
+        /// </summary>
+        public const string LaserColorPropertyName = "LaserColor";
+        /// <summary>
+        /// Gets the LaserColor property. The color change depending of the current state of the laser (ON=Blue, OFF=Light Gray...)
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public SolidColorBrush LaserColor
+        {
+            get
+            {
+                return _laserColor;
+            }
+            set
+            {
+                Set(ref _laserColor, value);
+            }
+        }
         #endregion
 
         #region subregion machine status, coordinate and version
-
         /// <summary>
         /// The <see cref="MachineStatus" /> property's name.
         /// </summary>
@@ -1027,7 +1116,6 @@ namespace VDGrbl.ViewModel
         #endregion
 
         #region Methods
-
         /// <summary>
         /// List of RelayCommands bind to button in ViewModels
         /// </summary>
@@ -1041,7 +1129,6 @@ namespace VDGrbl.ViewModel
             SendM2Command = new RelayCommand(SendM2Data, CanExecuteSendM2Data);
             SendM3Command = new RelayCommand(SendM3Data, CanExecuteSendM3Data);
             SendM4Command = new RelayCommand(SendM4Data, CanExecuteSendM4Data);
-            SendM5Command = new RelayCommand(SendM5Data, CanExecuteSendM5Data);
             ClearCommand = new RelayCommand(ClearData, CanExecuteClearData);
             GrblResetCommand = new RelayCommand(GrblReset, CanExecuteRealTimeCommand);
             GrblPauseCommand = new RelayCommand(GrblFeedHold, CanExecuteRealTimeCommand);
@@ -1076,6 +1163,10 @@ namespace VDGrbl.ViewModel
             ResetAxisYCommand = new RelayCommand(ResetAxisX, CanExecuteResetAxis);
             ResetAxisZCommand = new RelayCommand(ResetAxisY, CanExecuteResetAxis);
             ResetAllAxisCommand = new RelayCommand(ResetAxisZ, CanExecuteResetAxis);
+            IncreaseLaserPowerCommand = new RelayCommand(IncreaseLaserPower, CanExecuteLaserPower);
+            DecreaseLaserPowerCommand = new RelayCommand(DecreaseLaserPower, CanExecuteLaserPower);
+            StartLaserCommand = new RelayCommand(StartLaser, CanExecuteLaser);
+            StopLaserCommand = new RelayCommand(StopLaser, CanExecuteLaser);
             logger.Info("All RelayCommands loaded");
         }
 
@@ -1238,7 +1329,7 @@ namespace VDGrbl.ViewModel
         {
             if (_serialPort.IsOpen && !string.IsNullOrEmpty(TXLine))
             {
-                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                if (ResponseStatus == RespStatus.Ok)
                 {
                     return true;
                 }
@@ -1258,7 +1349,8 @@ namespace VDGrbl.ViewModel
         {
             if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro1))
             {
-                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                //if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                if (ResponseStatus == RespStatus.Ok)
                 {
                     return true;
                 }
@@ -1278,13 +1370,14 @@ namespace VDGrbl.ViewModel
         {
             if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro2))
             {
-                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                if (ResponseStatus == RespStatus.Ok)
                 {
                     return true;
                 }
             }
             return false;
         }
+
         /// <summary>
         /// Sends Macro3 to serial port.
         /// </summary>
@@ -1297,13 +1390,14 @@ namespace VDGrbl.ViewModel
         {
             if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro3))
             {
-                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                if (ResponseStatus == RespStatus.Ok)
                 {
                     return true;
                 }
             }
             return false;
         }
+
         /// <summary>
         /// Sends Macro4 to serial port.
         /// </summary>
@@ -1316,27 +1410,7 @@ namespace VDGrbl.ViewModel
         {
             if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro4))
             {
-                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Sends Macro5 to serial port.
-        /// </summary>
-        public void SendM5Data()
-        {
-            _serialPort.WriteLine(Macro5);
-            logger.Info("Data TX: {0}", Macro5);
-        }
-        public bool CanExecuteSendM5Data()
-        {
-            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro5))
-            {
-                if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
+                if (ResponseStatus == RespStatus.Ok)
                 {
                     return true;
                 }
@@ -1757,7 +1831,7 @@ namespace VDGrbl.ViewModel
         /// <param name="parameter"></param>
         private void DecreaseFeedRate(bool parameter)
         {
-            FeedRate-=10;
+            FeedRate -= 10;
         }
 
         /// <summary>
@@ -1766,7 +1840,69 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteFeedRate(bool parameter)
         {
-            if (!parameter && FeedRate<0 && FeedRate>MaxFeedRate)
+            if (!parameter && FeedRate < 0 && FeedRate > MaxFeedRate)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Start laser mode
+        /// </summary>
+        private void StartLaser()
+        {
+            WriteString("M3");
+            WriteString("S10");
+            LaserColor = Brushes.Red;
+        }
+
+        /// <summary>
+        /// Stop laser mode
+        /// </summary>
+        private void StopLaser()
+        {
+            WriteString("S0");
+            LaserColor = Brushes.LightGray;
+        }
+
+        /// <summary>
+        /// Allows/Disallows Laser methods.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanExecuteLaser()
+        {
+            return _serialPort.IsOpen;
+        }
+
+        /// <summary>
+        /// Increases the laser power value
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void IncreaseLaserPower()
+        {
+            LaserPower += 10;
+            WriteString(string.Format("S{0}", LaserPower));
+            RXLine = LaserPower.ToString();
+        }
+
+        /// <summary>
+        /// Decrease the laser power value
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void DecreaseLaserPower()
+        {
+            LaserPower -= 10;
+            WriteString(string.Format("S{0}", LaserPower));
+        }
+
+        /// <summary>
+        /// Allows/Disallows GetFeedRate method.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanExecuteLaserPower()
+        {
+            if (LaserPower<0 && LaserPower>MaxLaserPower)
             {
                 return false;
             }
@@ -2085,7 +2221,7 @@ namespace VDGrbl.ViewModel
                     //WPosX = arr[7];
                     //WPosY = arr[8];
                     //WPosZ = arr[9];
-                    //PlannerBuffer = arr[11];
+                    //Buf = arr[11];
                     switch (arr[1])
                     {
                         case "idle":
@@ -2126,16 +2262,29 @@ namespace VDGrbl.ViewModel
                             break;
                     }
                 }
-                else//Report state Grbl v0.9 <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000,Buf:0>
+                else//Report state Grbl v0.9 <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000,Buf:0,RX:0>
                 {
                     string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n' });
-                    PosX = arr[3];
-                    PosY = arr[4];
-                    PosZ = arr[5];
-                    WPosX = arr[7];
-                    WPosY = arr[8];
-                    WPosZ = arr[9];
-                    PlannerBuffer = arr[11];
+                    if (arr.Length > 3)
+                    {
+                        PosX = arr[3];
+                        PosY = arr[4];
+                        PosZ = arr[5];
+                    }
+                    if (arr.Length > 7)
+                    {
+                        WPosX = arr[7];
+                        WPosY = arr[8];
+                        WPosZ = arr[9];
+                    }
+                    if (arr.Length > 11)
+                    {
+                        Buf = arr[11];
+                    }
+                    if (arr.Length > 13)
+                    {
+                        RX = arr[13];
+                    }
                     switch (arr[1])
                     {
                         case "idle":

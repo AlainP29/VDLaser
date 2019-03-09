@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.Tools"
-             mc:Ignorable="d" Height="320" Width="300">
+             mc:Ignorable="d" Height="350" Width="300">
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
         <local:DoubleConverter x:Key="ConvertDouble"/>
@@ -16,8 +16,8 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="4*"/>
-
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="3*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal">
                     <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
@@ -31,14 +31,23 @@
                     <TextBox  Text="{Binding Main.ResponseStatus, Mode=OneWay}" Margin="5" VerticalContentAlignment="Center" 
                               HorizontalContentAlignment="Center" Width="30" VerticalAlignment="Center" IsReadOnly="True" IsEnabled="False"/>
                 </StackPanel>
-                <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ProgressBar Maximum="{Binding Main.MaxPlannerBuffer}" Value="{Binding Main.PlannerBuffer}" Height="20" 
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <Label Content="Buffer:" VerticalAlignment="Center"/>
+                    <Grid Margin="10,0,0,0">
+                        <ProgressBar Maximum="{Binding Main.MaxPlannerBuffer}" Value="{Binding Main.PlannerBuffer}" Height="20" 
                                  HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" 
                                  HorizontalContentAlignment="Center" Width="150"/>
-                    <TextBlock Text="{Binding Main.PlannerBuffer, ConverterParameter=100, Converter={StaticResource ConvertDouble}, StringFormat=\{0:P0\}}" 
+                        <TextBlock Text="{Binding Main.Buf, ConverterParameter=100, Converter={StaticResource ConvertDouble}, StringFormat=\{0:P0\}}" 
                                Width="150" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" />
-                </Grid>
-                <StackPanel Grid.Row="2" >
+                    </Grid>
+                </StackPanel>
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Label Content="Buf:" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                    <TextBox Text="{Binding Main.Buf, Mode=OneWay}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="23" Height="23" TextChanged="TextBox_TextChanged"/>
+                    <Label Content="RX:" VerticalAlignment="Center" Margin="40,0,0,0"/>
+                    <TextBox Text="{Binding Main.RX}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="23" Height="23"/>
+                </StackPanel>
+                <StackPanel Grid.Row="3" >
                     <Label Content="Macros:"/>
                     <StackPanel Orientation="Horizontal">
                     <Button  Content="M1" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
@@ -56,7 +65,7 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button  Content="M3" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
-                             Command="{Binding Main.SendM3Command, Mode=OneWay}"/>
+                             Command="{Binding Main.SendM3Command, Mode=OneTime}"/>
                         <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
                              Text="{Binding Main.Macro3}" Width="200">
                         </TextBox>
@@ -66,13 +75,6 @@
                              Command="{Binding Main.SendM4Command, Mode=OneWay}"/>
                         <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
                              Text="{Binding Main.Macro4}" Width="200">
-                        </TextBox>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Button  Content="M5" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
-                             Command="{Binding Main.SendM5Command, Mode=OneWay}"/>
-                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
-                             Text="{Binding Main.Macro5, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="200">
                         </TextBox>
                     </StackPanel>
                 </StackPanel>

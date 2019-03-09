@@ -15,8 +15,8 @@ namespace VDGrbl.ViewModel.Tests
         private readonly string infoBuild = "[0.9i.20150620:]";
         private readonly string infoGrbl = "Grbl 0.9i ['$' for help]";
         //private readonly string currentStatus = "<Run,MPos:5.529,30.860,-7.000,WPos:1.529,-5.440,-0.000>";//For Grbl version 0.9 and lower
-        private readonly string currentStatus = "<Run,MPos:5.529,30.860,-7.000,WPos:1.529,-5.440,-0.000,Buf:5>";//For Grbl version 0.9 and lower w/ buffers
-
+        //private readonly string currentStatus = "<Run,MPos:5.529,30.860,-7.000,WPos:1.529,-5.440,-0.000,Buf:5>";//For Grbl version 0.9 and lower w/ buffers
+        private readonly string currentStatus = "<Run,MPos:5.529,30.860,-7.000,WPos:1.529,-5.440,-0.000,Buf:5,RX:2>";//For Grbl version 0.9 and lower w/ buffers
         //private readonly string currentStatus = "<Run|MPos:5.529,30.860,-7.000,>";//For Grbl version 1.1 and higher
         private readonly string err11 = "error:17";
         private readonly string err09 = "error: bad number format";
@@ -138,11 +138,19 @@ namespace VDGrbl.ViewModel.Tests
         }
 
         [TestMethod()]
-        public void ProcessCurrentStatusResponsePlanneBuffer()
+        public void ProcessCurrentStatusResponseBuf()
         {
             mvm = new MainViewModel(_dataService);
             mvm.ProcessCurrentStatusResponse(currentStatus);
-            Assert.AreEqual("5", mvm.PlannerBuffer);
+            Assert.AreEqual("5", mvm.Buf);
+        }
+
+        [TestMethod()]
+        public void ProcessCurrentStatusResponseRX()
+        {
+            mvm = new MainViewModel(_dataService);
+            mvm.ProcessCurrentStatusResponse(currentStatus);
+            Assert.AreEqual("2", mvm.RX);
         }
 
         [TestMethod()]

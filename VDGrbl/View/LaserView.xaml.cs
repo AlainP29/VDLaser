@@ -16,18 +16,13 @@ using System.Windows.Shapes;
 namespace VDGrbl.View
 {
     /// <summary>
-    /// Logique d'interaction pour SendData.xaml
+    /// Logique d'interaction pour LaserView.xaml
     /// </summary>
-    public partial class SendDataView : UserControl
+    public partial class LaserView : UserControl
     {
-        public SendDataView()
+        public LaserView()
         {
             InitializeComponent();
-        }
-
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
         }
     }
 }

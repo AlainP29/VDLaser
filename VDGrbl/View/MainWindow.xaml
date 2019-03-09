@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:VDGrbl.View"
         mc:Ignorable="d ignore"
         Height="520"
-        Width="850"
+        Width="890"
         Title="VDGrbl" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
@@ -21,6 +21,7 @@
             <local:SerialPortSettingsView Margin="1" Width="Auto" Height="Auto"/>
             <local:CoordinateView Margin="1" Width="Auto" Height="Auto"/>
             <local:GrblInfoView Margin="1"/>
+            <local:LaserView Margin="1"/>
         </StackPanel>
         <!--Jogging area + settings informations-->
         <StackPanel Grid.Column="2">
