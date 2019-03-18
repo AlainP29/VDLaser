@@ -162,15 +162,7 @@ namespace VDGrbl.ViewModel.Tests
                 FeedRate = 200
             };
             mvm.JogW(true);
-            Assert.AreEqual("G91 G1 X-0.5 Y0 Z0 F200", mvm.TXLine);
-        }
-
-        [TestMethod()]
-        public void FormatGrblLineTest()
-        {
-            mvm = new MainViewModel(_dataService);
-            string formatLine=mvm.FormatGrblLine(" <Run|MPos:5.529,30.860,-7.000,> ");
-            Assert.AreEqual("<run|mpos:5.529,30.860,-7.000,>", formatLine);
+            Assert.AreEqual("g91g1x-0.5y0z0f200", mvm.TXLine);
         }
     }
 }

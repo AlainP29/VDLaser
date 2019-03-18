@@ -3,11 +3,11 @@
 namespace VDGrbl.View
 {
     /// <summary>
-    /// Logique d'interaction pour LoadSettingsView.xaml
+    /// Logique d'interaction pour ReceiveData.xaml
     /// </summary>
-    public partial class LoadSettingsView : UserControl
+    public partial class DataConsoleView : UserControl
     {
-        public LoadSettingsView()
+        public DataConsoleView()
         {
             InitializeComponent();
         }

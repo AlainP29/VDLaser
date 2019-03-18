@@ -4,18 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.Tools"
-             mc:Ignorable="d" Height="350" Width="300">
+             mc:Ignorable="d" Height="250" Width="300">
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
-        <local:DoubleConverter x:Key="ConvertDouble"/>
     </UserControl.Resources>
-    <!--It shows all the data sent manually/Jog/buttons to the Arduino. no stack, new data erase old data -->
+    <!--Show all the data sent manually/Jog/buttons to the Arduino. no stack, new data erase old data -->
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <GroupBox Header="Send data" Style="{StaticResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="3*"/>
                 </Grid.RowDefinitions>
@@ -31,23 +28,8 @@
                     <TextBox  Text="{Binding Main.ResponseStatus, Mode=OneWay}" Margin="5" VerticalContentAlignment="Center" 
                               HorizontalContentAlignment="Center" Width="30" VerticalAlignment="Center" IsReadOnly="True" IsEnabled="False"/>
                 </StackPanel>
-                <StackPanel Grid.Row="1" Orientation="Horizontal">
-                    <Label Content="Buffer:" VerticalAlignment="Center"/>
-                    <Grid Margin="10,0,0,0">
-                        <ProgressBar Maximum="{Binding Main.MaxPlannerBuffer}" Value="{Binding Main.PlannerBuffer}" Height="20" 
-                                 HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" 
-                                 HorizontalContentAlignment="Center" Width="150"/>
-                        <TextBlock Text="{Binding Main.Buf, ConverterParameter=100, Converter={StaticResource ConvertDouble}, StringFormat=\{0:P0\}}" 
-                               Width="150" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" />
-                    </Grid>
-                </StackPanel>
-                <StackPanel Grid.Row="2" Orientation="Horizontal">
-                    <Label Content="Buf:" VerticalAlignment="Center" Margin="20,0,0,0"/>
-                    <TextBox Text="{Binding Main.Buf, Mode=OneWay}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="23" Height="23" TextChanged="TextBox_TextChanged"/>
-                    <Label Content="RX:" VerticalAlignment="Center" Margin="40,0,0,0"/>
-                    <TextBox Text="{Binding Main.RX}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="23" Height="23"/>
-                </StackPanel>
-                <StackPanel Grid.Row="3" >
+                <!--Macro area: lines of G-code-->
+                <StackPanel Grid.Row="1" >
                     <Label Content="Macros:"/>
                     <StackPanel Orientation="Horizontal">
                     <Button  Content="M1" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 

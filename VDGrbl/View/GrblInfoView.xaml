@@ -8,7 +8,7 @@
              d:DesignHeight="65
              " d:DesignWidth="300">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <!--it displays the build informations: Grbl version and build date-->
+        <!--Display build informations: Grbl version and build date-->
         <GroupBox Header="Infos" Style="{DynamicResource GroupBoxStyleVD}">
             <Grid>
                 <Grid.ColumnDefinitions>

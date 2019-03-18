@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace VDGrbl.View
 {
     /// <summary>
-    /// Logique d'interaction pour ReceiveData.xaml
+    /// Logique d'interaction pour FileView.xaml
     /// </summary>
-    public partial class ReceiveDataView : UserControl
+    public partial class FileView : UserControl
     {
-        public ReceiveDataView()
+        public FileView()
         {
             InitializeComponent();
         }

@@ -99,18 +99,23 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
+    <Compile Include="Model\FileModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\SerialPortSettingsModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\SettingModel.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Tools\BrushColorConverter.cs" />
     <Compile Include="Tools\DoubleConverter.cs" />
     <Compile Include="Tools\Gcode.cs" />
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\StringConverter.cs" />
     <Compile Include="View\CommandsView.xaml.cs">
       <DependentUpon>CommandsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\FileView.xaml.cs">
+      <DependentUpon>FileView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\GrblInfoView.xaml.cs">
       <DependentUpon>GrblInfoView.xaml</DependentUpon>
@@ -126,11 +131,14 @@
     <Compile Include="View\LaserView.xaml.cs">
       <DependentUpon>LaserView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\GrblView.xaml.cs">
+      <DependentUpon>GrblView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\LoadSettingsView.xaml.cs">
       <DependentUpon>LoadSettingsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\ReceiveDataView.xaml.cs">
-      <DependentUpon>ReceiveDataView.xaml</DependentUpon>
+    <Compile Include="View\DataConsoleView.xaml.cs">
+      <DependentUpon>DataConsoleView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SendDataView.xaml.cs">
       <DependentUpon>SendDataView.xaml</DependentUpon>
@@ -138,10 +146,11 @@
     <Compile Include="View\SerialPortSettingsView.xaml.cs">
       <DependentUpon>SerialPortSettingsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\StatusBarView.xaml.cs">
-      <DependentUpon>StatusBarView.xaml</DependentUpon>
-    </Compile>
     <Page Include="View\CommandsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\FileView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -160,6 +169,10 @@
     <Page Include="View\LaserView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\GrblView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\LoadSettingsView.xaml">
       <SubType>Designer</SubType>
@@ -181,7 +194,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="View\ReceiveDataView.xaml">
+    <Page Include="View\DataConsoleView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -192,10 +205,6 @@
     <Page Include="View\SerialPortSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\StatusBarView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -263,6 +272,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Skins\Images\iconRefresh40.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Skins\Images\iconOpenFile40.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Skins\Images\iconStopFile40.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

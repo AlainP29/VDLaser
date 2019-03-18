@@ -8,7 +8,7 @@
         mc:Ignorable="d ignore"
         Height="520"
         Width="890"
-        Title="VDGrbl" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Title="VDGrbl v0.3" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
@@ -27,30 +27,39 @@
         <StackPanel Grid.Column="2">
             <TabControl >
                 <TabItem Header="Jogging">
-                    <Grid Background="#FFE5E5E5">
-                        <StackPanel Orientation="Horizontal" Height="300">
+                    <Grid Background="#FFE5E5E5" Height="300">
+                        <StackPanel Orientation="Horizontal">
                             <!--Send/receive data area-->
                             <StackPanel>
-                            <local:SendDataView Margin="1,1,0.6,1"
+                            <local:SendDataView Margin="1"
                                                 Width="Auto" Height="Auto"/>
                             </StackPanel>
                             <local:JoggingView Margin="1" VerticalAlignment="Top"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
+                <TabItem Header="File">
+                    <Grid Background="#FFE5E5E5" Height="300" Margin="0">
+                        <StackPanel Orientation="Horizontal">
+                            <!--Send file area-->
+                            <StackPanel Orientation="Horizontal">
+                                <local:FileView Margin="1" Width="Auto" Height="Auto"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
                 <TabItem Header="Grbl settings">
-                    <Grid Background="#FFE5E5E5" Height="300" Margin="0,0,-0.4,0">
+                    <Grid Background="#FFE5E5E5" Height="300" Margin="0">
                         <!-- Grbl settings and commands-->
                         <StackPanel Orientation="Horizontal">
-                        <local:CommandsView Margin="1" Height="200" Width="Auto" VerticalAlignment="Top"/>
-                        <local:LoadSettingsView Margin="1" Height="500" Width="Auto"/>
+                        <local:CommandsView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
+                        <local:LoadSettingsView Margin="1" Height="Auto" Width="Auto"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
             </TabControl>
             <DockPanel>
-                <local:ReceiveDataView Margin="1" Height="150"/>
-
+                <local:DataConsoleView Margin="1" Height="Auto" Width="Auto"/>
             </DockPanel>
         </StackPanel>
     </Grid>

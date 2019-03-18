@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace VDGrbl.Codes
 {
+    /// <summary>
+    /// Grbl settings codes.
+    /// </summary>
     public class SettingCodes
     {
         /// <summary>

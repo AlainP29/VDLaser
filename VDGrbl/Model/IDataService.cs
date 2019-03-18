@@ -7,7 +7,7 @@ namespace VDGrbl.Model
 {
     public interface IDataService
     {
-        void GetData(Action<SerialPortSettingsModel, Exception> callback);
-
+        void GetPortSettings(Action<SerialPortSettingsModel, Exception> callback);
+        void GetGrblData(Action<GrblModel, Exception> callback);
     }
 }

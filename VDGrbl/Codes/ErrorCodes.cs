@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace VDGrbl.Codes
 {
+    /// <summary>
+    /// Grbl Error codes.
+    /// </summary>
     class ErrorCodes
     {
         /// <summary>

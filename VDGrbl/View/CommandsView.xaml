@@ -24,7 +24,7 @@
                 <Button Content="~" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblStartCommand, Mode=OneWay}" ToolTip="Cycle Start / Resume"/>
                 <Button Content="!" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblPauseCommand, Mode=OneWay}" ToolTip="Feed Hold"/>
                 <Button Content="?" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblCurrentStatusCommand, Mode=OneWay}" ToolTip="Status Report Query"/>
-                    <Button Content="$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblHelpCommand, Mode=OneWay}" ToolTip="Grbl print a help message"/>
+                <Button Content="$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblHelpCommand, Mode=OneWay}" ToolTip="Grbl print a help message"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="1">
                     <Button Content="$#" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblParametersCommand, Mode=OneWay}" ToolTip="View gcode parameters"/>

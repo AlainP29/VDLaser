@@ -14,6 +14,9 @@ using VDGrbl.Model;
 using VDGrbl.Tools;
 using System.Windows.Data;
 using System.Globalization;
+using Microsoft.Win32;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace VDGrbl.ViewModel
 {
@@ -29,7 +32,6 @@ namespace VDGrbl.ViewModel
         private readonly IDataService _dataService;
         private SerialPort _serialPort;
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        //private readonly SerialPortSettingsModel DeviceComPort = new SerialPortSettingsModel();
         private string _selectedDevicePortName = string.Empty;
         private string[] _listPortNames;
         private int _selectedBaudRate;
@@ -46,8 +48,7 @@ namespace VDGrbl.ViewModel
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
         private string _macro1="G90 G0 X0", _macro2 = "G91 G1 X10 Y-20", _macro3 = "G90 G0 Y0 F2000", _macro4 = "G91 G1 X-20 Y10 F1000";
-        private readonly char[] trimArray = new char[] { '\r', '\n', ' ' };
-        private RespStatus _responseStatus = RespStatus.Ok;//TODO softwareStatus, responseStatus tobe check depending on what we want to include in checking...
+        private RespStatus _responseStatus = RespStatus.Ok;
         private MachStatus _machineStatus = MachStatus.Idle;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
@@ -67,11 +68,22 @@ namespace VDGrbl.ViewModel
         private bool _isSelectedKeyboard=false;
         private bool _isSelectedMetric = true;
         private bool _isJogEnabled=true;
-        private string _buf,_rx;
+        private string _buf="0",_rx="0";
         private string _errorMessage=string.Empty;
         private string _alarmMessage=string.Empty;
         private string _infoMessage = string.Empty;
         private double _laserPower=0;
+        private FileModel fm = new FileModel("file");
+        private string _fileName = string.Empty;
+        private StreamReader sr;
+        private bool _isVerbose=false;
+        private Queue<string> _fileQueue = new Queue<string>();
+        private double _nLine = 0;
+        private double _rLine = 0;
+        private double _percentLine = 0;
+        private ObservableCollection<GrblModel> _consoleData;
+        private List<GrblModel> _listConsoleData = new List<GrblModel>();
+        private GrblModel _grblModel;
         #endregion
 
         #region public Properties
@@ -117,16 +129,19 @@ namespace VDGrbl.ViewModel
         public RelayCommand<bool> JogUpCommand { get; private set; }
         public RelayCommand<bool> JogDownCommand { get; private set; }
         public RelayCommand<string> StepCommand { get; private set; }
-        public RelayCommand<bool> IncreaseFeedRateCommand { get; private set; }
         public RelayCommand<bool> DecreaseFeedRateCommand { get; private set; }
+        public RelayCommand<bool> IncreaseFeedRateCommand { get; private set; }
         public RelayCommand ResetAxisXCommand { get; private set; }
         public RelayCommand ResetAxisYCommand { get; private set; }
         public RelayCommand ResetAxisZCommand { get; private set; }
         public RelayCommand ResetAllAxisCommand { get; private set; }
-        public RelayCommand IncreaseLaserPowerCommand { get; private set; }
-        public RelayCommand DecreaseLaserPowerCommand { get; private set; }
         public RelayCommand StartLaserCommand { get; private set; }
         public RelayCommand StopLaserCommand { get; private set; }
+        public RelayCommand LoadFileCommand { get; private set; }
+        public RelayCommand SendFileCommand { get; private set; }
+        public RelayCommand StopFileCommand { get; private set; }
+        public RelayCommand<bool> DecreaseLaserPowerCommand { get; private set; }
+        public RelayCommand<bool> IncreaseLaserPowerCommand { get; private set; }
         #endregion
 
         #region subregion port settings
@@ -666,9 +681,164 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Max number of motion commands in planner buffer.
+        /// The <see cref=" FileName" /> property's name.
         /// </summary>
-        public string MaxPlannerBuffer { get; set; } = "20";
+        public const string FileNamePropertyName = "FileName";
+        /// <summary>
+        /// Gets the InfoMessage property. InfoMessage is got from the Arduino or the VDGrbl software.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string FileName
+        {
+            get
+            {
+                return _fileName;
+            }
+            set
+            {
+                Set(ref _fileName, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="IsVerbose" /> property's name.
+        /// </summary>
+        public const string IsVerbosePropertyName = "IsVerbose";
+        /// <summary>
+        /// Gets the IsVerbose property. Allows/Disallows the verbose mode, especially to print current status.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsVerbose
+        {
+            get
+            {
+                return _isVerbose;
+            }
+            set
+            {
+                Set(ref _isVerbose, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="FileQueue" /> property's name.
+        /// </summary>
+        public const string FileQueuePropertyName = "FileQueue";
+        /// <summary>
+        /// Gets the FileQueue property. FileQueue is populated w/ lines of G-code file.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Queue<string> FileQueue
+        {
+            get
+            {
+                return _fileQueue;
+            }
+            set
+            {
+                Set(ref _fileQueue, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="NLine" /> property's name.
+        /// </summary>
+        public const string NLinePropertyName = "NLine";
+        /// <summary>
+        /// Gets the NLine property. NLine is the number of lines in the G-code file.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double NLine
+        {
+            get
+            {
+                return _nLine;
+            }
+            set
+            {
+                Set(ref _nLine, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="RLine" /> property's name.
+        /// </summary>
+        public const string RLinePropertyName = "RLine";
+        /// <summary>
+        /// Gets the RLine property. RLine is the number of lines remaning in the G-code queue.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double RLine
+        {
+            get
+            {
+                return _rLine;
+            }
+            set
+            {
+                Set(ref _rLine, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="PercentLine" /> property's name.
+        /// </summary>
+        public const string PercentLinePropertyName = "PercentLine";
+        /// <summary>
+        /// Gets the PercentLine property. PercentLine is the number of lines remaning in the G-code queue.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double PercentLine
+        {
+            get
+            {
+                return _percentLine;
+            }
+            set
+            {
+                Set(ref _percentLine, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="ListConsoleData" /> property's name.
+        /// </summary>
+        public const string ListConsoleDataPropertyName = "ListConsoleData";
+        /// <summary>
+        /// Gets the ListConsoleData property. ListConsoleData is populated w/ TXLine/RXLine
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public List<GrblModel> ListConsoleData
+        {
+            get
+            {
+                return _listConsoleData;
+            }
+            set
+            {
+                Set(ref _listConsoleData, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="ConsoleData" /> property's name.
+        /// </summary>
+        public const string ConsoleDataPropertyName = "ConsoleData";
+        /// <summary>
+        /// Gets the ConsoleData property. ConsoleData is populated w/ data from ListConsoleData
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ObservableCollection<GrblModel> ConsoleData
+        {
+            get
+            {
+                return _consoleData;
+            }
+            set
+            {
+                Set(ref _consoleData, value);
+            }
+        }
         #endregion
 
         #region subregion G-code
@@ -833,7 +1003,8 @@ namespace VDGrbl.ViewModel
                 {
                     _laserPower = MaxLaserPower;
                 }
-                logger.Info("Manual speed rate value is {0}", _laserPower);
+                WriteString(string.Format("S{0}",_laserPower));
+                logger.Info("Manual laser power value is {0}", _laserPower);
             }
         }
 
@@ -841,6 +1012,11 @@ namespace VDGrbl.ViewModel
         /// Sets the maximum laser power allowed.
         /// </summary>
         public double MaxLaserPower { get; private set; } = 100;
+
+        /// <summary>
+        /// Check laser status.
+        /// </summary>
+        public bool IsLaserPower { get; private set; } = false;
 
         /// <summary>
         /// The <see cref="MachineStatusColor" /> property's name.
@@ -1091,7 +1267,7 @@ namespace VDGrbl.ViewModel
                 //logger.Log(LogLevel.Info, "---Program started ! ---");
                 logger.Info("---Program started ! ---");
                 _dataService = dataService;
-                _dataService.GetData(
+                _dataService.GetPortSettings(
                     (item, error) =>
                     {
                         if (error != null)
@@ -1134,17 +1310,17 @@ namespace VDGrbl.ViewModel
             GrblPauseCommand = new RelayCommand(GrblFeedHold, CanExecuteRealTimeCommand);
             GrblCurrentStatusCommand = new RelayCommand(GrblCurrentStatus, CanExecuteRealTimeCommand);
             GrblStartCommand = new RelayCommand(GrblStartCycle, CanExecuteRealTimeCommand);
-            GrblSettingsCommand = new RelayCommand(GrblSettings, CanExecuteOtherCommand());
-            GrblParametersCommand = new RelayCommand(GrblParameters, CanExecuteOtherCommand());
-            GrblParserStateCommand = new RelayCommand(GrblParserState, CanExecuteOtherCommand());
-            GrblBuildInfoCommand = new RelayCommand(GrblBuildInfo, CanExecuteOtherCommand());
-            GrblStartupBlocksCommand = new RelayCommand(GrblStartupBlocks, CanExecuteOtherCommand());
-            GrblCheckCommand = new RelayCommand(GrblCheck, CanExecuteOtherCommand());
-            GrblKillAlarmCommand = new RelayCommand(GrblKillAlarm, CanExecuteOtherCommand());
-            GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteOtherCommand());
-            GrblSleepCommand = new RelayCommand(GrblSleep, CanExecuteOtherCommand());
+            GrblSettingsCommand = new RelayCommand(GrblSettings, CanExecuteOtherCommand);
+            GrblParametersCommand = new RelayCommand(GrblParameters, CanExecuteOtherCommand);
+            GrblParserStateCommand = new RelayCommand(GrblParserState, CanExecuteOtherCommand);
+            GrblBuildInfoCommand = new RelayCommand(GrblBuildInfo, CanExecuteOtherCommand);
+            GrblStartupBlocksCommand = new RelayCommand(GrblStartupBlocks, CanExecuteOtherCommand);
+            GrblCheckCommand = new RelayCommand(GrblCheck, CanExecuteOtherCommand);
+            GrblKillAlarmCommand = new RelayCommand(GrblKillAlarm, CanExecuteOtherCommand);
+            GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteOtherCommand);
+            GrblSleepCommand = new RelayCommand(GrblSleep, CanExecuteOtherCommand);
             GrblTestCommand = new RelayCommand(GrblTest, CanExecuteGrblTest);
-            GrblHelpCommand = new RelayCommand(GrblHelp, CanExecuteOtherCommand());
+            GrblHelpCommand = new RelayCommand(GrblHelp, CanExecuteOtherCommand);
             JogHCommand = new RelayCommand<bool>(JogH, CanExecuteJog);
             JogNCommand = new RelayCommand<bool>(JogN, CanExecuteJog);
             JogSCommand = new RelayCommand<bool>(JogS, CanExecuteJog);
@@ -1163,10 +1339,13 @@ namespace VDGrbl.ViewModel
             ResetAxisYCommand = new RelayCommand(ResetAxisX, CanExecuteResetAxis);
             ResetAxisZCommand = new RelayCommand(ResetAxisY, CanExecuteResetAxis);
             ResetAllAxisCommand = new RelayCommand(ResetAxisZ, CanExecuteResetAxis);
-            IncreaseLaserPowerCommand = new RelayCommand(IncreaseLaserPower, CanExecuteLaserPower);
-            DecreaseLaserPowerCommand = new RelayCommand(DecreaseLaserPower, CanExecuteLaserPower);
             StartLaserCommand = new RelayCommand(StartLaser, CanExecuteLaser);
             StopLaserCommand = new RelayCommand(StopLaser, CanExecuteLaser);
+            LoadFileCommand = new RelayCommand(OpenFile, CanExecuteOpenFile);
+            SendFileCommand = new RelayCommand(SendFile, CanExecuteSendFile);
+            StopFileCommand = new RelayCommand(StopFile, CanExecuteStopFile);
+            IncreaseLaserPowerCommand = new RelayCommand<bool>(IncreaseLaserPower, CanExecuteLaserPower);
+            DecreaseLaserPowerCommand = new RelayCommand<bool>(DecreaseLaserPower, CanExecuteLaserPower);
             logger.Info("All RelayCommands loaded");
         }
 
@@ -1499,6 +1678,9 @@ namespace VDGrbl.ViewModel
                 RXLine = string.Empty;
                 TXLine = string.Empty;
                 ListSettingModel.Clear();
+                ListConsoleData.Clear();
+                NLine = 0;
+                PercentLine = 0;
                 logger.Info("TXLine/RXLine and buffers erased");
             }
             catch (Exception ex)
@@ -1512,6 +1694,10 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteClearData()
         {
+            if (Buf!="0")
+            {
+                return false;
+            }
             return true;
         }
         #endregion
@@ -1550,13 +1736,21 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
+        /// Write Grbl '$X' command to kill alarm mode. In real-time command and canexecuterealTimeCommand in order to kill alarm
+        /// </summary>
+        public void GrblKillAlarm()
+        {
+            WriteString("$X");
+        }
+
+        /// <summary>
         /// Allows/disallows real-time command. These commands can be sent at anytime,
         /// anywhere, and Grbl will immediately respond, no matter what it's doing
         /// </summary>
         /// <returns></returns>
         public bool CanExecuteRealTimeCommand()
         {
-            return true;
+            return _serialPort.IsOpen;
         }
 
         /// <summary>
@@ -1611,14 +1805,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Write Grbl '$X' command to kill alarm mode.
-        /// </summary>
-        public void GrblKillAlarm()
-        {
-            WriteString("$X");
-        }
-
-        /// <summary>
         /// Write Grbl '$H' command to run homing cycle.
         /// </summary>
         public void GrblHoming()
@@ -1649,9 +1835,12 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteOtherCommand()
         {
-            if (_serialPort.IsOpen && ResponseStatus==RespStatus.Ok)
+            if (_serialPort.IsOpen)
             {
-                return true;
+                if (ResponseStatus != RespStatus.NOk)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -1785,7 +1974,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteJog(bool parameter)
         {
-            if (_serialPort.IsOpen && ResponseStatus == RespStatus.Ok)
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
             {
                 if (parameter)
                 {
@@ -1815,36 +2004,44 @@ namespace VDGrbl.ViewModel
                 }
             return false;
         }
+        
+        //TODO: add set zero position in joggingview G92 X0 Y0...
 
         /// <summary>
-        /// Gets the move feed rate value
+        /// Increase the motion speed with keyboard
         /// </summary>
         /// <param name="parameter"></param>
         private void IncreaseFeedRate(bool parameter)
         {
-            FeedRate+=10;
+            FeedRate += 10;
+            logger.Info("F{0}", _feedRate);
         }
 
         /// <summary>
-        /// Gets the move feed rate value
+        /// Decrease the motion speed with keyboard
         /// </summary>
         /// <param name="parameter"></param>
         private void DecreaseFeedRate(bool parameter)
         {
             FeedRate -= 10;
+            logger.Info("F{0}", _feedRate);
         }
 
         /// <summary>
-        /// Allows/Disallows GetFeedRate method.
+        /// Allows/Disallows feed rate motion increase/decrease methods.
         /// </summary>
+        /// <param name="parameter"></param>
         /// <returns></returns>
         private bool CanExecuteFeedRate(bool parameter)
         {
-            if (!parameter && FeedRate < 0 && FeedRate > MaxFeedRate)
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
             {
-                return false;
+                if (parameter)
+                {
+                    return true;
+                }
             }
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -1853,8 +2050,10 @@ namespace VDGrbl.ViewModel
         private void StartLaser()
         {
             WriteString("M3");
-            WriteString("S10");
-            LaserColor = Brushes.Red;
+            LaserPower = 10;
+            WriteString(string.Format("S{0}", _laserPower));
+            LaserColor = Brushes.Blue;
+            IsLaserPower = true;
         }
 
         /// <summary>
@@ -1862,8 +2061,10 @@ namespace VDGrbl.ViewModel
         /// </summary>
         private void StopLaser()
         {
-            WriteString("S0");
+            LaserPower = 0;
+            WriteString(string.Format("S{0}", _laserPower));
             LaserColor = Brushes.LightGray;
+            IsLaserPower = false;
         }
 
         /// <summary>
@@ -1876,38 +2077,42 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Increases the laser power value
+        /// Increase the laser power with keyboard
         /// </summary>
         /// <param name="parameter"></param>
-        private void IncreaseLaserPower()
+        private void IncreaseLaserPower(bool parameter)
         {
             LaserPower += 10;
-            WriteString(string.Format("S{0}", LaserPower));
-            RXLine = LaserPower.ToString();
+            logger.Info("S{0}", _laserPower);
         }
 
         /// <summary>
-        /// Decrease the laser power value
+        /// Decrease the laser power with keyboard
         /// </summary>
         /// <param name="parameter"></param>
-        private void DecreaseLaserPower()
+        private void DecreaseLaserPower(bool parameter)
         {
             LaserPower -= 10;
-            WriteString(string.Format("S{0}", LaserPower));
+            logger.Info("S{0}", _laserPower);
         }
 
         /// <summary>
-        /// Allows/Disallows GetFeedRate method.
+        /// Allows/Disallows feed rate motion increase/decrease methods.
         /// </summary>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        private bool CanExecuteLaserPower()
+        private bool CanExecuteLaserPower(bool parameter)
         {
-            if (LaserPower<0 && LaserPower>MaxLaserPower)
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
             {
-                return false;
+                if (parameter)
+                {
+                    return true;
+                }
             }
-            return true;
+            return false;
         }
+
 
         /// <summary>
         /// Sets current axis X to 0.
@@ -1970,18 +2175,6 @@ namespace VDGrbl.ViewModel
         }
         #endregion
 
-        /// <summary>
-        /// This is a test command bind to TEST button for development purpose only.
-        /// </summary>
-        public void GrblTest()
-        {
-            //TODO Test
-        }
-        public bool CanExecuteGrblTest()
-        {
-            return true;
-        }
-
         #region process methods for DataGrblSorter method
         /// <summary>
         /// Sorts Grbl data received like Grbl informations, response, coordinates, settings...
@@ -1989,10 +2182,9 @@ namespace VDGrbl.ViewModel
         /// <param name="line"></param>
         public void DataGrblSorter(string _line)
         {
-            string line = FormatGrblLine(_line);
-            ResponseStatus = RespStatus.DR;
             try
             {
+                string line = Gcode.TrimGcode(_line);
                 if (!string.IsNullOrEmpty(line))
                 {
                     if (line.StartsWith("ok"))
@@ -2029,7 +2221,6 @@ namespace VDGrbl.ViewModel
                     }
                 }
                 logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", line, ResponseStatus.ToString(), MachineStatus.ToString());
-
             }
             catch (Exception ex)
             {
@@ -2103,6 +2294,7 @@ namespace VDGrbl.ViewModel
         public void ProcessResponse(string _data)
         {
             ResponseStatus = RespStatus.Ok;
+            SendFile();
             logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
         }
 
@@ -2115,7 +2307,6 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command + try/catch
                 ErrorCodes ec = new ErrorCodes();
                 logger.Info("Error key:{0}", _data.Split(':')[1]);
                 if (VersionGrbl.StartsWith("1"))//In version 1.1 all error codes have ID
@@ -2136,6 +2327,8 @@ namespace VDGrbl.ViewModel
                         logger.Info("Error key {0} | description:{1}", _data.Split(':')[1], ErrorMessage);
                     }
                 }
+                ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command + try/catch
+                SendFile();
             }
             catch (Exception ex)
             {
@@ -2329,16 +2522,6 @@ namespace VDGrbl.ViewModel
 
         #region subregion other methods
         /// <summary>
-        /// Elimantes 'space', '\r', '\n', of Grbl response line
-        /// </summary>
-        /// <param name="_data"></param>
-        /// <returns></returns>
-        public string FormatGrblLine(string _data)
-        {
-            return _data.ToLower().Trim().TrimEnd(trimArray);
-        }
-
-        /// <summary>
         /// Does nothing yet...
         /// </summary>
         public override void Cleanup()
@@ -2360,7 +2543,159 @@ namespace VDGrbl.ViewModel
             currentStatusTimer.Start();
             logger.Info("Initialize Dispatcher Timer");
         }
+
+        /// <summary>
+        /// Selects the G-code file to send to the Arduino.
+        /// </summary>
+        public void OpenFile()
+        {
+            if(FileQueue!=null)
+            {
+                FileQueue.Clear();
+            }
+            OpenFileDialog ofd = new OpenFileDialog();
+            try
+            {
+                ofd.Title = fm.FileTitle;
+                ofd.Filter = fm.FileFilter;
+                ofd.FilterIndex = fm.FileFilterIndex;
+                ofd.DefaultExt = fm.FileDefaultExt;
+                if(ofd.ShowDialog().Value)
+                {
+                    FileName = ofd.FileName;
+                    LoadFile(FileName);
+                    logger.Info("Open file: {0}", FileName);
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error("Exception data received raised: " + ex.ToString());
+                ResponseStatus = RespStatus.NOk;
+            }
+        }
+
+        /// <summary>
+        /// Allows/Disallows LoadFile method.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanExecuteOpenFile()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Loads file
+        /// </summary>
+        /// <param name="fileName"></param>
+        private void LoadFile(string fileName)
+        {
+            string line;
+
+            using (StreamReader sr = new StreamReader(FileName))
+            {
+                while((line=sr.ReadLine())!=null)
+                {
+                    FileQueue.Enqueue(Gcode.TrimGcode(line));
+                }
+            }
+            NLine = FileQueue.Count;
+            RLine = _nLine;
+        }
+
+        /// <summary>
+        /// Sends G-code file line by line =>startSendingFile
+        /// </summary>
+        public void SendFile()
+        {
+            string line = string.Empty;
+            RLine = FileQueue.Count;
+            if (_nLine!=0)//Divide by zero (NaN)
+            {
+                PercentLine = (_nLine - _rLine) / _nLine;
+            }
+            else
+            {
+                PercentLine = 0;
+            }
+            if (RLine > 0)
+            {
+                ResponseStatus = RespStatus.Q;
+                TXLine = FileQueue.Dequeue();
+                WriteString(_txLine);
+            }
+        }
+
+        /// <summary>
+        /// Allows/Disallows SendFile method.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteSendFile()
+        {
+            if (FileQueue.Count>0 && _serialPort.IsOpen)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Changes status response pause sending file
+        /// </summary>
+        public void StopFile()
+        {
+            ResponseStatus = RespStatus.Q;
+            FileQueue.Clear();
+            NLine = FileQueue.Count;
+        }
+
+        /// <summary>
+        /// Allows/Disallows PauseFile method.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteStopFile()
+        {
+            if (FileQueue.Count > 0 && _serialPort.IsOpen)
+                {
+                return true;
+            }
+            return false;
+        }
+
+        #region TODO use task to send file but pb of synchro showing data...
+        /*
+        /// <summary>
+        /// Starts sending file with button start
+        /// </summary>
+        public async void StartSendingFile()
+        {
+            await Task.Run(() => SendingFile());
+        }
+
+        /// <summary>
+        /// Loop sendFile untill isSending is false
+        /// </summary>
+        private void SendingFile()
+        {
+            while(IsSending)
+            {
+                Thread.Sleep(500);
+                SendFile();
+            }
+        }*/
         #endregion
+        #endregion
+
+        /// <summary>
+        /// This is a test command bind to TEST button for development purpose only.
+        /// </summary>
+        public void GrblTest()
+        {
+            //TODO Test
+        }
+        public bool CanExecuteGrblTest()
+        {
+            return true;
+        }
         #endregion
 
         #region Event
@@ -2373,10 +2708,35 @@ namespace VDGrbl.ViewModel
         {
             try
             {
+                //ResponseStatus = RespStatus.DR;
                 string line = _serialPort.ReadLine();
-                if (!line.StartsWith("<"))
+                ConsoleData = new ObservableCollection<GrblModel>(ListConsoleData);
+                _grblModel = new GrblModel(_txLine, Gcode.TrimGcode(line));
+                if (IsVerbose)
                 {
-                    RXLine += line + Environment.NewLine;
+                    if (line.StartsWith("<"))
+                    {
+                        ListConsoleData.Add(_grblModel);
+                    }
+                    else if (RLine == 0)
+                    {
+                        ListConsoleData.Add(_grblModel);
+                    }
+                    else
+                    {
+                        ListConsoleData.Add(_grblModel);
+                    }
+                }
+                else if (!line.StartsWith("<"))
+                {
+                    if (RLine == 0)
+                    {
+                        ListConsoleData.Add(_grblModel);
+                    }
+                    else 
+                    {
+                        ListConsoleData.Add(_grblModel);
+                    }
                 }
                 DataGrblSorter(line);
             }
@@ -2384,7 +2744,7 @@ namespace VDGrbl.ViewModel
                 {
                 logger.Error("Exception data received raised: " + ex.ToString());
                 ResponseStatus = RespStatus.NOk;
-            }
+                }
         }
 
         /// <summary>

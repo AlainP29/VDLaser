@@ -2,6 +2,9 @@
 
 namespace VDGrbl.Model
 {
+    /// <summary>
+    /// Grbl settings model class.
+    /// </summary>
     public class SettingModel : ObservableObject
     {
         #region Fields

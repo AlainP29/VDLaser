@@ -10,7 +10,7 @@
             <GroupBox Header="{Binding GroupBoxPortSettingsTitle}" VerticalAlignment="Top" Margin="5" 
                       Style="{DynamicResource GroupBoxStyleVD}">
                 <StackPanel>
-                <!--Parameters of the serial port. Only COM port and Baud rate are available and usefull to be selected for the Arduino-->
+                <!--Parameters of the serial port. Only COM port and Baud rate are available for the Arduino-->
                 <Grid Margin="5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>

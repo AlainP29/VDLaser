@@ -2,6 +2,9 @@
 
 namespace VDGrbl.Codes
 {
+    /// <summary>
+    /// Grbl alarm codes
+    /// </summary>
     class AlarmCodes
     {
         /// <summary>

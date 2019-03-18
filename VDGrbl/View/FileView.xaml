@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="VDGrbl.View.FileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDGrbl.Tools"
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="300">
+    <UserControl.Resources>
+        <local:DoubleConverter x:Key="ConvertDouble"/>
+    </UserControl.Resources>
+    <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <!--G-code file area-->
+        <GroupBox Header="File" Style="{DynamicResource GroupBoxStyleVD}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <!--G-code file path and name-->
+                <TextBox Grid.Row="0" Margin="5" Text="{Binding Main.FileName}" Height="25"/>
+                <!--Buttons: load, start and stop sending file-->
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <Button VerticalAlignment="Center" Height="25" Width="25"
+                            Margin="5" Style="{DynamicResource ControlStyleVD}"
+                            Command="{Binding Main.LoadFileCommand, Mode=OneWay}">
+                        <StackPanel Height="20" Width="20">
+                            <Image Source="/VDGrbl;component/Skins/Images/iconOpenFile40.png"/>
+                        </StackPanel>
+                    </Button>
+                    <Button VerticalAlignment="Center"
+                            Margin="5" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.SendFileCommand, Mode=OneWay}">
+                            <StackPanel Height="20" Width="20">
+                                <Image Source="/VDGrbl;component/Skins/Images/iconPlay40.png"/>
+                            </StackPanel>
+                    </Button>
+                    <Button VerticalAlignment="Center"
+                            Margin="5" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.StopFileCommand, Mode=OneWay}">
+                            <StackPanel Height="20" Width="20">
+                                <Image Source="/VDGrbl;component/Skins/Images/iconStopFile40.png"/>
+                            </StackPanel>
+                    </Button>
+                </StackPanel>
+                <!--Total of lines sent + number of motion command queued-->
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Label Content="Total lines:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                    <TextBox Text="{Binding Main.NLine}" Margin="12,5,5,5" IsReadOnly="True" VerticalContentAlignment="Center" Width="30" HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                    <Label Content="RX:" VerticalAlignment="Center" Margin="45,0,0,0"/>
+                    <TextBox Text="{Binding Main.RX}" Margin="10,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="30" Height="23"/>
+                </StackPanel>
+                <!--Number of lines left + buffer size-->
+                <StackPanel Grid.Row="3" Orientation="Horizontal">
+                    <Label Content="Remaining:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                    <TextBox Text="{Binding Main.RLine}" Margin="5" IsReadOnly="True" VerticalContentAlignment="Center" Width="30" HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                    <Label Content="Buf:" VerticalAlignment="Center" Margin="45,0,0,0"/>
+                    <TextBox Text="{Binding Main.Buf, Mode=OneWay}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="30" Height="23"/>
+                </StackPanel>
+                <!--Percentage of lines sent to be change by a timer-->
+                <StackPanel Grid.Row="4" Orientation="Horizontal">
+                    <Label Content="Lines sent:" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <Grid Margin="10,0,0,0">
+                        <ProgressBar Maximum="1" Value="{Binding Main.PercentLine}" Height="20" 
+                                 HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                                 HorizontalContentAlignment="Center" Width="150"/>
+                        <TextBlock Text="{Binding Main.PercentLine, Converter={StaticResource ConvertDouble}, StringFormat=\{0:P0\}}"
+                               Width="150" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

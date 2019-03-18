@@ -5,43 +5,46 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.View"
              xmlns:ViewModel="clr-namespace:VDGrbl.ViewModel" x:Class="VDGrbl.View.CoordinateView"
-             mc:Ignorable="d" Height="140" Width="250">
+             mc:Ignorable="d" Height="150" Width="300">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <!--Report current machine state: status and coordinates-->
         <GroupBox Header="Coordinates" Style="{DynamicResource GroupBoxStyleVD}">
-        <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="2.5*"/>
-        </Grid.RowDefinitions>
-        <!--It displays the report state: current machine status and positions-->
-        <TextBox Name="TextBoxMachineStatus" Grid.Column="1" Margin="5" VerticalContentAlignment="Center" 
-                 HorizontalContentAlignment="Center" Background="{Binding Main.MachineStatusColor}" 
-                 Text="{Binding Main.MachineStatus, StringFormat={}{0}}" Height="24" Width="60"/>
-                <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Row="1">
-                    <Grid >
-                        <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                <Grid>
+                <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="2.8*"/>
                 </Grid.RowDefinitions>
-                <Label Content=" MPos" Grid.Column="1" Grid.Row="0"/>
-                <Label Grid.Row="1" Content="X" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                <Label Grid.Column="1" Grid.Row="1" Content="Y" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                <Label Grid.Column="2" Grid.Row="1" Content="Z" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="29" VerticalAlignment="Top"/>
-                <Label Grid.Column="0" Grid.Row="2" Content="{Binding Main.PosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.PosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                <Label Grid.Column="2" Grid.Row="2" Content="{Binding Main.PosZ, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                </Grid>
+                <!--Display the report state: current machine status-->
+                <TextBox Name="TextBoxMachineStatus" Grid.Column="1" Margin="1" VerticalContentAlignment="Center" 
+                         HorizontalContentAlignment="Center" Background="{Binding Main.MachineStatusColor}" 
+                         Text="{Binding Main.MachineStatus, StringFormat={}{0}}" Height="24" Width="60" IsEnabled="False"/>
+                <!--Display the machine coordinates: real time machine position-->
+                <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Row="1">
+                    <Grid >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Label Content=" MPos" Grid.Column="1" Grid.Row="0"/>
+                        <Label Grid.Column="0" Grid.Row="1" Content="X" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="1" Grid.Row="1" Content="Y" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="2" Grid.Row="1" Content="Z" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="29" VerticalAlignment="Top"/>
+                        <Label Grid.Column="0" Grid.Row="2" Content="{Binding Main.PosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.PosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="2" Grid.Row="2" Content="{Binding Main.PosZ, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                    </Grid>
                 </Border>
+                <!--Display the work coordinates: real time work position-->
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1" Grid.Row="1">
                     <Grid >
                         <Grid.ColumnDefinitions>
@@ -55,9 +58,9 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Label Content=" WPos" Grid.Column="1" Grid.Row="0"/>
-                        <Label Grid.Row="1" Content="X" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Label Grid.Column="1" Grid.Row="1" Content="Y" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Label Grid.Column="2" Grid.Row="1" Content="Z" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="29" VerticalAlignment="Top"/>
+                        <Label Grid.Row="1" Content="X" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="1" Grid.Row="1" Content="Y" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="2" Grid.Row="1" Content="Z" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="29" VerticalAlignment="Top"/>
                         <Label Grid.Column="0" Grid.Row="2" Content="{Binding Main.WPosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                         <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.WPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                         <Label Grid.Column="2" Grid.Row="2" Content="{Binding Main.WPosZ, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>

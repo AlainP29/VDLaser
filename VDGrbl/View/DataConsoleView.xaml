@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="VDGrbl.View.DataConsoleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDGrbl.Tools"
+             mc:Ignorable="d" 
+             d:DesignHeight="180" d:DesignWidth="600">
+    <UserControl.Resources>
+        <local:InverseBooleanConverter x:Key="ConvertBool"/>
+    </UserControl.Resources>
+    <!--Show data sent + response from the Arduino-->
+    <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <GroupBox Header="Data console" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                    <DataGrid Grid.Row="0" Grid.Column="0" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
+                          IsReadOnly="True" Width="Auto" Height="120" SelectedIndex="1"
+                          ItemsSource="{Binding Main.ConsoleData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5">
+                    <DataGrid.VerticalGridLinesBrush>
+                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>
+                    </DataGrid.VerticalGridLinesBrush>
+                    <DataGrid.HorizontalGridLinesBrush>
+                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}"/>
+                    </DataGrid.HorizontalGridLinesBrush>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Line sent" Binding="{Binding TXData}" MinWidth="150"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding RXData}" MinWidth="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <!--Clear datagrid + kill alarm + verbose (all data received, machine position...)-->
+                <StackPanel Grid.Row="0" Grid.Column="1">
+                    <Button Content="Clear" Margin="5" Width="50" 
+                            Command="{Binding Main.ClearCommand, Mode=OneWay}" 
+                        Style="{DynamicResource ControlStyleVD}"/>
+                    <Button Content="$X" HorizontalAlignment="Center" Margin="5" VerticalAlignment="Top" 
+                            Width="50" Style="{DynamicResource ControlStyleVD}" 
+                            Command="{Binding Main.GrblKillAlarmCommand, Mode=OneWay}" ToolTip="Kill alarm lock"/>
+                    <CheckBox Content="Verbose" Margin="5,30,5,5" 
+                              VerticalContentAlignment="Center" 
+                              IsChecked="{Binding Main.IsVerbose, Mode=TwoWay}"/>
+                </StackPanel>
+                <!--Emergency stop-->
+                <Button Grid.Column="2" VerticalAlignment="Center" Height="40" Width="40"
+                            Margin="5" Style="{DynamicResource ControlStyleVD}" 
+                        Command="{Binding Main.GrblResetCommand, Mode=OneWay}">
+                    <StackPanel>
+                        <Image Source="/VDGrbl;component/Skins/Images/iconStop40.png" RenderTransformOrigin="0.5,0.5"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>
