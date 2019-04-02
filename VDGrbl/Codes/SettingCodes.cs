@@ -9,7 +9,7 @@ namespace VDGrbl.Codes
     public class SettingCodes
     {
         /// <summary>
-        /// List of the system settings that we get after sending $$ command.
+        /// List of the system settings of Grbl version 0.9 and 1.1 (get after sending $$ command).
         /// In Grbl version 1.1 the description is not save in the Arduino.
         /// </summary>
         public SettingCodes()
@@ -50,8 +50,19 @@ namespace VDGrbl.Codes
             SettingDict.Add("$132", "Z Max travel, mm.");
         }
 
+        /// <summary>
+        /// Get the dictionnary of setting message: Key: IDXX - Value: Setting code description
+        /// </summary>
+        public Dictionary<string, string> SettingDict { get; set; } = new Dictionary<string, string>();
+
+/// <summary>
+/// List of $XX settings value
+/// </summary>
         private readonly List<string> _settingCode = new List<string> { "$0", "$1", "$2", "$3", "$4", "$5", "$6", "$10", "$11", "$12", "$13", "$20", "$21", "$22", "$23", "$24", "$25", "$26", "$27","$30","$31","$32","$100","$101","$102","$110","$111","$112","$120","$121","$122","$130","$131","$132" };
 
+        /// <summary>
+        /// List of settings description
+        /// </summary>
         private readonly List<string> _settingDescription = new List<string> {
             "Step pulse, microseconds.",
             "Step idle delay, milliseconds.",
@@ -89,9 +100,6 @@ namespace VDGrbl.Codes
             "Z Max travel, mm.",
         };
 
-        /// <summary>
-        /// Get the dictionnary of setting message: Key: IDXX - Value: Setting code description
-        /// </summary>
-        public Dictionary<string, string> SettingDict { get; set; } = new Dictionary<string, string>();
+        
     }
 }

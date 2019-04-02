@@ -4,18 +4,24 @@ namespace VDGrbl.Model
 {
     public class DataService : IDataService
     {
-        public void GetPortSettings(Action<SerialPortSettingsModel, Exception> callback)
+        public void GetSerialPortSetting(Action<SerialPortSettingModel, Exception> callback)
         {
             // Use this to connect to the actual data service
 
-            var itemPortSettings = new SerialPortSettingsModel("Port settings");
-            callback(itemPortSettings, null);
+            var item = new SerialPortSettingModel("Port setting");
+            callback(item, null);
         }
 
-        public void GetGrblData(Action<GrblModel, Exception> callback)
+        public void GetGrblSetting(Action<GrblSettingModel, Exception> callback)
         {
-            var itemGrbl = new GrblModel("Data send","Data received");
-            callback(itemGrbl, null);
+            var item = new GrblSettingModel("Grbl setting");
+            callback(item, null);
+        }
+
+        public void GetGCodeFile(Action<GCodeFileModel, Exception> callback)
+        {
+            var item = new GCodeFileModel("G-Code File");
+            callback(item, null);
         }
     }
 }

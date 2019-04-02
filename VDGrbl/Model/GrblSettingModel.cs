@@ -5,7 +5,7 @@ namespace VDGrbl.Model
     /// <summary>
     /// Grbl settings model class.
     /// </summary>
-    public class SettingModel : ObservableObject
+    /*public class SettingModel : ObservableObject
     {
         #region Fields
         private string _settingCode;
@@ -14,6 +14,8 @@ namespace VDGrbl.Model
         #endregion
 
         #region Properties
+        public string SettingHeader { get; private set; }
+
         /// <summary>
         /// return the list of codes of the Grbl settings
         /// </summary>
@@ -70,6 +72,49 @@ namespace VDGrbl.Model
             _settingCode = settingCode;
             _settingValue = settingValue;
             _settingDescription = settingDescription;
+        }
+        #endregion
+    }*/
+
+    public class GrblSettingModel
+    {
+        #region public property
+        /// <summary>
+        /// Title of the groupbox setting
+        /// </summary>
+        public string SettingHeader { get; private set; }
+
+        /// <summary>
+        /// return the list of codes of the Grbl settings
+        /// </summary>
+        public string SettingCode { get; private set; }
+
+        /// <summary>
+        /// Get the list of values of Grbl settings
+        /// </summary>
+        public string SettingValue { get; private set; }
+        
+        /// <summary>
+        /// Return the list of description of the Grbl settings
+        /// </summary>
+        public string SettingDescription { get; private set; }
+        #endregion
+
+        #region Constructor
+        public GrblSettingModel()
+        {
+        }
+
+        public GrblSettingModel(string settingHeader)
+        {
+            SettingHeader = settingHeader;
+        }
+
+        public GrblSettingModel(string settingCode, string settingValue, string settingDescription)
+        {
+            SettingCode = settingCode;
+            SettingValue = settingValue;
+            SettingDescription = settingDescription;
         }
         #endregion
     }

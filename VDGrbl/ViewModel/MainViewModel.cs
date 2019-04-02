@@ -1,9 +1,11 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
+using Microsoft.Win32;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Windows;
@@ -12,11 +14,6 @@ using System.Windows.Threading;
 using VDGrbl.Codes;
 using VDGrbl.Model;
 using VDGrbl.Tools;
-using System.Windows.Data;
-using System.Globalization;
-using Microsoft.Win32;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace VDGrbl.ViewModel
 {
@@ -30,72 +27,74 @@ namespace VDGrbl.ViewModel
     {
         #region private Fields
         private readonly IDataService _dataService;
-        private SerialPort _serialPort;
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-        private string _selectedDevicePortName = string.Empty;
-        private string[] _listPortNames;
+
         private int _selectedBaudRate;
-        private int[] _listBaudRates;
-        private int _selectedDataBits;
-        private int[] _listDataBits;
-        private string _groupBoxPortSettingsTitle = string.Empty;
-        private Parity _selectedParity;
-        private List<SerialPortSettingsModel> _listParities;
-        private StopBits _selectedStopBits;
-        private List<SerialPortSettingsModel> _listStopBits;
-        private Handshake _selectedHandshake;
-        private List<SerialPortSettingsModel> _listHandshake;
+
+        private string _selectedPortName = string.Empty;
+        private string _versionGrbl = "-", _buildInfo = "-";
+        private string _posX = "0.000", _posY = "0.000", _posZ = "0.000";
+        private string _wposX = "0.000", _wposY = "0.000", _wposZ = "0.000";
+        private string _step = "1";
+        private string _buf = "0", _rx = "0";
+        private string _errorMessage = string.Empty;
+        private string _alarmMessage = string.Empty;
+        private string _infoMessage = string.Empty;
+        private string _fileName = string.Empty;
+        private string _estimateJobTime = "00:00:00";
+        private string _groupBoxPortSettingTitle = string.Empty;
+        private string _groupBoxSettingTitle = string.Empty;
+        private string _groupBoxGCodeFileTitle = string.Empty;
+
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
-        private string _macro1="G90 G0 X0", _macro2 = "G91 G1 X10 Y-20", _macro3 = "G90 G0 Y0 F2000", _macro4 = "G91 G1 X-20 Y10 F1000";
+        private string _macro1 = "G90 G0 X0", _macro2 = "G91 G1 X10 Y-20", _macro3 = "G90 G0 Y0 F2000", _macro4 = "G91 G1 X-20 Y10 F1000";
+
+        private double _feedRate = 300;
+        private double _nLine = 0;
+        private double _rLine = 0;
+        private double _percentLine = 0;
+        private double _laserPower = 0;
+
+        private bool _isSelectedKeyboard=false;
+        private bool _isSelectedMetric = true;
+        private bool _isJogEnabled=true;
+        private bool _isVerbose = false;
+        private bool _isManualSending = true;
+
+        private SerialPort _serialPort;
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         private RespStatus _responseStatus = RespStatus.Ok;
         private MachStatus _machineStatus = MachStatus.Idle;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
-        private string _versionGrbl = "-";
-        private string _buildInfo = "-";
-        private string _posX = "0.000";
-        private string _posY = "0.000";
-        private string _posZ = "0.000";
-        private string _wposX = "0.000";
-        private string _wposY = "0.000";
-        private string _wposZ = "0.000";
-        private ObservableCollection<SettingModel> _settingCollection;
-        private List<SettingModel> _listSettingModel = new List<SettingModel>();
-        private SettingModel _settingModel;
-        private double _feedRate = 300;
-        private string _step = "1";
-        private bool _isSelectedKeyboard=false;
-        private bool _isSelectedMetric = true;
-        private bool _isJogEnabled=true;
-        private string _buf="0",_rx="0";
-        private string _errorMessage=string.Empty;
-        private string _alarmMessage=string.Empty;
-        private string _infoMessage = string.Empty;
-        private double _laserPower=0;
-        private FileModel fm = new FileModel("file");
-        private string _fileName = string.Empty;
-        private StreamReader sr;
-        private bool _isVerbose=false;
+        private ObservableCollection<GrblSettingModel> _settingCollection;
+        private List<GrblSettingModel> _listSettingModel = new List<GrblSettingModel>();
+        private GrblSettingModel _grblSettingModel;
+        private GCodeFileModel fm = new GCodeFileModel("file");
         private Queue<string> _fileQueue = new Queue<string>();
-        private double _nLine = 0;
-        private double _rLine = 0;
-        private double _percentLine = 0;
+        private List<string> _fileList = new List<string>();
         private ObservableCollection<GrblModel> _consoleData;
         private List<GrblModel> _listConsoleData = new List<GrblModel>();
         private GrblModel _grblModel;
+        private GCodeModel gmodel;
+        #region subregion enum
+        /// <summary>
+        /// Enumeration of the response states. Ok: All is good, NOk: Alarm state Q: Queued [DR: Data received] 
+        /// </summary>
+        public enum RespStatus { Ok, NOk, Q };
+
+        /// <summary>
+        /// Enumeration of the machine states.
+        /// </summary>
+        public enum MachStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
+        #endregion
         #endregion
 
         #region public Properties
-        #region subregion enum
-        public enum RespStatus { Q, DR, Ok, NOk };//Q: Queued, DR: Data received
-        public enum MachStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
-        #endregion
-
         #region subregion Relaycommands
         public RelayCommand ConnectCommand { get; private set; }
         public RelayCommand DisconnectCommand { get; private set; }
-        public RelayCommand<SerialPortSettingsModel> RefreshPortCommand { get; private set; }
+        public RelayCommand RefreshPortCommand { get; private set; }
         public RelayCommand SendCommand { get; private set; }
         public RelayCommand SendM1Command { get; private set; }
         public RelayCommand SendM2Command { get; private set; }
@@ -146,33 +145,45 @@ namespace VDGrbl.ViewModel
 
         #region subregion port settings
         /// <summary>
-        /// The <see cref="GroupBoxPortSettingsTitle" /> property's name.
-        /// </summary>
-        public const string GroupBoxPortSettingsTitlePropertyName = "GroupBoxPortSettingsTitle";
-
-        /// <summary>
-        /// Gets the GroupBoxPortSettingsTitle property.
+        /// Get the GroupBoxPortSettingsTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string GroupBoxPortSettingsTitle
+        public string GroupBoxPortSettingTitle
         {
             get
             {
-                return _groupBoxPortSettingsTitle;
+                return _groupBoxPortSettingTitle;
             }
             set
             {
-                Set(ref _groupBoxPortSettingsTitle, value);
+                Set(ref _groupBoxPortSettingTitle, value);
             }
         }
 
         /// <summary>
-        /// The <see cref="SelectedBaudRate" /> property's name.
+        /// Gets the SelectedPortName property.
+        /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public const string SelectedBaudRatePropertyName = "SelectedBaudRate";
+        public string SelectedPortName
+        {
+            get
+            {
+                return _selectedPortName;
+            }
+            set
+            {
+                Set(ref _selectedPortName, value);
+            }
+        }
 
         /// <summary>
-        /// Gets the SelectedBaudRateName property.
+        /// Get the ListParities property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string[] ListPortNames { get; private set; }
+
+        /// <summary>
+        /// Get the SelectedBaudRateName property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public int SelectedBaudRate
@@ -188,233 +199,44 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="ListBaudRates" /> property's name.
-        /// </summary>
-        public const string ListBaudRatesPropertyName = "ListBaudRates";
-
-        /// <summary>
-        /// Gets the ListBaudRates property.
+        /// Get the ListBaudRates property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public int[] ListBaudRates
+        public int[] ListBaudRates { get; private set; } = { 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
+        #endregion
+
+        #region subregion GrblSettingModel
+        /// <summary>
+        /// Get the GroupBoxGrblSettingTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxGrblSettingTitle
         {
             get
             {
-                return _listBaudRates;
+                return _groupBoxSettingTitle;
             }
             set
             {
-                Set(ref _listBaudRates, value);
+                Set(ref _groupBoxSettingTitle, value);
             }
         }
+        #endregion
 
+        #region subregion GCodeFileModel
         /// <summary>
-        /// The <see cref="SelectedDataBits" /> property's name.
-        /// </summary>
-        public const string SelectedDataBitsPropertyName = "SelectedDataBits";
-
-        /// <summary>
-        /// Gets the SelectedBaudRateName property.
+        /// Get the GroupBoxGCodeFileTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public int SelectedDataBits
+        public string GroupBoxGCodeFileTitle
         {
             get
             {
-                return _selectedDataBits;
+                return _groupBoxGCodeFileTitle;
             }
             set
             {
-                Set(ref _selectedDataBits, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="ListDataBits" /> property's name.
-        /// </summary>
-        public const string ListDataBitsPropertyName = "ListDataBits";
-
-        /// <summary>
-        /// Gets the ListDataBits property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int[] ListDataBits
-        {
-            get
-            {
-                return _listDataBits;
-            }
-            set
-            {
-                Set(ref _listDataBits, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="SelectedParity" /> property's name.
-        /// </summary>
-        public const string SelectedParityPropertyName = "SelectedParity";
-
-        /// <summary>
-        /// Gets the SelectedParityName property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public Parity SelectedParity
-        {
-            get
-            {
-                return _selectedParity;
-            }
-            set
-            {
-                Set(ref _selectedParity, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="ListParities" /> property's name.
-        /// </summary>
-        public const string ListParitiesPropertyName = "ListParities";
-
-        /// <summary>
-        /// Gets the ListParities property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public List<SerialPortSettingsModel> ListParities
-        {
-            get
-            {
-                return _listParities;
-            }
-            set
-            {
-                Set(ref _listParities, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="SelectedStopBits" /> property's name.
-        /// </summary>
-        public const string SelectedPropertyName = "SelectedStopBits";
-
-        /// <summary>
-        /// Gets the SelectedBaudRateName property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public StopBits SelectedStopBits
-        {
-            get
-            {
-                return _selectedStopBits;
-            }
-            set
-            {
-                Set(ref _selectedStopBits, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="ListStopBits" /> property's name.
-        /// </summary>
-        public const string ListStopBitsPropertyName = "ListStopBits";
-
-        /// <summary>
-        /// Gets the ListParities property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public List<SerialPortSettingsModel> ListStopBits
-        {
-            get
-            {
-                return _listStopBits;
-            }
-            set
-            {
-                Set(ref _listStopBits, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="SelectedHandshake" /> property's name.
-        /// </summary>
-        public const string SelectedHandshakePropertyName = "SelectedHandshake";
-
-        /// <summary>
-        /// Gets the SelectedBaudRateName property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public Handshake SelectedHandshake
-        {
-            get
-            {
-                return _selectedHandshake;
-            }
-            set
-            {
-                Set(ref _selectedHandshake, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="ListHandshake" /> property's name.
-        /// </summary>
-        public const string ListHandshakePropertyName = "ListHandshake";
-
-        /// <summary>
-        /// Gets the ListParities property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public List<SerialPortSettingsModel> ListHandshake
-        {
-            get
-            {
-                return _listHandshake;
-            }
-            set
-            {
-                Set(ref _listHandshake, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="SelectedPortName" /> property's name.
-        /// </summary>
-        public const string SelectedPortNamePropertyName = "SelectedPortName";
-
-        /// <summary>
-        /// Gets the SelectedPortName property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string SelectedPortName
-        {
-            get
-            {
-                return _selectedDevicePortName;
-            }
-            set
-            {
-                Set(ref _selectedDevicePortName, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="ListPortNames" /> property's name.
-        /// </summary>
-        public const string ListPortNamesPropertyName = "ListPortNames";
-
-        /// <summary>
-        /// Gets the ListParities property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string[] ListPortNames
-        {
-            get
-            {
-                return _listPortNames;
-            }
-            set
-            {
-                Set(ref _listPortNames, value);
+                Set(ref _groupBoxGCodeFileTitle, value);
             }
         }
         #endregion
@@ -541,14 +363,14 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="ListSettingModel" /> property's name.
+        /// The <see cref="ListGrblSettingModel" /> property's name.
         /// </summary>
         public const string ListSettingModelName = "ListSettingModel";
         /// <summary>
         /// Gets the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public List<SettingModel> ListSettingModel
+        public List<GrblSettingModel> ListGrblSettingModel
         {
             get
             {
@@ -568,7 +390,7 @@ namespace VDGrbl.ViewModel
         /// Gets the SettingCollection property. SettingCollection is populated w/ data from ListSettingModel
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<SettingModel> SettingCollection
+        public ObservableCollection<GrblSettingModel> SettingCollection
         {
             get
             {
@@ -681,11 +503,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref=" FileName" /> property's name.
-        /// </summary>
-        public const string FileNamePropertyName = "FileName";
-        /// <summary>
-        /// Gets the InfoMessage property. InfoMessage is got from the Arduino or the VDGrbl software.
+        /// Gets the FileName property. FileName is the G-code file name.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string FileName
@@ -697,6 +515,26 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _fileName, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref=" EstimateJobTime" /> property's name.
+        /// </summary>
+        public const string EstimateJobTimePropertyName = "EstimateJobTime";
+        /// <summary>
+        /// Gets the EstimateJobTime property. EstimateJobTime is the estimation of running time.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string EstimateJobTime
+        {
+            get
+            {
+                return _estimateJobTime;
+            }
+            set
+            {
+                Set(ref _estimateJobTime, value);
             }
         }
 
@@ -721,11 +559,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="FileQueue" /> property's name.
-        /// </summary>
-        public const string FileQueuePropertyName = "FileQueue";
-        /// <summary>
-        /// Gets the FileQueue property. FileQueue is populated w/ lines of G-code file.
+        /// Gets the FileQueue property. FileQueue is populated w/ lines of G-code file trimed.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public Queue<string> FileQueue
@@ -737,6 +571,22 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _fileQueue, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the FileList property. FileList is populated w/ lines of G-code file.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public List<string> FileList
+        {
+            get
+            {
+                return _fileList;
+            }
+            set
+            {
+                Set(ref _fileList, value);
             }
         }
 
@@ -837,6 +687,26 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _consoleData, value);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="IsManualSending" /> property's name.
+        /// </summary>
+        public const string IsManualSendingPropertyName = "IsManualSending";
+        /// <summary>
+        /// Get the IsSendingFile property. When sending file we cannot use jog or send manual command.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsManualSending
+        {
+            get
+            {
+                return _isManualSending;
+            }
+            set
+            {
+                Set(ref _isManualSending, value);
             }
         }
         #endregion
@@ -1258,31 +1128,54 @@ namespace VDGrbl.ViewModel
 
         #region Constructor
         /// <summary>
-        /// Initializes a new instance of the MainViewModel class.
+        /// Initialize a new instance of the MainViewModel class.
         /// </summary>
         public MainViewModel(IDataService dataService)
         {
             try
             {
-                //logger.Log(LogLevel.Info, "---Program started ! ---");
                 logger.Info("---Program started ! ---");
                 _dataService = dataService;
-                _dataService.GetPortSettings(
+                _dataService.GetSerialPortSetting(
                     (item, error) =>
                     {
                         if (error != null)
                         {
-                            logger.Error("Exception GetData raised: " + error);
+                            logger.Error("Exception GetPortSettings raised: " + error);
                             return;
                         }
                         _serialPort = new SerialPort();
-                        GroupBoxPortSettingsTitle = item.PortSettingsHeader;
-                        GetSerialPortSettings(item);
-                        DefaultPortSettings();
-                        MyCommands();
-                        InitializeDispatcherTimer();
-                        logger.Info("Main MainWindow initialized");
+                        GroupBoxPortSettingTitle = item.SerialPortSettingHeader;
+                        GetSerialPortSettings();
+
                     });
+
+                _dataService.GetGrblSetting(
+                    (item, error) =>
+                    {
+                        if (error != null)
+                        {
+                            logger.Error("Exception GrblSetting raised: " + error);
+                            return;
+                        }
+                        GroupBoxGrblSettingTitle = item.SettingHeader;
+                    });
+
+                _dataService.GetGCodeFile(
+                    (item, error) =>
+                    {
+                        if (error != null)
+                        {
+                            logger.Error("Exception GCodeFile raised: " + error);
+                            return;
+                        }
+                        GroupBoxGCodeFileTitle = item.GCodeFileHeader;
+                    });
+
+                DefaultPortSettings();
+                MyRelayCommands();
+                InitializeDispatcherTimer();
+                logger.Info("Main MainWindow initialized");
             }
             catch (Exception ex)
             {
@@ -1295,11 +1188,11 @@ namespace VDGrbl.ViewModel
         /// <summary>
         /// List of RelayCommands bind to button in ViewModels
         /// </summary>
-        private void MyCommands()
+        private void MyRelayCommands()
         {
             ConnectCommand = new RelayCommand(OpenSerialPort, CanExecuteOpenSerialPort);
             DisconnectCommand = new RelayCommand(CloseSerialPort, CanExecuteCloseSerialPort);
-            RefreshPortCommand = new RelayCommand<SerialPortSettingsModel>(RefreshSerialPort, CanExecuteRefreshSerialPort);
+            RefreshPortCommand = new RelayCommand(RefreshSerialPort, CanExecuteRefreshSerialPort);
             SendCommand = new RelayCommand(SendData, CanExecuteSendData);
             SendM1Command = new RelayCommand(SendM1Data, CanExecuteSendM1Data);
             SendM2Command = new RelayCommand(SendM2Data, CanExecuteSendM2Data);
@@ -1354,12 +1247,11 @@ namespace VDGrbl.ViewModel
         /// Gets serial port settings from SerialPortSettingsModel class
         /// </summary>
         /// <param name="settingsInit"></param>
-        public void GetSerialPortSettings(SerialPortSettingsModel settingsInit)
+        public void GetSerialPortSettings()
         {
             try
             {
-                ListPortNames = settingsInit.ListPortNames;
-                ListBaudRates = settingsInit.ListBaudRates;
+                ListPortNames = SerialPort.GetPortNames();
                 logger.Info("All serial port settings loaded");
             }
             catch (Exception ex)
@@ -1377,12 +1269,8 @@ namespace VDGrbl.ViewModel
             {
                 if (ListPortNames != null && ListPortNames.Length > 0)
                 {
-                    _selectedDevicePortName = ListPortNames[0];
-                    _selectedBaudRate = 115200;
-                    _selectedDataBits = 8;
-                    _selectedParity = Parity.None;
-                    _selectedStopBits = StopBits.One;
-                    _selectedHandshake = Handshake.None;
+                    SelectedPortName = ListPortNames[0];
+                    SelectedBaudRate = 115200;
                     logger.Info("Default settings loaded");
                 }
                 else
@@ -1398,11 +1286,11 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Reload serial port settings and sets them to default values.
+        /// Reload serial port settings and set default values.
         /// </summary>
-        public void RefreshSerialPort(SerialPortSettingsModel settingsInit)
+        public void RefreshSerialPort()
         {
-            GetSerialPortSettings(settingsInit);
+            GetSerialPortSettings();
             DefaultPortSettings();
             logger.Info("Refresh Port COM");
         }
@@ -1410,7 +1298,7 @@ namespace VDGrbl.ViewModel
 /// Allows/Disallows RefreshSerialPort method to be executed.
 /// </summary>
 /// <returns></returns>
-        public bool CanExecuteRefreshSerialPort(SerialPortSettingsModel settingsInit)
+        public bool CanExecuteRefreshSerialPort()
         {
                 return true;
         }
@@ -1422,26 +1310,21 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                if (String.IsNullOrEmpty(SelectedPortName))
-                {
-                    MessageBox.Show("Please select a Port COM");
-                    InfoMessage = "Please select a Port COM";
-                    logger.Info("Select a Port COM");
-                }
-                else
-                {
                     _serialPort.PortName = SelectedPortName;
                     _serialPort.BaudRate = SelectedBaudRate;
+                    _serialPort.DataBits = 8;
+                    _serialPort.Parity = Parity.None;
+                    _serialPort.StopBits = StopBits.One;
+                    _serialPort.Handshake = Handshake.None;
                     _serialPort.ReadBufferSize = 100;
                     _serialPort.WriteBufferSize = 100;
                     _serialPort.ReceivedBytesThreshold = 10;
                     _serialPort.DiscardNull = false;
                     _serialPort.DataReceived += _serialPort_DataReceived;
                     _serialPort.Open();
-                    GrblReset(); //Do a soft reset before starting a new job
-                    GrblBuildInfo();//To get Grbl version information
+                    GrblReset(); //Do a soft reset before starting a new job?
+                    GrblBuildInfo();
                     logger.Info("Port COM open");
-                }
             }
             catch (Exception ex)
             {
@@ -1454,11 +1337,11 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteOpenSerialPort()
         {
-            return !_serialPort.IsOpen;
+            return !_serialPort.IsOpen && !String.IsNullOrEmpty(SelectedPortName);
         }
 
         /// <summary>
-        /// Ends serial port communication
+        /// End serial port communication
         /// </summary>
         public void CloseSerialPort()
         {
@@ -1468,7 +1351,6 @@ namespace VDGrbl.ViewModel
                 _serialPort.Dispose();
                 _serialPort.Close();
                 logger.Info("Port COM closed");
-
             }
             catch (Exception ex)
             {
@@ -1677,10 +1559,12 @@ namespace VDGrbl.ViewModel
                 Thread.Sleep(50);
                 RXLine = string.Empty;
                 TXLine = string.Empty;
-                ListSettingModel.Clear();
+                ListGrblSettingModel.Clear();
                 ListConsoleData.Clear();
                 NLine = 0;
                 PercentLine = 0;
+                RLine = 0;
+                EstimateJobTime = "00:00:00" ;
                 logger.Info("TXLine/RXLine and buffers erased");
             }
             catch (Exception ex)
@@ -1758,10 +1642,10 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void GrblSettings()
         {
-            ListSettingModel.Clear();
+            ListGrblSettingModel.Clear();
             WriteString("$$");
             Thread.Sleep(100);//Waits for ListSettingModel to populate all setting values
-            SettingCollection = new ObservableCollection<SettingModel>(ListSettingModel);
+            SettingCollection = new ObservableCollection<GrblSettingModel>(ListGrblSettingModel);
         }
 
         /// <summary>
@@ -2073,7 +1957,8 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteLaser()
         {
-            return _serialPort.IsOpen;
+            return (_serialPort.IsOpen);
+            ;
         }
 
         /// <summary>
@@ -2205,7 +2090,7 @@ namespace VDGrbl.ViewModel
                     }
                     else if (line.StartsWith("$")&&line.Contains("="))
                     {
-                        ProcessSettingsResponse(line);
+                        ProcessGrblSettingResponse(line);
                     }
                     else if(line.StartsWith("[") || line.EndsWith("]"))
                     {
@@ -2364,7 +2249,7 @@ namespace VDGrbl.ViewModel
         /// Populates the settingsCollection w/ data received w/ Grbl '$$' command.
         /// </summary>
         /// <param name="data"></param>
-        public void ProcessSettingsResponse(string data)
+        public void ProcessGrblSettingResponse(string data)
         {
             try
             {
@@ -2378,20 +2263,20 @@ namespace VDGrbl.ViewModel
                 {
                     if (arr.Length > 2)//Grbl version 0.9 (w/ setting description)
                     {
-                        _settingModel = new SettingModel(arr[0], arr[1], arr[2]);
-                        ListSettingModel.Add(_settingModel);
+                        _grblSettingModel = new GrblSettingModel(arr[0], arr[1], arr[2]);
+                        ListGrblSettingModel.Add(_grblSettingModel);
                     }
                     else//Grbl version 1.1 (w/o setting description)
                     {
-                        _settingModel = new SettingModel(arr[0], arr[1], "");
-                        ListSettingModel.Add(_settingModel);
+                        _grblSettingModel = new GrblSettingModel(arr[0], arr[1], "");
+                        ListGrblSettingModel.Add(_grblSettingModel);
                     }
                 }
-                logger.Info("Setting Value:{0}|RespStatus:{1}|MachStatus{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
+                logger.Info("GrblSetting Value:{0}|RespStatus:{1}|MachStatus{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
             }
             catch (Exception ex)
             {
-                logger.Error("Exception ProcessSettingResponse raised: ", ex.ToString());
+                logger.Error("Exception ProcessGrblSettingResponse raised: ", ex.ToString());
                 ResponseStatus = RespStatus.NOk;
             }
         }
@@ -2553,16 +2438,16 @@ namespace VDGrbl.ViewModel
             {
                 FileQueue.Clear();
             }
-            OpenFileDialog ofd = new OpenFileDialog();
+            OpenFileDialog openFileDialog = new OpenFileDialog();
             try
             {
-                ofd.Title = fm.FileTitle;
-                ofd.Filter = fm.FileFilter;
-                ofd.FilterIndex = fm.FileFilterIndex;
-                ofd.DefaultExt = fm.FileDefaultExt;
-                if(ofd.ShowDialog().Value)
+                openFileDialog.Title = "Fichier G-code";
+                openFileDialog.Filter = "G-Code files|*.txt;*.gcode;*.ngc;*.nc,*.cnc|Tous les fichiers|*.*";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.DefaultExt = ".txt";
+                if(openFileDialog.ShowDialog().Value)
                 {
-                    FileName = ofd.FileName;
+                    FileName = openFileDialog.FileName;
                     LoadFile(FileName);
                     logger.Info("Open file: {0}", FileName);
                 }
@@ -2590,16 +2475,22 @@ namespace VDGrbl.ViewModel
         private void LoadFile(string fileName)
         {
             string line;
-
+            FileQueue.Clear();
+            FileList.Clear();
             using (StreamReader sr = new StreamReader(FileName))
             {
                 while((line=sr.ReadLine())!=null)
                 {
                     FileQueue.Enqueue(Gcode.TrimGcode(line));
+                    FileList.Add(line);
                 }
             }
             NLine = FileQueue.Count;
             RLine = _nLine;
+            gmodel = new GCodeModel(FileList);
+            TimeSpan time = TimeSpan.FromSeconds(Math.Round(gmodel.CalculateJobTime(MaxFeedRate)));
+            EstimateJobTime = time.ToString(@"hh\:mm\:ss");
+            //EstimateJobTime = time.ToString(@"hh\:mm\:ss\:fff");
         }
 
         /// <summary>
@@ -2622,6 +2513,11 @@ namespace VDGrbl.ViewModel
                 ResponseStatus = RespStatus.Q;
                 TXLine = FileQueue.Dequeue();
                 WriteString(_txLine);
+                IsManualSending = false;
+            }
+            else
+            {
+                IsManualSending = true;
             }
         }
 
@@ -2646,6 +2542,7 @@ namespace VDGrbl.ViewModel
             ResponseStatus = RespStatus.Q;
             FileQueue.Clear();
             NLine = FileQueue.Count;
+            IsManualSending = false;
         }
 
         /// <summary>
@@ -2700,7 +2597,7 @@ namespace VDGrbl.ViewModel
 
         #region Event
         /// <summary>
-        /// Gets all data from serial port and print it in data received group box except report state.
+        /// Get all data from serial port and process response.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -2708,35 +2605,16 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                //ResponseStatus = RespStatus.DR;
                 string line = _serialPort.ReadLine();
                 ConsoleData = new ObservableCollection<GrblModel>(ListConsoleData);
                 _grblModel = new GrblModel(_txLine, Gcode.TrimGcode(line));
                 if (IsVerbose)
                 {
-                    if (line.StartsWith("<"))
-                    {
                         ListConsoleData.Add(_grblModel);
-                    }
-                    else if (RLine == 0)
-                    {
-                        ListConsoleData.Add(_grblModel);
-                    }
-                    else
-                    {
-                        ListConsoleData.Add(_grblModel);
-                    }
                 }
                 else if (!line.StartsWith("<"))
                 {
-                    if (RLine == 0)
-                    {
                         ListConsoleData.Add(_grblModel);
-                    }
-                    else 
-                    {
-                        ListConsoleData.Add(_grblModel);
-                    }
                 }
                 DataGrblSorter(line);
             }
@@ -2760,7 +2638,7 @@ namespace VDGrbl.ViewModel
 
         #region IDisposable Support
         /// <summary>
-        /// Implements the method for IDispose interface
+        /// Implement the method for IDispose interface
         /// Disposes the serial communication
         /// </summary>
         private bool disposedValue = false; // Pour détecter les appels redondants

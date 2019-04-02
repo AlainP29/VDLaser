@@ -13,15 +13,21 @@ namespace VDGrbl.Design
             callback(item, null);
         }*/
 
-        public void GetGrblData(Action<GrblModel, Exception> callback)
+        public void GetGrblSetting(Action<GrblSettingModel, Exception> callback)
         {
-            var item = new GrblModel("Data send [design]", "Data received [design]");
+            var item = new GrblSettingModel("Grbl setting [design]");
             callback(item, null);
         }
 
-        public void GetPortSettings(Action<SerialPortSettingsModel, Exception> callback)
+        public void GetSerialPortSetting(Action<SerialPortSettingModel, Exception> callback)
         {
-            var item = new SerialPortSettingsModel("Port settings [design]");
+            var item = new SerialPortSettingModel("Port setting [design]");
+            callback(item, null);
+        }
+
+        public void GetGCodeFile(Action<GCodeFileModel, Exception> callback)
+        {
+            var item = new GCodeFileModel("G-Code File [design]");
             callback(item, null);
         }
     }

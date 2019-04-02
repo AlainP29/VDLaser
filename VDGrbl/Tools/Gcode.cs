@@ -1,7 +1,10 @@
-﻿namespace VDGrbl.Tools
+﻿using System;
+using Microsoft.Win32;
+
+namespace VDGrbl.Tools
 {
     /// <summary>
-    /// G-code class: format, check or parse G-code file.
+    /// G-code class: usefull tool to format, check or parse G-code file.
     /// </summary>
     public static class Gcode
     {
@@ -45,5 +48,17 @@
             char[] trimArray = new char[] { '\r', '\n'};
             return line.ToLower().Replace(" ", string.Empty).TrimEnd(trimArray);
     }
-}
+
+        /// <summary>
+        /// Convert second in time. Use converter
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string SecondToTime(double s)
+        {
+            TimeSpan ts = TimeSpan.FromSeconds(s);
+            return ts.ToString(@"hh\:mm\:ss\:fff");
+        }
+
+    }
 }

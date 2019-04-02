@@ -3,6 +3,7 @@ using GalaSoft.MvvmLight.Threading;
 
 namespace VDGrbl
 {
+
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -11,6 +12,6 @@ namespace VDGrbl
         static App()
         {
             DispatcherHelper.Initialize();
-        }
     }
+}
 }

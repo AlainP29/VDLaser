@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="VDGrbl.View.LoadSettingsView"
+﻿<UserControl x:Class="VDGrbl.View.GrblSettingView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -8,8 +8,8 @@
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Grbl setting informations (command '$$'). 
         It populates the grid with ID, value and description from Codes folder-->
-        <GroupBox Header="Grbl settings" Margin="5" Style="{DynamicResource GroupBoxStyleVD}">
-            <Grid>
+        <GroupBox Header="{Binding Main.GroupBoxGrblSettingTitle}" Margin="5" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
+            <Grid Margin="0,10,-0.4,-0.6">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="25"/>
                     <RowDefinition Height="*"/>

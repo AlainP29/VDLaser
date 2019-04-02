@@ -23,7 +23,7 @@
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Use to move the machine with buttons or keyboard-->
-        <GroupBox Header="Jog control" HorizontalAlignment="Left" Margin="5" Style="{DynamicResource GroupBoxStyleVD}">
+        <GroupBox Header="Jog control" HorizontalAlignment="Left" Margin="5" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
             <StackPanel>
                 <!--Buttons move all directions X, Y, Z-->
                 <Grid Margin="0" Width="250" Height="150" IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">

@@ -2,9 +2,8 @@
 using GalaSoft.MvvmLight;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using VDGrbl.Model;
-using System.Media;
-
 
 namespace VDGrbl.ViewModel.Tests
 {

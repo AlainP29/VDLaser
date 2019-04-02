@@ -10,8 +10,8 @@
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Grbl commands: some are disabled for safety and test button is for development purpose-->
-        <GroupBox Header="Grbl commands" Margin="0" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
-            <Grid Margin="5">
+        <GroupBox Header="Grbl commands" Margin="0" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
+            <Grid Margin="5" IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>

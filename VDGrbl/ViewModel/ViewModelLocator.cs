@@ -13,6 +13,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 //using Microsoft.Practices.ServiceLocation;with nugget v1.3.0/5.3.0
 using CommonServiceLocator;
+using NLog;
 
 using VDGrbl.Model;
 
@@ -62,6 +63,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public static void Cleanup()
         {
+            NLog.LogManager.Shutdown(); // Flush and close down internal threads and timers
         }
     }
 }

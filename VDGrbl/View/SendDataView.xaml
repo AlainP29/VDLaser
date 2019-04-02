@@ -10,8 +10,8 @@
     </UserControl.Resources>
     <!--Show all the data sent manually/Jog/buttons to the Arduino. no stack, new data erase old data -->
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="Send data" Style="{StaticResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
-            <Grid>
+        <GroupBox Header="Send data" Style="{StaticResource GroupBoxStyleVD}"  IsEnabled="{Binding Main.IsManualSending}">
+            <Grid IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="3*"/>

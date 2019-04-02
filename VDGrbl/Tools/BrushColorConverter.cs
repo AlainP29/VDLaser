@@ -5,7 +5,7 @@ using System.Globalization;
 namespace VDGrbl.Tools
 {
     /// <summary>
-    /// Convert a bool to color. Use in Xaml.
+    /// Convert a bool to a brushcolor. Use in Xaml.
     /// </summary>
     [ValueConversion(typeof(bool), typeof(SolidColorBrush))]
     public class BrushColorConverter : IValueConverter

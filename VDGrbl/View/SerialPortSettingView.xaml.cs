@@ -3,11 +3,11 @@
 namespace VDGrbl.View
 {
     /// <summary>
-    /// Logique d'interaction pour LoadSettingsView.xaml
+    /// Logique d'interaction pour SerialPortSettingsView.xaml
     /// </summary>
-    public partial class LoadSettingsView : UserControl
+    public partial class SerialPortSettingView : UserControl
     {
-        public LoadSettingsView()
+        public SerialPortSettingView()
         {
             InitializeComponent();
         }
