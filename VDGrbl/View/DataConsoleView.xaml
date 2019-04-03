@@ -4,14 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.Tools"
-             mc:Ignorable="d" 
-             d:DesignHeight="180" d:DesignWidth="600">
+             mc:Ignorable="d" d:DesignWidth="600" Height="165">
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
     </UserControl.Resources>
     <!--Show data sent + response from the Arduino-->
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="Data console" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
+        <GroupBox Header="{Binding Main.GroupBoxGrblConsoleTitle}" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" Margin="0,0,0,10">
             <Grid Margin="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -22,7 +21,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                    <DataGrid Grid.Row="0" Grid.Column="0" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
+                <DataGrid Grid.Row="0" Grid.Column="0" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
                           IsReadOnly="True" Width="Auto" Height="120" SelectedIndex="1"
                           ItemsSource="{Binding Main.ConsoleData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5">
                     <DataGrid.VerticalGridLinesBrush>

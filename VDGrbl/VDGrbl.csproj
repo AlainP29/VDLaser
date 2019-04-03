@@ -99,13 +99,12 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
-    <Compile Include="Model\GCodeFileModel.cs" />
+    <Compile Include="Model\CoordinateModel.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\SerialPortSettingModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
-    <Compile Include="Model\GrblSettingModel.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Tools\BrushColorConverter.cs" />
     <Compile Include="Tools\DoubleConverter.cs" />
@@ -116,12 +115,11 @@
     <Compile Include="Tools\IntToTimeConverter.cs" />
     <Compile Include="Tools\PointToCommaConverter.cs" />
     <Compile Include="Tools\StringConverter.cs" />
-    <Compile Include="ViewModel\ListGrblSettingModel.cs" />
-    <Compile Include="View\CommandsView.xaml.cs">
-      <DependentUpon>CommandsView.xaml</DependentUpon>
+    <Compile Include="View\GrblCommandView.xaml.cs">
+      <DependentUpon>GrblCommandView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\GCodeFileView.xaml.cs">
-      <DependentUpon>GCodeFileView.xaml</DependentUpon>
+    <Compile Include="View\GCodeView.xaml.cs">
+      <DependentUpon>GCodeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\GrblInfoView.xaml.cs">
       <DependentUpon>GrblInfoView.xaml</DependentUpon>
@@ -137,9 +135,6 @@
     <Compile Include="View\LaserView.xaml.cs">
       <DependentUpon>LaserView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\GrblView.xaml.cs">
-      <DependentUpon>GrblView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\GrblSettingView.xaml.cs">
       <DependentUpon>GrblSettingView.xaml</DependentUpon>
     </Compile>
@@ -152,11 +147,11 @@
     <Compile Include="View\SerialPortSettingView.xaml.cs">
       <DependentUpon>SerialPortSettingView.xaml</DependentUpon>
     </Compile>
-    <Page Include="View\CommandsView.xaml">
+    <Page Include="View\GrblCommandView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\GCodeFileView.xaml">
+    <Page Include="View\GCodeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -175,10 +170,6 @@
     <Page Include="View\LaserView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\GrblView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\GrblSettingView.xaml">
       <SubType>Designer</SubType>

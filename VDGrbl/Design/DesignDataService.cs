@@ -13,9 +13,9 @@ namespace VDGrbl.Design
             callback(item, null);
         }*/
 
-        public void GetGrblSetting(Action<GrblSettingModel, Exception> callback)
+        public void GetGrbl(Action<GrblModel, Exception> callback)
         {
-            var item = new GrblSettingModel("Grbl setting [design]");
+            var item = new GrblModel(" [design]");
             callback(item, null);
         }
 
@@ -25,9 +25,15 @@ namespace VDGrbl.Design
             callback(item, null);
         }
 
-        public void GetGCodeFile(Action<GCodeFileModel, Exception> callback)
+        public void GetGCode(Action<GCodeModel, Exception> callback)
         {
-            var item = new GCodeFileModel("G-Code File [design]");
+            var item = new GCodeModel("G-Code File [design]");
+            callback(item, null);
+        }
+
+        public void GetCoordinate(Action<CoordinateModel, Exception> callback)
+        {
+            var item = new CoordinateModel("X-Y Coordinate [design]");
             callback(item, null);
         }
     }

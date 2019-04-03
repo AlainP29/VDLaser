@@ -8,7 +8,8 @@ namespace VDGrbl.Model
     public interface IDataService
     {
         void GetSerialPortSetting(Action<SerialPortSettingModel, Exception> callback);
-        void GetGrblSetting(Action<GrblSettingModel, Exception> callback);
-        void GetGCodeFile(Action<GCodeFileModel, Exception> callback);
+        void GetGrbl(Action<GrblModel, Exception> callback);
+        void GetGCode(Action<GCodeModel, Exception> callback);
+        void GetCoordinate(Action<CoordinateModel, Exception> callback);
     }
 }

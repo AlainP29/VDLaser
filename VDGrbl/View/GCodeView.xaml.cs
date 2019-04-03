@@ -3,11 +3,11 @@
 namespace VDGrbl.View
 {
     /// <summary>
-    /// Logique d'interaction pour CommandsView.xaml
+    /// Logique d'interaction pour GCodeView.xaml
     /// </summary>
-    public partial class CommandsView : UserControl
+    public partial class GCodeView : UserControl
     {
-        public CommandsView()
+        public GCodeView()
         {
             InitializeComponent();
         }

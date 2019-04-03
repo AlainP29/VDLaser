@@ -8,7 +8,7 @@
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--This is the Grbl console. 
         It populates the grid with transmitted line and received line-->
-        <GroupBox Header="Grbl console" Margin="5" Style="{DynamicResource GroupBoxStyleVD}">
+        <GroupBox Header="Grbl Console" Margin="5" Style="{DynamicResource GroupBoxStyleVD}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="25"/>

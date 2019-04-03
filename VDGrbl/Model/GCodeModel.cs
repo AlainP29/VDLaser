@@ -34,6 +34,20 @@ namespace VDGrbl.Model
 
         #region public Properties
         /// <summary>
+        /// Title of the groupbox G-code file
+        /// </summary>
+        public string GCodeHeader { get; private set; }
+
+        /// <summary>
+        /// The name of the G-code file
+        /// </summary>
+        public string GCodeFileName { get; private set; }
+
+        /// <summary>
+        /// List of G-code lines
+        /// </summary>
+        public List<string> GCodeFilelist { get; private set; }
+        /// <summary>
         /// The <see cref="GCodeLine" /> property's name.
         /// </summary>
         public const string GcodeLinePropertyName = "GcodeLine";
@@ -258,7 +272,12 @@ namespace VDGrbl.Model
             
         }
 
-        public GCodeModel(string line)
+        public GCodeModel(string gcodeFileHeader)
+        {
+            GCodeHeader = gcodeFileHeader;
+        }
+
+        public GCodeModel(int number, string line)
         {
             if (line.Contains('.'))
             {

@@ -32,8 +32,8 @@ namespace VDGrbl.ViewModel
 
         private string _selectedPortName = string.Empty;
         private string _versionGrbl = "-", _buildInfo = "-";
-        private string _posX = "0.000", _posY = "0.000", _posZ = "0.000";
-        private string _wposX = "0.000", _wposY = "0.000", _wposZ = "0.000";
+        private string _posX = "0.000", _posY = "0.000";
+        private string _wposX = "0.000", _wposY = "0.000";
         private string _step = "1";
         private string _buf = "0", _rx = "0";
         private string _errorMessage = string.Empty;
@@ -42,8 +42,11 @@ namespace VDGrbl.ViewModel
         private string _fileName = string.Empty;
         private string _estimateJobTime = "00:00:00";
         private string _groupBoxPortSettingTitle = string.Empty;
-        private string _groupBoxSettingTitle = string.Empty;
-        private string _groupBoxGCodeFileTitle = string.Empty;
+        private string _groupBoxGrblSettingTitle = string.Empty;
+        private string _groupBoxGrblConsoleTitle = string.Empty;
+        private string _groupBoxGrblCommandTitle = string.Empty;
+        private string _groupBoxGCodeTitle = string.Empty;
+        private string _groupBoxCoordinateTitle = string.Empty;
 
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
@@ -67,10 +70,9 @@ namespace VDGrbl.ViewModel
         private MachStatus _machineStatus = MachStatus.Idle;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
-        private ObservableCollection<GrblSettingModel> _settingCollection;
-        private List<GrblSettingModel> _listSettingModel = new List<GrblSettingModel>();
-        private GrblSettingModel _grblSettingModel;
-        private GCodeFileModel fm = new GCodeFileModel("file");
+        private ObservableCollection<GrblModel> _settingCollection;
+        private List<GrblModel> _listGrblSettingModel = new List<GrblModel>();
+        private GCodeModel gcodeFile = new GCodeModel("file");
         private Queue<string> _fileQueue = new Queue<string>();
         private List<string> _fileList = new List<string>();
         private ObservableCollection<GrblModel> _consoleData;
@@ -205,7 +207,39 @@ namespace VDGrbl.ViewModel
         public int[] ListBaudRates { get; private set; } = { 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
         #endregion
 
-        #region subregion GrblSettingModel
+        /// <summary>
+        /// Get the GroupBoxCoordinateTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxCoordinateTitle
+        {
+            get
+            {
+                return _groupBoxCoordinateTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxCoordinateTitle, value);
+            }
+        }
+
+        #region subregion GrblModel
+        /// <summary>
+        /// Get the GroupBoxGrblCommandTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxGrblCommandTitle
+        {
+            get
+            {
+                return _groupBoxGrblCommandTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxGrblCommandTitle, value);
+            }
+        }
+
         /// <summary>
         /// Get the GroupBoxGrblSettingTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -214,11 +248,27 @@ namespace VDGrbl.ViewModel
         {
             get
             {
-                return _groupBoxSettingTitle;
+                return _groupBoxGrblSettingTitle;
             }
             set
             {
-                Set(ref _groupBoxSettingTitle, value);
+                Set(ref _groupBoxGrblSettingTitle, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the GroupBoxGrblConsoleTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxGrblConsoleTitle
+        {
+            get
+            {
+                return _groupBoxGrblConsoleTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxGrblConsoleTitle, value);
             }
         }
         #endregion
@@ -228,15 +278,15 @@ namespace VDGrbl.ViewModel
         /// Get the GroupBoxGCodeFileTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string GroupBoxGCodeFileTitle
+        public string GroupBoxGCodeTitle
         {
             get
             {
-                return _groupBoxGCodeFileTitle;
+                return _groupBoxGCodeTitle;
             }
             set
             {
-                Set(ref _groupBoxGCodeFileTitle, value);
+                Set(ref _groupBoxGCodeTitle, value);
             }
         }
         #endregion
@@ -370,15 +420,15 @@ namespace VDGrbl.ViewModel
         /// Gets the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public List<GrblSettingModel> ListGrblSettingModel
+        public List<GrblModel> ListGrblSettingModel
         {
             get
             {
-                return _listSettingModel;
+                return _listGrblSettingModel;
             }
             set
             {
-                Set(ref _listSettingModel, value);
+                Set(ref _listGrblSettingModel, value);
             }
         }
 
@@ -390,7 +440,7 @@ namespace VDGrbl.ViewModel
         /// Gets the SettingCollection property. SettingCollection is populated w/ data from ListSettingModel
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<GrblSettingModel> SettingCollection
+        public ObservableCollection<GrblModel> SettingCollection
         {
             get
             {
@@ -1045,26 +1095,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="PosZ" /> property's name.
-        /// </summary>
-        public const string PosZPropertyName = "PosZ";
-        /// <summary>
-        /// Gets the PosZ property. PosZ is the Z coordinate of the machin get w/ '?' Grbl real-time command.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string PosZ
-        {
-            get
-            {
-                return _posZ;
-            }
-            set
-            {
-                Set("PosZ", ref _posZ, value);
-            }
-        }
-
-        /// <summary>
         /// The <see cref="WPosX" /> property's name.
         /// </summary>
         public const string WPosXPropertyName = "WPosX";
@@ -1104,25 +1134,6 @@ namespace VDGrbl.ViewModel
             }
         }
 
-        /// <summary>
-        /// The <see cref="WPosZ" /> property's name.
-        /// </summary>
-        public const string WPosZPropertyName = "WPosZ";
-        /// <summary>
-        /// Gets the PosZ property. PosZ is the Z coordinate of the machin get w/ '?' Grbl real-time command.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string WPosZ
-        {
-            get
-            {
-                return _wposZ;
-            }
-            set
-            {
-                Set("PosZ", ref _wposZ, value);
-            }
-        }
         #endregion
         #endregion
 
@@ -1150,7 +1161,7 @@ namespace VDGrbl.ViewModel
 
                     });
 
-                _dataService.GetGrblSetting(
+                _dataService.GetGrbl(
                     (item, error) =>
                     {
                         if (error != null)
@@ -1158,10 +1169,12 @@ namespace VDGrbl.ViewModel
                             logger.Error("Exception GrblSetting raised: " + error);
                             return;
                         }
-                        GroupBoxGrblSettingTitle = item.SettingHeader;
+                        GroupBoxGrblSettingTitle = item.GrblSettingHeader;
+                        GroupBoxGrblConsoleTitle = item.GrblConsoleHeader;
+                        GroupBoxGrblCommandTitle = item.GrblCommandHeader;
                     });
 
-                _dataService.GetGCodeFile(
+                _dataService.GetGCode(
                     (item, error) =>
                     {
                         if (error != null)
@@ -1169,9 +1182,30 @@ namespace VDGrbl.ViewModel
                             logger.Error("Exception GCodeFile raised: " + error);
                             return;
                         }
-                        GroupBoxGCodeFileTitle = item.GCodeFileHeader;
+                        GroupBoxGCodeTitle = item.GCodeHeader;
                     });
 
+                _dataService.GetCoordinate(
+                    (item, error) =>
+                    {
+                        if (error != null)
+                        {
+                            logger.Error("Exception GCodeFile raised: " + error);
+                            return;
+                        }
+                        GroupBoxCoordinateTitle = item.CoordinateHeader;
+                    });
+
+                _dataService.GetCoordinate(
+                    (item, error) =>
+                    {
+                        if (error != null)
+                        {
+                            logger.Error("Exception GCodeFile raised: " + error);
+                            return;
+                        }
+                        GroupBoxCoordinateTitle = item.CoordinateHeader;
+                    });
                 DefaultPortSettings();
                 MyRelayCommands();
                 InitializeDispatcherTimer();
@@ -1645,7 +1679,7 @@ namespace VDGrbl.ViewModel
             ListGrblSettingModel.Clear();
             WriteString("$$");
             Thread.Sleep(100);//Waits for ListSettingModel to populate all setting values
-            SettingCollection = new ObservableCollection<GrblSettingModel>(ListGrblSettingModel);
+            SettingCollection = new ObservableCollection<GrblModel>(ListGrblSettingModel);
         }
 
         /// <summary>
@@ -2263,13 +2297,13 @@ namespace VDGrbl.ViewModel
                 {
                     if (arr.Length > 2)//Grbl version 0.9 (w/ setting description)
                     {
-                        _grblSettingModel = new GrblSettingModel(arr[0], arr[1], arr[2]);
-                        ListGrblSettingModel.Add(_grblSettingModel);
+                        _grblModel = new GrblModel(arr[0], arr[1], arr[2]);
+                        ListGrblSettingModel.Add(_grblModel);
                     }
                     else//Grbl version 1.1 (w/o setting description)
                     {
-                        _grblSettingModel = new GrblSettingModel(arr[0], arr[1], "");
-                        ListGrblSettingModel.Add(_grblSettingModel);
+                        _grblModel = new GrblModel(arr[0], arr[1], "");
+                        ListGrblSettingModel.Add(_grblModel);
                     }
                 }
                 logger.Info("GrblSetting Value:{0}|RespStatus:{1}|MachStatus{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
@@ -2295,10 +2329,8 @@ namespace VDGrbl.ViewModel
                     string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n', '|' });
                     PosX = arr[3];
                     PosY = arr[4];
-                    PosZ = arr[5];
                     //WPosX = arr[7];
                     //WPosY = arr[8];
-                    //WPosZ = arr[9];
                     //Buf = arr[11];
                     switch (arr[1])
                     {
@@ -2347,13 +2379,11 @@ namespace VDGrbl.ViewModel
                     {
                         PosX = arr[3];
                         PosY = arr[4];
-                        PosZ = arr[5];
                     }
                     if (arr.Length > 7)
                     {
                         WPosX = arr[7];
                         WPosY = arr[8];
-                        WPosZ = arr[9];
                     }
                     if (arr.Length > 11)
                     {
