@@ -108,7 +108,8 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Tools\BrushColorConverter.cs" />
     <Compile Include="Tools\DoubleConverter.cs" />
-    <Compile Include="Tools\Gcode.cs" />
+    <Compile Include="Tools\GCodeTool.cs" />
+    <Compile Include="Tools\GrblTool.cs" />
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\MathTool.cs" />
     <Compile Include="Tools\MultiBooleanConverter.cs" />

@@ -3,9 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:VDGrbl.View"
+             xmlns:local="clr-namespace:VDGrbl.Tools"
              mc:Ignorable="d" Width="250" Height="150"
              DataContext="{Binding Main, Source={StaticResource Locator}}">
+    <UserControl.Resources>
+        <local:BrushColorConverter x:Key="Convertbrush"/>
+    </UserControl.Resources>
     <Grid>
         <GroupBox Header="{Binding GroupBoxPortSettingTitle}" Margin="5,5,4.6,5" 
                       Style="{DynamicResource GroupBoxStyleVD}">
@@ -15,6 +18,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -29,6 +33,8 @@
                     <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding ListBaudRates}"  Width="75" Margin="0" 
                               SelectedValue="{Binding SelectedBaudRate, Mode=TwoWay}" VerticalAlignment="Center" 
                               VerticalContentAlignment="Center"/>
+                    <Ellipse Grid.Column="2" Grid.Row="0" Height="20" Margin="0,0,0,0" Stroke="#FFABADB3" VerticalAlignment="Center" Width="20" 
+                             Fill="{Binding ElementName=DisconnectButton, Path=IsEnabled, Converter={StaticResource Convertbrush}, Mode=OneWay}"/>
                 </Grid>
                 <!--Buttons to connect/disconnect and refresh port COM-->
                 <Grid Margin="5" Width="Auto" Height="40">
@@ -37,7 +43,7 @@
                         <ColumnDefinition Width="0.5*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Content="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    <Button x:Name="ConnectButton" Content="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" 
                         Width="75" HorizontalContentAlignment="Center" Margin="0" Style="{DynamicResource ControlStyleVD}"/>
                     <Button Grid.Column="1" Command="{Binding RefreshPortCommand, FallbackValue=true, Mode=OneWay}" HorizontalAlignment="Center" 
                         VerticalAlignment="Center" HorizontalContentAlignment="Center" 
@@ -46,7 +52,7 @@
                             <Image Source="/VDGrbl;component/Skins/Images/iconrefresh40.png"/>
                         </StackPanel>
                     </Button>
-                    <Button Grid.Column="2" Content="Disconnect" Command="{Binding DisconnectCommand}" HorizontalAlignment="Center" 
+                    <Button x:Name="DisconnectButton" Grid.Column="2" Content="Disconnect" Command="{Binding DisconnectCommand}" HorizontalAlignment="Center" 
                         VerticalAlignment="Center" Width="75" HorizontalContentAlignment="Center" Margin="0" 
                         Style="{DynamicResource ControlStyleVD}"/>
                 </Grid>

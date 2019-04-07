@@ -9,7 +9,7 @@
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Report current machine state: status and coordinates-->
         <GroupBox Header="{Binding Main.GroupBoxCoordinateTitle}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0,0,0,0">
-                <Grid>
+                <Grid Margin="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -19,13 +19,11 @@
                     <RowDefinition Height="2.3*"/>
                 </Grid.RowDefinitions>
                 <!--Display the report state: current machine status-->
-                <TextBox Name="TextBoxMachineStatus" Grid.Column="1" Margin="1" VerticalContentAlignment="Center" 
+                <TextBox Name="TextBoxMachineStatus" Grid.ColumnSpan="2" Margin="5" VerticalContentAlignment="Center" 
                          HorizontalContentAlignment="Center" Background="{Binding Main.MachineStatusColor}" 
                          Text="{Binding Main.MachineStatus, StringFormat={}{0}}" Height="24" Width="60" IsEnabled="False"/>
                 <!--Display the machine X-Y coordinates: real time machine position-->
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Row="1">
-                    <StackPanel>
-                        <Label Content=" MPos" HorizontalAlignment="Center"/>
                         <Grid >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -34,18 +32,18 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Label Grid.Column="0" Grid.Row="0" Content="X" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                            <Label Grid.Column="1" Grid.Row="0" Content="Y" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                            <Label Grid.Column="0" Grid.Row="1" Content="{Binding Main.PosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                            <Label Grid.Column="1" Grid.Row="1" Content="{Binding Main.PosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Label Content=" MPos" HorizontalAlignment="Center" Grid.ColumnSpan="2"/>
+                            <Label Grid.Column="0" Grid.Row="1" Content="X" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="1" Grid.Row="1" Content="Y" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="0" Grid.Row="2" Content="{Binding Main.MPosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.MPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                         </Grid>
-                    </StackPanel>
                 </Border>
                 <!--Display the work coordinates: real time work position-->
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1" Grid.Row="1">
                     <StackPanel>
-                        <Label Content=" WPos"  HorizontalAlignment="Center"/>
                         <Grid >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -54,11 +52,13 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                            <Label Grid.Column="0" Grid.Row="0" Content="X" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Label Grid.Column="1" Grid.Row="0" Content="Y" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Label Grid.Column="0" Grid.Row="1" Content="{Binding Main.WPosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Label Grid.Column="1" Grid.Row="1" Content="{Binding Main.WPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Content=" WPos"  HorizontalAlignment="Center" Grid.ColumnSpan="2"/>
+                        <Label Grid.Column="0" Grid.Row="1" Content="X" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="1" Grid.Row="1" Content="Y" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="0" Grid.Row="2" Content="{Binding Main.WPosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.WPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                     </Grid>
                     </StackPanel>
                 </Border>

@@ -5,16 +5,17 @@ namespace VDGrbl.Codes
     /// <summary>
     /// Grbl alarm codes
     /// </summary>
-    class AlarmCodes
+    public class AlarmCodes
     {
         /// <summary>
         /// Description of the alarm messages Grbl version 0.9 and 1.1
         /// </summary>
         public AlarmCodes()
         {
-            AlarmDict09.Add("Hard / soft limit", "Hard and / or soft limits must be enabled for this error to occur.With hard limits, Grbl will enter alarm mode when a hard limit switch has been triggered and force kills all motion.Machine position will be lost and require re-homing.With soft limits, the alarm occurs when Grbl detects a programmed motion trying to move outside of the machine space, set by homing and the max travel settings.However, upon the alarm, a soft limit violation will instruct a feed hold and wait until the machine has stopped before issuing the alarm. Soft limits do not lose machine position because of this.");
-            AlarmDict09.Add("Abort during cycle", "This alarm occurs when a user issues a soft-reset while the machine is in a cycle and moving. The soft-reset will kill all current motion, and, much like the hard limit alarm, the uncontrolled stop causes Grbl to lose position.");
-            AlarmDict09.Add("Probe fail", "The G38.2 straight probe command requires an alarm or error when the probe fails to trigger within the programmed probe distance. Grbl enters the alarm state to indicate to the user the probe has failed, but will not lose machine position, since the probe motion comes to a controlled stop before the error.");
+            AlarmDict09.Add("hard/soft limit", "Hard and / or soft limits must be enabled for this error to occur.With hard limits, Grbl will enter alarm mode when a hard limit switch has been triggered and force kills all motion.Machine position will be lost and require re-homing.With soft limits, the alarm occurs when Grbl detects a programmed motion trying to move outside of the machine space, set by homing and the max travel settings.However, upon the alarm, a soft limit violation will instruct a feed hold and wait until the machine has stopped before issuing the alarm. Soft limits do not lose machine position because of this.");
+            //AlarmDict09.Add("Abort during cycle", "This alarm occurs when a user issues a soft-reset while the machine is in a cycle and moving. The soft-reset will kill all current motion, and, much like the hard limit alarm, the uncontrolled stop causes Grbl to lose position.");
+            AlarmDict09.Add("abortduringcycle", "This alarm occurs when a user issues a soft-reset while the machine is in a cycle and moving. The soft-reset will kill all current motion, and, much like the hard limit alarm, the uncontrolled stop causes Grbl to lose position.");
+            AlarmDict09.Add("probefail", "The G38.2 straight probe command requires an alarm or error when the probe fails to trigger within the programmed probe distance. Grbl enters the alarm state to indicate to the user the probe has failed, but will not lose machine position, since the probe motion comes to a controlled stop before the error.");
 
             AlarmDict11.Add("1", "Hard limit triggered. Machine position is likely lost due to sudden and immediate halt. Re-homing is highly recommended.");
             AlarmDict11.Add("2", "G-code motion target exceeds machine travel. Machine position safely retained. Alarm may be unlocked.");

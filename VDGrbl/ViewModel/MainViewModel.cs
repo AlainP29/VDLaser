@@ -32,7 +32,7 @@ namespace VDGrbl.ViewModel
 
         private string _selectedPortName = string.Empty;
         private string _versionGrbl = "-", _buildInfo = "-";
-        private string _posX = "0.000", _posY = "0.000";
+        private string _mposX = "0.000", _mposY = "0.000";
         private string _wposX = "0.000", _wposY = "0.000";
         private string _step = "1";
         private string _buf = "0", _rx = "0";
@@ -63,22 +63,25 @@ namespace VDGrbl.ViewModel
         private bool _isJogEnabled=true;
         private bool _isVerbose = false;
         private bool _isManualSending = true;
+        private bool _isSending = false;
 
         private SerialPort _serialPort;
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        DispatcherTimer currentStatusTimer = new DispatcherTimer(DispatcherPriority.Normal);
+
         private RespStatus _responseStatus = RespStatus.Ok;
         private MachStatus _machineStatus = MachStatus.Idle;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
         private ObservableCollection<GrblModel> _settingCollection;
         private List<GrblModel> _listGrblSettingModel = new List<GrblModel>();
-        private GCodeModel gcodeFile = new GCodeModel("file");
         private Queue<string> _fileQueue = new Queue<string>();
         private List<string> _fileList = new List<string>();
         private ObservableCollection<GrblModel> _consoleData;
         private List<GrblModel> _listConsoleData = new List<GrblModel>();
-        private GrblModel _grblModel;
-        private GCodeModel gmodel;
+        private GrblModel _grblModel=new GrblModel("TX","RX");
+        private GrblTool grbltool = new GrblTool();
+        private Tools.GCodeTool gcodeToolBasic = new Tools.GCodeTool();
         #region subregion enum
         /// <summary>
         /// Enumeration of the response states. Ok: All is good, NOk: Alarm state Q: Queued [DR: Data received] 
@@ -289,6 +292,37 @@ namespace VDGrbl.ViewModel
                 Set(ref _groupBoxGCodeTitle, value);
             }
         }
+
+        /// <summary>
+        /// Get the GrblModel property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public GrblModel GrblModel
+        {
+            get
+            {
+                return _grblModel;
+            }
+            set
+            {
+                Set(ref _grblModel, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the IsSending property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsSending {
+            get
+            {
+                return _isSending;
+            }
+            set
+            {
+                Set(ref _isSending, value);
+            }
+        }
         #endregion
 
         #region subregion Data TX/RX/Settings
@@ -413,14 +447,14 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="ListGrblSettingModel" /> property's name.
+        /// The <see cref="ListGrblSetting" /> property's name.
         /// </summary>
         public const string ListSettingModelName = "ListSettingModel";
         /// <summary>
         /// Gets the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public List<GrblModel> ListGrblSettingModel
+        public List<GrblModel> ListGrblSetting
         {
             get
             {
@@ -787,7 +821,7 @@ namespace VDGrbl.ViewModel
                 {
                     _feedRate = MaxFeedRate;
                 }
-                logger.Info("Manual speed rate value is {0}", _feedRate);
+                logger.Info("MainViewModel|Manual speed rate value is {0}", _feedRate);
             }
         }
 
@@ -813,7 +847,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _step, value);
-                logger.Info("Manual step value is {0}",value);
+                logger.Info("MainViewModel|Manual step value is {0}", value);
             }
         }
 
@@ -837,12 +871,12 @@ namespace VDGrbl.ViewModel
                 Set(ref _isSelectedKeyboard, value);
                 if (_isSelectedKeyboard == true)
                 {
-                    logger.Info("Keyboard is selected");
+                    logger.Info("MainViewModel|Keyboard is selected");
 
                 }
                 else
                 {
-                logger.Info("Keyboard is not selected");
+                logger.Info("MainViewModel|Keyboard is not selected");
             }
             }
         }
@@ -868,12 +902,12 @@ namespace VDGrbl.ViewModel
                 if (_isSelectedMetric == true && _serialPort.IsOpen)
                 {
                     WriteString("G21");
-                    logger.Info("Metric is selected");
+                    logger.Info("MainViewModel|Metric is selected");
                 }
                 if(_isSelectedMetric == false && _serialPort.IsOpen)
                 {
                     WriteString("G20");
-                    logger.Info("Metric is not selected");
+                    logger.Info("MainViewModel|Metric is not selected");
                 }
             }
         }
@@ -924,7 +958,7 @@ namespace VDGrbl.ViewModel
                     _laserPower = MaxLaserPower;
                 }
                 WriteString(string.Format("S{0}",_laserPower));
-                logger.Info("Manual laser power value is {0}", _laserPower);
+                logger.Info("MainViewModel|Manual laser power value is {0}", _laserPower);
             }
         }
 
@@ -1055,42 +1089,42 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="PosX" /> property's name.
+        /// The <see cref="MPosX" /> property's name.
         /// </summary>
-        public const string PosXPropertyName = "PosX";
+        public const string MPosXPropertyName = "MPosX";
         /// <summary>
         /// Gets the PosX property. PosX is the X coordinate of the machin get w/ '?' Grbl real-time command.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string PosX
+        public string MPosX
         {
             get
             {
-                return _posX;
+                return _mposX;
             }
             set
             {
-                Set(ref _posX, value);
+                Set(ref _mposX, value);
             }
         }
 
         /// <summary>
-        /// The <see cref="PosY" /> property's name.
+        /// The <see cref="MPosY" /> property's name.
         /// </summary>
-        public const string PosYPropertyName = "PosY";
+        public const string MPosYPropertyName = "MPosY";
         /// <summary>
         /// Gets the PosY property. PosY is the Y coordinate received the machin get w/ '?' Grbl real-time command.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string PosY
+        public string MPosY
         {
             get
             {
-                return _posY;
+                return _mposY;
             }
             set
             {
-                Set(ref _posY, value);
+                Set(ref _mposY, value);
             }
         }
 
@@ -1152,13 +1186,12 @@ namespace VDGrbl.ViewModel
                     {
                         if (error != null)
                         {
-                            logger.Error("Exception GetPortSettings raised: " + error);
+                            logger.Error("MainViewModel|Exception GetPortSettings raised: " + error);
                             return;
                         }
                         _serialPort = new SerialPort();
                         GroupBoxPortSettingTitle = item.SerialPortSettingHeader;
                         GetSerialPortSettings();
-
                     });
 
                 _dataService.GetGrbl(
@@ -1166,7 +1199,7 @@ namespace VDGrbl.ViewModel
                     {
                         if (error != null)
                         {
-                            logger.Error("Exception GrblSetting raised: " + error);
+                            logger.Error("MainViewModel|Exception GrblSetting raised: " + error);
                             return;
                         }
                         GroupBoxGrblSettingTitle = item.GrblSettingHeader;
@@ -1179,7 +1212,7 @@ namespace VDGrbl.ViewModel
                     {
                         if (error != null)
                         {
-                            logger.Error("Exception GCodeFile raised: " + error);
+                            logger.Error("MainViewModel|Exception GCodeFile raised: " + error);
                             return;
                         }
                         GroupBoxGCodeTitle = item.GCodeHeader;
@@ -1190,7 +1223,7 @@ namespace VDGrbl.ViewModel
                     {
                         if (error != null)
                         {
-                            logger.Error("Exception GCodeFile raised: " + error);
+                            logger.Error("MainViewModel|Exception GCodeFile raised: " + error);
                             return;
                         }
                         GroupBoxCoordinateTitle = item.CoordinateHeader;
@@ -1201,7 +1234,7 @@ namespace VDGrbl.ViewModel
                     {
                         if (error != null)
                         {
-                            logger.Error("Exception GCodeFile raised: " + error);
+                            logger.Error("MainViewModel|Exception GCodeFile raised: " + error);
                             return;
                         }
                         GroupBoxCoordinateTitle = item.CoordinateHeader;
@@ -1209,11 +1242,11 @@ namespace VDGrbl.ViewModel
                 DefaultPortSettings();
                 MyRelayCommands();
                 InitializeDispatcherTimer();
-                logger.Info("Main MainWindow initialized");
+                logger.Info("MainViewModel|MainWindow initialized");
             }
             catch (Exception ex)
             {
-                logger.Error("Exception MainViewModel raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception MainViewModel raised: " + ex.ToString());
             }
         }
         #endregion
@@ -1273,7 +1306,7 @@ namespace VDGrbl.ViewModel
             StopFileCommand = new RelayCommand(StopFile, CanExecuteStopFile);
             IncreaseLaserPowerCommand = new RelayCommand<bool>(IncreaseLaserPower, CanExecuteLaserPower);
             DecreaseLaserPowerCommand = new RelayCommand<bool>(DecreaseLaserPower, CanExecuteLaserPower);
-            logger.Info("All RelayCommands loaded");
+            logger.Info("MainViewModel|All RelayCommands loaded");
         }
 
         #region subregion serial port method
@@ -1286,11 +1319,11 @@ namespace VDGrbl.ViewModel
             try
             {
                 ListPortNames = SerialPort.GetPortNames();
-                logger.Info("All serial port settings loaded");
+                logger.Info("MainViewModel|All serial port settings loaded");
             }
             catch (Exception ex)
             {
-                logger.Error("Exception GetSerialPortSettings raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception GetSerialPortSettings raised: " + ex.ToString());
             }
         }
 
@@ -1305,17 +1338,17 @@ namespace VDGrbl.ViewModel
                 {
                     SelectedPortName = ListPortNames[0];
                     SelectedBaudRate = 115200;
-                    logger.Info("Default settings loaded");
+                    logger.Info("MainViewModel|Default settings loaded");
                 }
                 else
                 {
-                    logger.Info("No port COM available");
+                    logger.Info("MainViewModel|No port COM available");
                 }
 
             }
             catch (Exception ex)
             {
-                logger.Log(LogLevel.Error, "Exception DefaultPortSettings raised: " + ex.ToString());
+                logger.Log(LogLevel.Error, "MainViewModel|Exception DefaultPortSettings raised: " + ex.ToString());
             }
         }
 
@@ -1326,7 +1359,7 @@ namespace VDGrbl.ViewModel
         {
             GetSerialPortSettings();
             DefaultPortSettings();
-            logger.Info("Refresh Port COM");
+            logger.Info("MainViewModel|Refresh Port COM");
         }
         /// <summary>
 /// Allows/Disallows RefreshSerialPort method to be executed.
@@ -1358,11 +1391,11 @@ namespace VDGrbl.ViewModel
                     _serialPort.Open();
                     GrblReset(); //Do a soft reset before starting a new job?
                     GrblBuildInfo();
-                    logger.Info("Port COM open");
+                    logger.Info("MainViewModel|Port COM open");
             }
             catch (Exception ex)
             {
-                logger.Error("Exception OpenSerialPort raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception OpenSerialPort raised: " + ex.ToString());
             }
         }
         /// <summary>
@@ -1384,11 +1417,11 @@ namespace VDGrbl.ViewModel
                 _serialPort.DataReceived -= _serialPort_DataReceived;
                 _serialPort.Dispose();
                 _serialPort.Close();
-                logger.Info("Port COM closed");
+                logger.Info("MainViewModel|Port COM closed");
             }
             catch (Exception ex)
             {
-                logger.Error("Exception CloseSerialPort raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception CloseSerialPort raised: " + ex.ToString());
             }
         }
         /// <summary>
@@ -1408,12 +1441,12 @@ namespace VDGrbl.ViewModel
             try
             {
                 _serialPort.WriteLine(TXLine);
-                logger.Info("Data TX: {0}", TXLine);
+                logger.Info("MainViewModel|Data TX: {0}", TXLine);
                 TXLine = string.Empty;
             }
             catch (Exception ex)
             {
-                logger.Error("Exception SendData raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception SendData raised: " + ex.ToString());
             }
         }
         /// <summary>
@@ -1438,7 +1471,7 @@ namespace VDGrbl.ViewModel
         public void SendM1Data()
         {
                 _serialPort.WriteLine(Macro1);
-                logger.Info("Data TX: {0}", Macro1);
+                logger.Info("MainViewModel|Data TX: {0}", Macro1);
         }
         public bool CanExecuteSendM1Data()
         {
@@ -1459,7 +1492,7 @@ namespace VDGrbl.ViewModel
         public void SendM2Data()
         {
             _serialPort.WriteLine(Macro2);
-            logger.Info("Data TX: {0}", Macro2);
+            logger.Info("MainViewModel|Data TX: {0}", Macro2);
         }
         public bool CanExecuteSendM2Data()
         {
@@ -1479,7 +1512,7 @@ namespace VDGrbl.ViewModel
         public void SendM3Data()
         {
             _serialPort.WriteLine(Macro3);
-            logger.Info("Data TX: {0}", Macro3);
+            logger.Info("MainViewModel|Data TX: {0}", Macro3);
         }
         public bool CanExecuteSendM3Data()
         {
@@ -1499,7 +1532,7 @@ namespace VDGrbl.ViewModel
         public void SendM4Data()
         {
             _serialPort.WriteLine(Macro4);
-            logger.Info("Data TX: {0}", Macro4);
+            logger.Info("MainViewModel|Data TX: {0}", Macro4);
         }
         public bool CanExecuteSendM4Data()
         {
@@ -1526,13 +1559,13 @@ namespace VDGrbl.ViewModel
                     _serialPort.Write(new byte[1] { b }, 0, 1);
                     if (b != 63)//Skips current status logger with DispatcherTimer
                     {
-                        logger.Info("Method WriteByte: {0}", b);
+                        logger.Info("MainViewModel|Method WriteByte: {0}", b);
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.Error("Exception WriteByte raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception WriteByte raised: " + ex.ToString());
             }
         }
 
@@ -1548,12 +1581,12 @@ namespace VDGrbl.ViewModel
                 if (_serialPort.IsOpen)
                 {
                     _serialPort.Write(buffer, 0, lengh);
-                    logger.Info("Method WriteBytes: {0}", buffer.ToString());
+                    logger.Info("MainViewModel|Method WriteBytes: {0}", buffer.ToString());
                 }
             }
             catch (Exception ex)
             {
-                logger.Error("Exception WriteBytes raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception WriteBytes raised: " + ex.ToString());
             }
         }
 
@@ -1568,12 +1601,12 @@ namespace VDGrbl.ViewModel
                 if (_serialPort.IsOpen)
                 {
                     _serialPort.WriteLine(data);
-                    logger.Info("Method WriteString: {0}", data);
+                    logger.Info("MainViewModel|Method WriteString: {0}", data);
                 }
             }
             catch (Exception ex)
             {
-                logger.Error("Exception WriteString raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception WriteString raised: " + ex.ToString());
             }
         }
 
@@ -1593,17 +1626,17 @@ namespace VDGrbl.ViewModel
                 Thread.Sleep(50);
                 RXLine = string.Empty;
                 TXLine = string.Empty;
-                ListGrblSettingModel.Clear();
+                ListGrblSetting.Clear();
                 ListConsoleData.Clear();
                 NLine = 0;
                 PercentLine = 0;
                 RLine = 0;
                 EstimateJobTime = "00:00:00" ;
-                logger.Info("TXLine/RXLine and buffers erased");
+                logger.Info("MainViewModel|TXLine/RXLine and buffers erased");
             }
             catch (Exception ex)
             {
-                logger.Error("Exception ClearData raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception ClearData raised: " + ex.ToString());
             }
         }
         /// <summary>
@@ -1651,6 +1684,9 @@ namespace VDGrbl.ViewModel
         public void GrblCurrentStatus()
         {
             WriteByte(63);
+            ResponseStatus = (RespStatus)grbltool.ResponseStatus;
+            MachineStatus = (MachStatus)grbltool.MachineStatus;
+            MachineStatusColor = (SolidColorBrush)grbltool.MachineStatusColor;
         }
 
         /// <summary>
@@ -1676,10 +1712,10 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void GrblSettings()
         {
-            ListGrblSettingModel.Clear();
+            ListGrblSetting.Clear();
             WriteString("$$");
             Thread.Sleep(100);//Waits for ListSettingModel to populate all setting values
-            SettingCollection = new ObservableCollection<GrblModel>(ListGrblSettingModel);
+            SettingCollection = new ObservableCollection<GrblModel>(ListGrblSetting);
         }
 
         /// <summary>
@@ -1770,9 +1806,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogH(bool parameter)
         {
-            string line = Gcode.FormatGcode(0,0, 0, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(0,0, 0, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogH: {0}", line);
+            logger.Info("MainViewModel|JogH: {0}", line);
             TXLine = line;
         }
 
@@ -1781,9 +1817,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogN(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,1, 0, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 0, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogN: {0}", line);
+            logger.Info("MainViewModel|JogN: {0}", line);
             TXLine = line;
         }
 
@@ -1792,9 +1828,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogS(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,1, 0, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 0, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogS: {0}", line);
+            logger.Info("MainViewModel|JogS: {0}", line);
             TXLine = line;
         }
 
@@ -1803,9 +1839,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogE(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,1, 1, 0, 0, FeedRate, Double.Parse(Step.Replace('.',',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 1, 0, 0, FeedRate, Double.Parse(Step.Replace('.',',')));
             WriteString(line);
-            logger.Info("JogE: {0}", line);
+            logger.Info("MainViewModel|JogE: {0}", line);
             TXLine = line;
         }
 
@@ -1814,9 +1850,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogW(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,1, -1, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, -1, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogW: {0}", line);
+            logger.Info("MainViewModel|JogW: {0}", line);
             TXLine = line;
         }
 
@@ -1825,9 +1861,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogNW(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,1, -1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, -1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogNW: {0}", line);
+            logger.Info("MainViewModel|JogNW: {0}", line);
             TXLine = line;
         }
 
@@ -1836,9 +1872,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogNE(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,1, 1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogNE: {0}", line);
+            logger.Info("MainViewModel|JogNE: {0}", line);
             TXLine = line;
         }
 
@@ -1847,9 +1883,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogSW(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,1, -1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line =gcodeToolBasic.FormatGcode(1,1, -1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogSW: {0}", line);
+            logger.Info("MainViewModel|JogSW: {0}", line);
             TXLine = line;
         }
 
@@ -1858,9 +1894,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogSE(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,1, 1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogSE: {0}", line);
+            logger.Info("MainViewModel|JogSE: {0}", line);
             TXLine = line;
         }
 
@@ -1869,9 +1905,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogUp(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,0, 0, 0, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,0, 0, 0, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogUp: {0}", line);
+            logger.Info("MainViewModel|JogUp: {0}", line);
             TXLine = line;
         }
 
@@ -1880,9 +1916,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogDown(bool parameter)
         {
-            string line = Gcode.FormatGcode(1,0, 0, 0, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,0, 0, 0, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
-            logger.Info("JogDown: {0}", line);
+            logger.Info("MainViewModel|JogDown: {0}", line);
             TXLine = line;
         }
 
@@ -1892,7 +1928,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteJog(bool parameter)
         {
-            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && VersionGrbl.StartsWith("0"))
             {
                 if (parameter)
                 {
@@ -1932,7 +1968,7 @@ namespace VDGrbl.ViewModel
         private void IncreaseFeedRate(bool parameter)
         {
             FeedRate += 10;
-            logger.Info("F{0}", _feedRate);
+            logger.Info("MainViewModel|F{0}", _feedRate);
         }
 
         /// <summary>
@@ -1942,7 +1978,7 @@ namespace VDGrbl.ViewModel
         private void DecreaseFeedRate(bool parameter)
         {
             FeedRate -= 10;
-            logger.Info("F{0}", _feedRate);
+            logger.Info("MainViewModel|F{0}", _feedRate);
         }
 
         /// <summary>
@@ -2002,7 +2038,7 @@ namespace VDGrbl.ViewModel
         private void IncreaseLaserPower(bool parameter)
         {
             LaserPower += 10;
-            logger.Info("S{0}", _laserPower);
+            logger.Info("MainViewModel|S{0}", _laserPower);
         }
 
         /// <summary>
@@ -2012,7 +2048,7 @@ namespace VDGrbl.ViewModel
         private void DecreaseLaserPower(bool parameter)
         {
             LaserPower -= 10;
-            logger.Info("S{0}", _laserPower);
+            logger.Info("MainViewModel|S{0}", _laserPower);
         }
 
         /// <summary>
@@ -2032,7 +2068,6 @@ namespace VDGrbl.ViewModel
             return false;
         }
 
-
         /// <summary>
         /// Sets current axis X to 0.
         /// </summary>
@@ -2041,7 +2076,7 @@ namespace VDGrbl.ViewModel
             //string line = "G10 P0 L20 X0";
             string line = "G10 P0 L2 X0";
             WriteString(line);
-            logger.Info("Reset X: {0}", line);
+            logger.Info("MainViewModel|Reset X: {0}", line);
             TXLine = line;
         }
 
@@ -2052,7 +2087,7 @@ namespace VDGrbl.ViewModel
         {
             string line = "G10 P0 L20 Y0";
             WriteString(line);
-            logger.Info("Reset Y: {0}", line);
+            logger.Info("MainViewModel|Reset Y: {0}", line);
         }
 
         /// <summary>
@@ -2062,7 +2097,7 @@ namespace VDGrbl.ViewModel
         {
             string line = "G10 P0 L20 Z0";
             WriteString(line);
-            logger.Info("Reset Z: {0}", line);
+            logger.Info("MainViewModel|Reset Z: {0}", line);
             TXLine = line;
         }
 
@@ -2073,7 +2108,7 @@ namespace VDGrbl.ViewModel
         {
             string line = "G10 P0 L20 X0 Y0 Z0";
             WriteString(line);
-            logger.Info("Reset All axis: {0}", line);
+            logger.Info("MainViewModel|Reset All axis: {0}", line);
             TXLine = line;
         }
 
@@ -2094,347 +2129,6 @@ namespace VDGrbl.ViewModel
         }
         #endregion
 
-        #region process methods for DataGrblSorter method
-        /// <summary>
-        /// Sorts Grbl data received like Grbl informations, response, coordinates, settings...
-        /// </summary>
-        /// <param name="line"></param>
-        public void DataGrblSorter(string _line)
-        {
-            try
-            {
-                string line = Gcode.TrimGcode(_line);
-                if (!string.IsNullOrEmpty(line))
-                {
-                    if (line.StartsWith("ok"))
-                    {
-                        ProcessResponse(line);
-                    }
-                    else if (line.StartsWith("error"))
-                    {
-                        ProcessErrorResponse(line);
-                    }
-                    else if (line.StartsWith("alarm"))
-                    {
-                        ProcessAlarmResponse(line);
-                    }
-                    else if (line.StartsWith("<") && line.EndsWith(">"))
-                    {
-                        ProcessCurrentStatusResponse(line);
-                    }
-                    else if (line.StartsWith("$")&&line.Contains("="))
-                    {
-                        ProcessGrblSettingResponse(line);
-                    }
-                    else if(line.StartsWith("[") || line.EndsWith("]"))
-                    {
-                        ProcessInfoResponse(line);
-                    }
-                    else if(line.Contains("rbl"))
-                    {
-                        InfoMessage = "View startup blocks"; //Grbl 0.9i ['$' for help] put something like $N0=G20 G54 G17 to get it
-                    }
-                    else
-                    {
-                        InfoMessage = "Unknown";//TODO
-                    }
-                }
-                logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", line, ResponseStatus.ToString(), MachineStatus.ToString());
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Exception DataGrblSorter raised: " + ex.ToString());
-            }
-        }
-        
-        /// <summary>
-        /// Processes Grbl build informations.
-        /// </summary>
-        /// <param name="data"></param>
-        public void ProcessInfoResponse(string data)
-        {
-            try
-            {
-                ResponseStatus = RespStatus.Ok;
-                logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
-                switch (data.Length)
-                {
-                    case 9:
-                        InfoMessage = "Check gcode mode";//[Enabled]
-                        break;
-
-                    case 10:
-                        InfoMessage = "Check gcode mode";//[Disabled]
-                        break;
-
-                    case 16:
-                        VersionGrbl = data.Substring(1, 4);//[0.9i.20150620:]
-                        BuildInfo = data.Substring(6, 8);
-                        break;
-
-                    case 19:
-                        InfoMessage = "Kill alarm lock or reset to continue?";//[Caution: Unlocked] [Reset to continue]
-                        break;
-
-                    case 20:
-                        InfoMessage = "Kill alarm lock or homing to continue";//['$H'|'$X' to unlock]
-                        break;
-
-                    case 23 when !data.Contains("PLB")://For C#7 test only :-)
-                        InfoMessage = "View G-code parameters";
-                        break;
-
-                    case 24:
-                        InfoMessage = "View startup blocks"; //Grbl 0.9i ['$' for help] put something like $N0=G20 G54 G17 to get it
-                        break;
-
-                    case 44:
-                        InfoMessage = "View gcode parser state";//[G0 G54 G17 G21 G90 G94 M0 M5 M9 T0 F0. S0.]
-                        break;
-
-                    default:
-                        InfoMessage = "Unknown[]";
-                        break;
-                }
-            }
-
-            catch (Exception ex)
-            {
-                logger.Error("Exception ProcessInfoResponse raised: " + ex.ToString());
-            }
-        }
-
-        /// <summary>
-        /// Processes the serial port ok message reply.
-        /// </summary>
-        /// <param name="_data"></param>
-        /// <param name="_isError"></param>
-        /// <returns></returns>
-        public void ProcessResponse(string _data)
-        {
-            ResponseStatus = RespStatus.Ok;
-            SendFile();
-            logger.Info("Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
-        }
-
-        /// <summary>
-        /// Processes the serial port error message reply.
-        /// </summary>
-        /// <param name="_data"></param>
-        /// <returns></returns>
-        public void ProcessErrorResponse(string _data)
-        {
-            try
-            {
-                ErrorCodes ec = new ErrorCodes();
-                logger.Info("Error key:{0}", _data.Split(':')[1]);
-                if (VersionGrbl.StartsWith("1"))//In version 1.1 all error codes have ID
-                {
-                    ErrorMessage = ec.ErrorDict11[_data.Split(':')[1]];
-                    logger.Info("Error key:{0} | description:{1}", _data.Split(':')[1], ErrorMessage);
-                }
-                else
-                {
-                    if (_data.Contains("ID"))//In version 0.9 only error code from 23 to 37 have ID
-                    {
-                        ErrorMessage = ec.ErrorDict09[_data.Split(':')[2]];
-                        logger.Info("Error key {0} | description:{1}", _data.Split(':')[2], ErrorMessage);
-                    }
-                    else//Error codes w/o ID
-                    {
-                        ErrorMessage = ec.ErrorDict09[_data.Split(':')[1]];
-                        logger.Info("Error key {0} | description:{1}", _data.Split(':')[1], ErrorMessage);
-                    }
-                }
-                ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command + try/catch
-                SendFile();
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Exception ProcessErrorResponse raised: ", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
-            }
-        }
-
-        /// <summary>
-        /// Processes the serial port alarm message reply.
-        /// </summary>
-        /// <param name="_data"></param>
-        /// <returns></returns>
-        public void ProcessAlarmResponse(string _data)
-        {
-            ResponseStatus = RespStatus.NOk;
-            MachineStatusColor = Brushes.Red;
-            AlarmCodes ac = new AlarmCodes();
-            try
-            {
-                AlarmMessage= ac.AlarmDict11[_data.Split(':')[1]];
-                logger.Info("Alarm key {0} | description:{1}", _data.Split(':')[1], AlarmMessage);
-
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Exception ProcessAlarmResponse raised: ", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
-            }
-        }
-
-        /// <summary>
-        /// Populates the settingsCollection w/ data received w/ Grbl '$$' command.
-        /// </summary>
-        /// <param name="data"></param>
-        public void ProcessGrblSettingResponse(string data)
-        {
-            try
-            {
-                ResponseStatus = RespStatus.Q;//Wait until we get all settings before sending new line of code
-                string[] arr = data.Split(new Char[] { '=', '(', ')', '\r', '\n' });
-                if (data.Contains("N"))
-                {
-                    InfoMessage = "Startup block";//$N0=...
-                }
-                else
-                {
-                    if (arr.Length > 2)//Grbl version 0.9 (w/ setting description)
-                    {
-                        _grblModel = new GrblModel(arr[0], arr[1], arr[2]);
-                        ListGrblSettingModel.Add(_grblModel);
-                    }
-                    else//Grbl version 1.1 (w/o setting description)
-                    {
-                        _grblModel = new GrblModel(arr[0], arr[1], "");
-                        ListGrblSettingModel.Add(_grblModel);
-                    }
-                }
-                logger.Info("GrblSetting Value:{0}|RespStatus:{1}|MachStatus{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Exception ProcessGrblSettingResponse raised: ", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
-            }
-        }
-
-        /// <summary>
-        /// Gets machine coordinates and status depending of Grbl version.
-        /// </summary>
-        /// <param name="_data"></param>
-        public void ProcessCurrentStatusResponse(string _data)
-        {
-            try
-            {
-                ResponseStatus = RespStatus.Ok;
-                if (_data.Contains("|") || VersionGrbl.StartsWith("1"))//Report state Grbl v1.1 < Idle|MPos:0.000,0.000,0.000>
-                {
-                    string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n', '|' });
-                    PosX = arr[3];
-                    PosY = arr[4];
-                    //WPosX = arr[7];
-                    //WPosY = arr[8];
-                    //Buf = arr[11];
-                    switch (arr[1])
-                    {
-                        case "idle":
-                            MachineStatus = MachStatus.Idle;
-                            MachineStatusColor = Brushes.Beige;
-                            break;
-                        case "run":
-                            MachineStatus = MachStatus.Run;
-                            MachineStatusColor = Brushes.LightGreen;
-                            break;
-                        case "hold":
-                            MachineStatus = MachStatus.Hold;
-                            MachineStatusColor = Brushes.LightBlue;
-                            break;
-                        case "alarm":
-                            MachineStatus = MachStatus.Alarm;
-                            MachineStatusColor = Brushes.Red;
-                            break;
-                        case "jog":
-                            MachineStatus = MachStatus.Jog;
-                            MachineStatusColor = Brushes.LightSeaGreen;
-                            break;
-                        case "door":
-                            MachineStatus = MachStatus.Door;
-                            MachineStatusColor = Brushes.LightYellow;
-                            break;
-                        case "check":
-                            MachineStatus = MachStatus.Check;
-                            MachineStatusColor = Brushes.LightCyan;
-                            break;
-                        case "home":
-                            MachineStatus = MachStatus.Home;
-                            MachineStatusColor = Brushes.LightPink;
-                            break;
-                        case "sleep":
-                            MachineStatus = MachStatus.Sleep;
-                            MachineStatusColor = Brushes.LightGray;
-                            break;
-                    }
-                }
-                else//Report state Grbl v0.9 <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000,Buf:0,RX:0>
-                {
-                    string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n' });
-                    if (arr.Length > 3)
-                    {
-                        PosX = arr[3];
-                        PosY = arr[4];
-                    }
-                    if (arr.Length > 7)
-                    {
-                        WPosX = arr[7];
-                        WPosY = arr[8];
-                    }
-                    if (arr.Length > 11)
-                    {
-                        Buf = arr[11];
-                    }
-                    if (arr.Length > 13)
-                    {
-                        RX = arr[13];
-                    }
-                    switch (arr[1])
-                    {
-                        case "idle":
-                            MachineStatus = MachStatus.Idle;
-                            MachineStatusColor = Brushes.Beige;
-                            break;
-                        case "run":
-                            MachineStatus = MachStatus.Run;
-                            MachineStatusColor = Brushes.LightGreen;
-                            break;
-                        case "hold":
-                            MachineStatus = MachStatus.Hold;
-                            MachineStatusColor = Brushes.LightBlue;
-                            break;
-                        case "alarm":
-                            MachineStatus = MachStatus.Alarm;
-                            MachineStatusColor = Brushes.Red;
-                            break;
-                        case "door":
-                            MachineStatus = MachStatus.Door;
-                            MachineStatusColor = Brushes.LightYellow;
-                            break;
-                        case "check":
-                            MachineStatus = MachStatus.Check;
-                            MachineStatusColor = Brushes.LightCyan;
-                            break;
-                        case "home":
-                            MachineStatus = MachStatus.Home;
-                            MachineStatusColor = Brushes.LightPink;
-                            break;
-                    }
-                }
-                //logger.Info("Current state:{0}|RespStatus:{1}|MachStatus:{2}|Color:{3}", _data, ResponseStatus.ToString(), MachinStatus.ToString(), MachinStatusColor.ToString());
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Exception ProcessCurrentStatusResponse raised: ", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
-            }
-        }
-        #endregion
-
         #region subregion other methods
         /// <summary>
         /// Does nothing yet...
@@ -2451,12 +2145,11 @@ namespace VDGrbl.ViewModel
         /// </summary>
         private void InitializeDispatcherTimer()
         {
-            DispatcherTimer currentStatusTimer = new DispatcherTimer(DispatcherPriority.Normal);
             currentStatusTimer.Tick += new EventHandler(DispatcherTimer_Tick);
             //dispatcherTimer.Interval = TimeSpan.FromSeconds(0.25);
             currentStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 250);
             currentStatusTimer.Start();
-            logger.Info("Initialize Dispatcher Timer");
+            logger.Info("MainViewModel|Initialize Dispatcher Timer");
         }
 
         /// <summary>
@@ -2479,12 +2172,12 @@ namespace VDGrbl.ViewModel
                 {
                     FileName = openFileDialog.FileName;
                     LoadFile(FileName);
-                    logger.Info("Open file: {0}", FileName);
+                    logger.Info("MainViewModel|Open file: {0}", FileName);
                 }
             }
             catch(Exception ex)
             {
-                logger.Error("Exception data received raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception data received raised: " + ex.ToString());
                 ResponseStatus = RespStatus.NOk;
             }
         }
@@ -2511,14 +2204,14 @@ namespace VDGrbl.ViewModel
             {
                 while((line=sr.ReadLine())!=null)
                 {
-                    FileQueue.Enqueue(Gcode.TrimGcode(line));
+                    FileQueue.Enqueue(gcodeToolBasic.TrimGcode(line));
                     FileList.Add(line);
                 }
             }
             NLine = FileQueue.Count;
             RLine = _nLine;
-            gmodel = new GCodeModel(FileList);
-            TimeSpan time = TimeSpan.FromSeconds(Math.Round(gmodel.CalculateJobTime(MaxFeedRate)));
+            Tools.GCodeTool gcodeTool = new Tools.GCodeTool(FileList);
+            TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
             EstimateJobTime = time.ToString(@"hh\:mm\:ss");
             //EstimateJobTime = time.ToString(@"hh\:mm\:ss\:fff");
         }
@@ -2530,7 +2223,7 @@ namespace VDGrbl.ViewModel
         {
             string line = string.Empty;
             RLine = FileQueue.Count;
-            if (_nLine!=0)//Divide by zero (NaN)
+            if (_nLine != 0)//Divide by zero (NaN)
             {
                 PercentLine = (_nLine - _rLine) / _nLine;
             }
@@ -2538,16 +2231,18 @@ namespace VDGrbl.ViewModel
             {
                 PercentLine = 0;
             }
-            if (RLine > 0)
+            if (RLine > 0 && (int)ResponseStatus != 1)
             {
                 ResponseStatus = RespStatus.Q;
                 TXLine = FileQueue.Dequeue();
-                WriteString(_txLine);
+                WriteString(TXLine);
                 IsManualSending = false;
+                IsSending = true;
             }
             else
             {
                 IsManualSending = true;
+                IsSending = false;
             }
         }
 
@@ -2636,21 +2331,49 @@ namespace VDGrbl.ViewModel
             try
             {
                 string line = _serialPort.ReadLine();
+                RXLine = gcodeToolBasic.TrimGcode(line);
+                GrblModel = new GrblModel(TXLine, RXLine);
                 ConsoleData = new ObservableCollection<GrblModel>(ListConsoleData);
-                _grblModel = new GrblModel(_txLine, Gcode.TrimGcode(line));
                 if (IsVerbose)
                 {
-                        ListConsoleData.Add(_grblModel);
+                    ListConsoleData.Add(GrblModel);
                 }
                 else if (!line.StartsWith("<"))
                 {
-                        ListConsoleData.Add(_grblModel);
+                    ListConsoleData.Add(GrblModel);
                 }
-                DataGrblSorter(line);
+                grbltool.DataGrblSorter(line);
+                ResponseStatus = (RespStatus)grbltool.ResponseStatus;
+                MachineStatus = (MachStatus)grbltool.MachineStatus;
+                MachineStatusColor = (SolidColorBrush)grbltool.MachineStatusColor;
+                MPosX = grbltool.MachinePositionX;
+                MPosY = grbltool.MachinePositionY;
+                WPosX = grbltool.WorkPositionX;
+                WPosY = grbltool.WorkPositionY;
+                Buf = grbltool.PlannerBuffer;
+                RX = grbltool.RxBuffer;
+                VersionGrbl = grbltool.VersionGrbl;
+                BuildInfo = grbltool.BuildInfo;
+                if(ListConsoleData.Count>5)
+                {
+                    ListConsoleData.RemoveAt(0);
+                    //ListConsoleData.Reverse();
+
+                }
+                ListGrblSetting = grbltool.ListGrblSettingModel;
+                if(grbltool.CanSend && IsSending)//Use datareceived to send next line should use a background task to send data...
+                {
+                    
+                    SendFile();
+                }
+                else
+                {
+                    RXLine = string.Empty;
+                }
             }
             catch (Exception ex)
                 {
-                logger.Error("Exception data received raised: " + ex.ToString());
+                logger.Error("MainViewModel|Exception data received raised: " + ex.ToString());
                 ResponseStatus = RespStatus.NOk;
                 }
         }
@@ -2680,7 +2403,7 @@ namespace VDGrbl.ViewModel
                 if (disposing)
                 {
                     ((IDisposable)_serialPort).Dispose();
-                    logger.Info("Port COM disposed");
+                    logger.Info("MainViewModel|Port COM disposed");
                 }
 
                 // TODO: libérer les ressources non managées (objets non managés) et remplacer un finaliseur ci-dessous.

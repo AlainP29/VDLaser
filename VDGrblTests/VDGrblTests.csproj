@@ -84,9 +84,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Model\GCodeModelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tools\GcodeTests.cs" />
+    <Compile Include="Tools\GCodeToolTests.cs" />
+    <Compile Include="Tools\GrblToolTests.cs" />
     <Compile Include="Tools\MathToolTests.cs" />
     <Compile Include="ViewModel\MainViewModelTests.cs" />
   </ItemGroup>

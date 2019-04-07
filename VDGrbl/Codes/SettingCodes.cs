@@ -55,7 +55,7 @@ namespace VDGrbl.Codes
         /// </summary>
         public Dictionary<string, string> SettingDict { get; set; } = new Dictionary<string, string>();
 
-/// <summary>
+        /// <summary>
 /// List of $XX settings value
 /// </summary>
         private readonly List<string> _settingCode = new List<string> { "$0", "$1", "$2", "$3", "$4", "$5", "$6", "$10", "$11", "$12", "$13", "$20", "$21", "$22", "$23", "$24", "$25", "$26", "$27","$30","$31","$32","$100","$101","$102","$110","$111","$112","$120","$121","$122","$130","$131","$132" };
@@ -99,7 +99,6 @@ namespace VDGrbl.Codes
             "Y Max travel, mm.",
             "Z Max travel, mm.",
         };
-
         
     }
 }

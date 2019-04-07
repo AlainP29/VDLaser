@@ -17,7 +17,7 @@ namespace VDGrbl.Tools
                 //throw new InvalidOperationException("The target must be a boolean");
             }
             bool b = (bool)value;
-            return b ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
+            return b ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.OrangeRed);
         }
 
         public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
