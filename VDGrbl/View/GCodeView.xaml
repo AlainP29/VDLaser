@@ -44,24 +44,33 @@
                                 <Image Source="/VDGrbl;component/Skins/Images/iconStopFile40.png"/>
                             </StackPanel>
                     </Button>
+                    <Label Content="Transfer speed:" Margin="10, 0, 0, 0" VerticalContentAlignment="Center"/>
+                    <ComboBox Height="25" Width="Auto" ItemsSource="{Binding Main.ListTransferSpeed}" SelectedValue="{Binding Main.SelectedTransferSpeed}" 
+                              SelectedIndex="1" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Margin="0"/>
+
                 </StackPanel>
                 <!--Total of lines sent + number of motion command queued-->
                 <StackPanel Grid.Row="2" Orientation="Horizontal">
                     <Label Content="Total lines:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
-                    <TextBox Text="{Binding Main.NLine}" Margin="12,5,5,5" IsReadOnly="True" VerticalContentAlignment="Center" Width="40" HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                    <TextBox Text="{Binding Main.NLine}" Margin="12,5,5,5" IsReadOnly="True" VerticalContentAlignment="Center" 
+                             Width="40" HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
                     <Label Content="RX:" VerticalAlignment="Center" Margin="45,0,0,0"/>
-                    <TextBox Text="{Binding Main.RX}" Margin="10,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="30" Height="23"/>
+                    <TextBox Text="{Binding Main.RX}" Margin="10,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" 
+                             VerticalContentAlignment="Center" Width="30" Height="23"/>
                 </StackPanel>
                 <!--Number of lines left + buffer size-->
                 <StackPanel Grid.Row="3" Orientation="Horizontal">
                     <Label Content="Remaining:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
-                    <TextBox Text="{Binding Main.RLine}" Margin="5" IsReadOnly="True" VerticalContentAlignment="Center" Width="40" HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                    <TextBox Text="{Binding Main.RLine}" Margin="5" IsReadOnly="True" VerticalContentAlignment="Center" Width="40" 
+                             HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
                     <Label Content="Buf:" VerticalAlignment="Center" Margin="45,0,0,0"/>
-                    <TextBox Text="{Binding Main.Buf, Mode=OneWay}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="30" Height="23"/>
+                    <TextBox Text="{Binding Main.Buf, Mode=OneWay}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" 
+                             VerticalContentAlignment="Center" Width="30" Height="23"/>
                 </StackPanel>
                 <StackPanel Grid.Row="4" Orientation="Horizontal">
                     <Label Content="Estimated time:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
-                    <TextBox Text="{Binding Main.EstimateJobTime}" Margin="5" IsReadOnly="True" VerticalContentAlignment="Center" Width="70" HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                    <TextBox Text="{Binding Main.EstimateJobTime}" Margin="5" IsReadOnly="True" VerticalContentAlignment="Center" Width="70" 
+                             HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
                 </StackPanel>
                 <!--Percentage of lines sent to be change by a timer-->
                 <StackPanel Grid.Row="5" Orientation="Horizontal">
@@ -69,7 +78,7 @@
                     <Grid Margin="10,0,0,0">
                         <ProgressBar Maximum="1" Value="{Binding Main.PercentLine}" Height="20" 
                                  HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" 
-                                 HorizontalContentAlignment="Center" Width="150"/>
+                                 HorizontalContentAlignment="Center" Width="150" Foreground="#FF78DD8A"/>
                         <TextBlock Text="{Binding Main.PercentLine, Converter={StaticResource ConvertDouble}, StringFormat=\{0:P0\}}"
                                Width="150" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
                     </Grid>

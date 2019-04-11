@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Ports;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -29,6 +30,7 @@ namespace VDGrbl.ViewModel
         private readonly IDataService _dataService;
 
         private int _selectedBaudRate;
+        private int transferDelay;
 
         private string _selectedPortName = string.Empty;
         private string _versionGrbl = "-", _buildInfo = "-";
@@ -47,6 +49,7 @@ namespace VDGrbl.ViewModel
         private string _groupBoxGrblCommandTitle = string.Empty;
         private string _groupBoxGCodeTitle = string.Empty;
         private string _groupBoxCoordinateTitle = string.Empty;
+        private string _selectedTransferSpeed = string.Empty;
 
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
@@ -68,9 +71,10 @@ namespace VDGrbl.ViewModel
         private SerialPort _serialPort;
         private static Logger logger = LogManager.GetCurrentClassLogger();
         DispatcherTimer currentStatusTimer = new DispatcherTimer(DispatcherPriority.Normal);
-
+        private CancellationTokenSource cts;
         private RespStatus _responseStatus = RespStatus.Ok;
         private MachStatus _machineStatus = MachStatus.Idle;
+        private SendSpeedStatus _sendSpeedState = SendSpeedStatus.Normal;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
         private ObservableCollection<GrblModel> _settingCollection;
@@ -92,6 +96,11 @@ namespace VDGrbl.ViewModel
         /// Enumeration of the machine states.
         /// </summary>
         public enum MachStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
+
+        /// <summary>
+        /// Enumeration of the speed state : delay between two G-code lines.
+        /// </summary>
+        public enum SendSpeedStatus { Slow, Normal, Fast};
         #endregion
         #endregion
 
@@ -1029,6 +1038,32 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
+        /// The <see cref="SelectedTransferSpeed" /> property's name.
+        /// </summary>
+        public const string SelectedTransferSpeedPropertyName = "SelectedTransferSpeed";
+        /// <summary>
+        /// Get the SelectedTransferSpeed property. This is the speed selected to send G-Code lines of a file.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string SelectedTransferSpeed
+        {
+            get
+            {
+                return _selectedTransferSpeed;
+            }
+            set
+            {
+                Set(ref _selectedTransferSpeed, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the ListTransferSpeed property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string[] ListTransferSpeed { get; private set; } = { "Slow", "Normal", "Fast" };
+
+        /// <summary>
         /// The <see cref="MachineStatusColor" /> property's name.
         /// </summary>
         public const string MachineStatusColorPropertyName = "MachineStatusColor";
@@ -1167,7 +1202,6 @@ namespace VDGrbl.ViewModel
                 Set(ref _wposY, value);
             }
         }
-
         #endregion
         #endregion
 
@@ -1216,6 +1250,7 @@ namespace VDGrbl.ViewModel
                             return;
                         }
                         GroupBoxGCodeTitle = item.GCodeHeader;
+                        SelectedTransferSpeed = ListTransferSpeed[1];
                     });
 
                 _dataService.GetCoordinate(
@@ -1302,8 +1337,11 @@ namespace VDGrbl.ViewModel
             StartLaserCommand = new RelayCommand(StartLaser, CanExecuteLaser);
             StopLaserCommand = new RelayCommand(StopLaser, CanExecuteLaser);
             LoadFileCommand = new RelayCommand(OpenFile, CanExecuteOpenFile);
-            SendFileCommand = new RelayCommand(SendFile, CanExecuteSendFile);
-            StopFileCommand = new RelayCommand(StopFile, CanExecuteStopFile);
+            //SendFileCommand = new RelayCommand(SendFile, CanExecuteSendFile);
+            //StopFileCommand = new RelayCommand(StopFile, CanExecuteStopFile);
+            SendFileCommand = new RelayCommand(StartSendingFileAsync, CanExecuteAsyncTask);
+            StopFileCommand = new RelayCommand(StopSendingFileA, CanExecuteAsyncTask);
+
             IncreaseLaserPowerCommand = new RelayCommand<bool>(IncreaseLaserPower, CanExecuteLaserPower);
             DecreaseLaserPowerCommand = new RelayCommand<bool>(DecreaseLaserPower, CanExecuteLaserPower);
             logger.Info("MainViewModel|All RelayCommands loaded");
@@ -1684,9 +1722,6 @@ namespace VDGrbl.ViewModel
         public void GrblCurrentStatus()
         {
             WriteByte(63);
-            ResponseStatus = (RespStatus)grbltool.ResponseStatus;
-            MachineStatus = (MachStatus)grbltool.MachineStatus;
-            MachineStatusColor = (SolidColorBrush)grbltool.MachineStatusColor;
         }
 
         /// <summary>
@@ -2192,7 +2227,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Loads file
+        /// Load G-Code file and save lines to a queue and a list.
         /// </summary>
         /// <param name="fileName"></param>
         private void LoadFile(string fileName)
@@ -2209,11 +2244,98 @@ namespace VDGrbl.ViewModel
                 }
             }
             NLine = FileQueue.Count;
-            RLine = _nLine;
+            RLine = NLine;
             Tools.GCodeTool gcodeTool = new Tools.GCodeTool(FileList);
             TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
             EstimateJobTime = time.ToString(@"hh\:mm\:ss");
-            //EstimateJobTime = time.ToString(@"hh\:mm\:ss\:fff");
+            
+        }
+
+        /// <summary>
+        /// Send the G-Code file in async mode.
+        /// </summary>
+        private async void StartSendingFileAsync()
+        {
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+            var progressHandler = new Progress<double>(value => PercentLine = value);
+            var progress = progressHandler as IProgress<double>;
+            var t = Task.Run(() =>
+                {
+                    for (int i = 0; i <= NLine; ++i)
+                    {
+                        SendFile();
+                        logger.Info("MainViewModel|N{0}: {1}", i.ToString(),TXLine);
+                        if (progress != null && NLine != 0)
+                        {
+                            progress.Report((NLine - RLine) / NLine);
+                        }
+                        else
+                        {
+                            progress.Report(0);
+                        }
+                        Thread.Sleep(transferDelay);
+                        if (token.IsCancellationRequested)
+                        {
+                            break;
+                        }
+                    }
+                },token);
+            switch (SelectedTransferSpeed)
+            {
+                case "Slow":
+                    transferDelay = 2000;
+                    break;
+                case "Normal":
+                    transferDelay = 750;
+                    break;
+                case "Fast":
+                    transferDelay = 250;
+                    break;
+            }
+            logger.Info("MainViewModel|Transfer speed:", SelectedTransferSpeed);
+            try
+            {
+                await t;
+                logger.Info("MainViewModel|Task sending file completed");
+            }
+
+            catch (AggregateException)
+            {
+                logger.Info("MainViewModel|Task1 sending file cancelled");
+            }
+
+            finally
+            {
+                //cts.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Cancel the task to send G-code file in async. Used with stop button.
+        /// </summary>
+        private void StopSendingFileA()
+        {
+            if(cts!=null)
+            {
+                logger.Info("MainViewModel|Task sending file cancelled");
+                cts.Cancel();
+                GrblFeedHold();
+                FileQueue.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Allows/Disallows SendFile method.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteAsyncTask()
+        {
+            if (FileQueue.Count > 0 && _serialPort.IsOpen)
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -2221,16 +2343,8 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void SendFile()
         {
-            string line = string.Empty;
+            //string line = string.Empty;
             RLine = FileQueue.Count;
-            if (_nLine != 0)//Divide by zero (NaN)
-            {
-                PercentLine = (_nLine - _rLine) / _nLine;
-            }
-            else
-            {
-                PercentLine = 0;
-            }
             if (RLine > 0 && (int)ResponseStatus != 1)
             {
                 ResponseStatus = RespStatus.Q;
@@ -2276,35 +2390,13 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteStopFile()
         {
-            if (FileQueue.Count > 0 && _serialPort.IsOpen)
+            if (FileQueue.Count > 0)
                 {
                 return true;
-            }
+                }
             return false;
         }
-
-        #region TODO use task to send file but pb of synchro showing data...
-        /*
-        /// <summary>
-        /// Starts sending file with button start
-        /// </summary>
-        public async void StartSendingFile()
-        {
-            await Task.Run(() => SendingFile());
-        }
-
-        /// <summary>
-        /// Loop sendFile untill isSending is false
-        /// </summary>
-        private void SendingFile()
-        {
-            while(IsSending)
-            {
-                Thread.Sleep(500);
-                SendFile();
-            }
-        }*/
-        #endregion
+       
         #endregion
 
         /// <summary>
@@ -2354,22 +2446,11 @@ namespace VDGrbl.ViewModel
                 RX = grbltool.RxBuffer;
                 VersionGrbl = grbltool.VersionGrbl;
                 BuildInfo = grbltool.BuildInfo;
-                if(ListConsoleData.Count>5)
+                if(ListConsoleData.Count>4)//Number of lines showed in data console
                 {
                     ListConsoleData.RemoveAt(0);
-                    //ListConsoleData.Reverse();
-
                 }
                 ListGrblSetting = grbltool.ListGrblSettingModel;
-                if(grbltool.CanSend && IsSending)//Use datareceived to send next line should use a background task to send data...
-                {
-                    
-                    SendFile();
-                }
-                else
-                {
-                    RXLine = string.Empty;
-                }
             }
             catch (Exception ex)
                 {
