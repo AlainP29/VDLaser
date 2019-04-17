@@ -9,10 +9,8 @@ using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
-using VDGrbl.Codes;
 using VDGrbl.Model;
 using VDGrbl.Tools;
 
@@ -49,10 +47,11 @@ namespace VDGrbl.ViewModel
         private string _groupBoxGrblCommandTitle = string.Empty;
         private string _groupBoxGCodeTitle = string.Empty;
         private string _groupBoxCoordinateTitle = string.Empty;
-        private string _selectedTransferSpeed = string.Empty;
+        private string _selectedTransferDelay = string.Empty;
 
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
+        private string _gcodeLine = string.Empty;
         private string _macro1 = "G90 G0 X0", _macro2 = "G91 G1 X10 Y-20", _macro3 = "G90 G0 Y0 F2000", _macro4 = "G91 G1 X-20 Y10 F1000";
 
         private double _feedRate = 300;
@@ -74,7 +73,6 @@ namespace VDGrbl.ViewModel
         private CancellationTokenSource cts;
         private RespStatus _responseStatus = RespStatus.Ok;
         private MachStatus _machineStatus = MachStatus.Idle;
-        private SendSpeedStatus _sendSpeedState = SendSpeedStatus.Normal;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
         private ObservableCollection<GrblModel> _settingCollection;
@@ -157,101 +155,7 @@ namespace VDGrbl.ViewModel
         public RelayCommand<bool> IncreaseLaserPowerCommand { get; private set; }
         #endregion
 
-        #region subregion port settings
-        /// <summary>
-        /// Get the GroupBoxPortSettingsTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string GroupBoxPortSettingTitle
-        {
-            get
-            {
-                return _groupBoxPortSettingTitle;
-            }
-            set
-            {
-                Set(ref _groupBoxPortSettingTitle, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets the SelectedPortName property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string SelectedPortName
-        {
-            get
-            {
-                return _selectedPortName;
-            }
-            set
-            {
-                Set(ref _selectedPortName, value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ListParities property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string[] ListPortNames { get; private set; }
-
-        /// <summary>
-        /// Get the SelectedBaudRateName property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int SelectedBaudRate
-        {
-            get
-            {
-                return _selectedBaudRate;
-            }
-            set
-            {
-                Set(ref _selectedBaudRate, value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ListBaudRates property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public int[] ListBaudRates { get; private set; } = { 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
-        #endregion
-
-        /// <summary>
-        /// Get the GroupBoxCoordinateTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string GroupBoxCoordinateTitle
-        {
-            get
-            {
-                return _groupBoxCoordinateTitle;
-            }
-            set
-            {
-                Set(ref _groupBoxCoordinateTitle, value);
-            }
-        }
-
-        #region subregion GrblModel
-        /// <summary>
-        /// Get the GroupBoxGrblCommandTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string GroupBoxGrblCommandTitle
-        {
-            get
-            {
-                return _groupBoxGrblCommandTitle;
-            }
-            set
-            {
-                Set(ref _groupBoxGrblCommandTitle, value);
-            }
-        }
-
+        #region subregion setting
         /// <summary>
         /// Get the GroupBoxGrblSettingTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -269,6 +173,40 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
+        /// Gets the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public List<GrblModel> ListGrblSetting
+        {
+            get
+            {
+                return _listGrblSettingModel;
+            }
+            set
+            {
+                Set(ref _listGrblSettingModel, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the SettingCollection property. SettingCollection is populated w/ data from ListSettingModel
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ObservableCollection<GrblModel> SettingCollection
+        {
+            get
+            {
+                return _settingCollection;
+            }
+            set
+            {
+                Set(ref _settingCollection, value);
+            }
+        }
+        #endregion
+
+        #region subregion console
+        /// <summary>
         /// Get the GroupBoxGrblConsoleTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
@@ -283,22 +221,118 @@ namespace VDGrbl.ViewModel
                 Set(ref _groupBoxGrblConsoleTitle, value);
             }
         }
-        #endregion
 
-        #region subregion GCodeFileModel
         /// <summary>
-        /// Get the GroupBoxGCodeFileTitle property.
+        /// Gets the ListConsoleData property. ListConsoleData is populated w/ TXLine/RXLine
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string GroupBoxGCodeTitle
+        public List<GrblModel> ListConsoleData
         {
             get
             {
-                return _groupBoxGCodeTitle;
+                return _listConsoleData;
             }
             set
             {
-                Set(ref _groupBoxGCodeTitle, value);
+                Set(ref _listConsoleData, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the ConsoleData property. ConsoleData is populated w/ data from ListConsoleData
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ObservableCollection<GrblModel> ConsoleData
+        {
+            get
+            {
+                return _consoleData;
+            }
+            set
+            {
+                Set(ref _consoleData, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the ErrorMessage property. ErrorMessage is got from ErrorCode ID.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string ErrorMessage
+        {
+            get
+            {
+                return _errorMessage;
+            }
+            set
+            {
+                Set(ref _errorMessage, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the AlarmMessage property. AlarmMessage is got from AlarmCode ID.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string AlarmMessage
+        {
+            get
+            {
+                return _alarmMessage;
+            }
+            set
+            {
+                Set(ref _alarmMessage, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the InfoMessage property. InfoMessage is got from the Arduino or the VDGrbl software.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string InfoMessage
+        {
+            get
+            {
+                return _infoMessage;
+            }
+            set
+            {
+                Set(ref _infoMessage, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the IsVerbose property. Allows/Disallows the verbose mode, especially to print current status.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsVerbose
+        {
+            get
+            {
+                return _isVerbose;
+            }
+            set
+            {
+                Set(ref _isVerbose, value);
+            }
+        }
+        #endregion
+
+        #region subregion send
+        /// <summary>
+        /// Get the GroupBoxGrblCommandTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxGrblCommandTitle
+        {
+            get
+            {
+                return _groupBoxGrblCommandTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxGrblCommandTitle, value);
             }
         }
 
@@ -317,28 +351,7 @@ namespace VDGrbl.ViewModel
                 Set(ref _grblModel, value);
             }
         }
-
-        /// <summary>
-        /// Get the IsSending property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public bool IsSending {
-            get
-            {
-                return _isSending;
-            }
-            set
-            {
-                Set(ref _isSending, value);
-            }
-        }
-        #endregion
-
-        #region subregion Data TX/RX/Settings
-        /// <summary>
-        /// The <see cref="TXLine" /> property's name.
-        /// </summary>
-        public const string TXLinePropertyName = "TXLine";
+        
         /// <summary>
         /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -354,11 +367,7 @@ namespace VDGrbl.ViewModel
                 Set(ref _txLine, value);
             }
         }
-
-        /// <summary>
-        /// The <see cref="Macro1" /> property's name.
-        /// </summary>
-        public const string Macro1PropertyName = "Macro1";
+   
         /// <summary>
         /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -374,11 +383,7 @@ namespace VDGrbl.ViewModel
                 Set(ref _macro1, value);
             }
         }
-
-        /// <summary>
-        /// The <see cref="Macro2" /> property's name.
-        /// </summary>
-        public const string Macro2PropertyName = "Macro2";
+      
         /// <summary>
         /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -396,10 +401,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="Macro3" /> property's name.
-        /// </summary>
-        public const string Macro3PropertyName = "Macro3";
-        /// <summary>
         /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
@@ -416,10 +417,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="Macro4" /> property's name.
-        /// </summary>
-        public const string Macro4PropertyName = "Macro4";
-        /// <summary>
         /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
@@ -434,11 +431,7 @@ namespace VDGrbl.ViewModel
                 Set(ref _macro4, value);
             }
         }
-
-        /// <summary>
-        /// The <see cref="RXLine" /> property's name.
-        /// </summary>
-        public const string RXLinePropertyName = "RXLine";
+       
         /// <summary>
         /// Gets the RXLine property. RXLine is the data received from the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -456,338 +449,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="ListGrblSetting" /> property's name.
-        /// </summary>
-        public const string ListSettingModelName = "ListSettingModel";
-        /// <summary>
-        /// Gets the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public List<GrblModel> ListGrblSetting
-        {
-            get
-            {
-                return _listGrblSettingModel;
-            }
-            set
-            {
-                Set(ref _listGrblSettingModel, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="SettingCollection" /> property's name.
-        /// </summary>
-        public const string SettingCollectionName = "SettingCollection";
-        /// <summary>
-        /// Gets the SettingCollection property. SettingCollection is populated w/ data from ListSettingModel
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public ObservableCollection<GrblModel> SettingCollection
-        {
-            get
-            {
-                return _settingCollection;
-            }
-            set
-            {
-                Set(ref _settingCollection, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="Buf" /> property's name.
-        /// </summary>
-        public const string BufPropertyName = "Buf";
-        /// <summary>
-        /// Gets the Buf property. Buf is the Number of motions queued in Grbl's planner buffer.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string Buf
-        {
-            get
-            {
-                return _buf;
-            }
-            set
-            {
-                Set(ref _buf, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="RX" /> property's name.
-        /// </summary>
-        public const string RXPropertyName = "RX";
-        /// <summary>
-        /// Gets the RX property. RX is the Number of characters queued in Grbl's serial RX receive buffer.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string RX
-        {
-            get
-            {
-                return _rx;
-            }
-            set
-            {
-                Set(ref _rx, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="ErrorMessage" /> property's name.
-        /// </summary>
-        public const string ErrorMessagePropertyName = "ErrorMessage";
-        /// <summary>
-        /// Gets the ErrorMessage property. ErrorMessage is got from ErrorCode ID.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string ErrorMessage
-        {
-            get
-            {
-                return _errorMessage;
-            }
-            set
-            {
-                Set(ref _errorMessage, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="AlarmMessage" /> property's name.
-        /// </summary>
-        public const string AlarmMessagePropertyName = "AlarmMessage";
-        /// <summary>
-        /// Gets the AlarmMessage property. AlarmMessage is got from AlarmCode ID.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string AlarmMessage
-        {
-            get
-            {
-                return _alarmMessage;
-            }
-            set
-            {
-                Set(ref _alarmMessage, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="InfoMessage" /> property's name.
-        /// </summary>
-        public const string InfoMessagePropertyName = "InfoMessage";
-        /// <summary>
-        /// Gets the InfoMessage property. InfoMessage is got from the Arduino or the VDGrbl software.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string InfoMessage
-        {
-            get
-            {
-                return _infoMessage;
-            }
-            set
-            {
-                Set(ref _infoMessage, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets the FileName property. FileName is the G-code file name.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string FileName
-        {
-            get
-            {
-                return _fileName;
-            }
-            set
-            {
-                Set(ref _fileName, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref=" EstimateJobTime" /> property's name.
-        /// </summary>
-        public const string EstimateJobTimePropertyName = "EstimateJobTime";
-        /// <summary>
-        /// Gets the EstimateJobTime property. EstimateJobTime is the estimation of running time.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string EstimateJobTime
-        {
-            get
-            {
-                return _estimateJobTime;
-            }
-            set
-            {
-                Set(ref _estimateJobTime, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="IsVerbose" /> property's name.
-        /// </summary>
-        public const string IsVerbosePropertyName = "IsVerbose";
-        /// <summary>
-        /// Gets the IsVerbose property. Allows/Disallows the verbose mode, especially to print current status.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public bool IsVerbose
-        {
-            get
-            {
-                return _isVerbose;
-            }
-            set
-            {
-                Set(ref _isVerbose, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets the FileQueue property. FileQueue is populated w/ lines of G-code file trimed.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public Queue<string> FileQueue
-        {
-            get
-            {
-                return _fileQueue;
-            }
-            set
-            {
-                Set(ref _fileQueue, value);
-            }
-        }
-
-        /// <summary>
-        /// Gets the FileList property. FileList is populated w/ lines of G-code file.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public List<string> FileList
-        {
-            get
-            {
-                return _fileList;
-            }
-            set
-            {
-                Set(ref _fileList, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="NLine" /> property's name.
-        /// </summary>
-        public const string NLinePropertyName = "NLine";
-        /// <summary>
-        /// Gets the NLine property. NLine is the number of lines in the G-code file.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double NLine
-        {
-            get
-            {
-                return _nLine;
-            }
-            set
-            {
-                Set(ref _nLine, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="RLine" /> property's name.
-        /// </summary>
-        public const string RLinePropertyName = "RLine";
-        /// <summary>
-        /// Gets the RLine property. RLine is the number of lines remaning in the G-code queue.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double RLine
-        {
-            get
-            {
-                return _rLine;
-            }
-            set
-            {
-                Set(ref _rLine, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="PercentLine" /> property's name.
-        /// </summary>
-        public const string PercentLinePropertyName = "PercentLine";
-        /// <summary>
-        /// Gets the PercentLine property. PercentLine is the number of lines remaning in the G-code queue.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double PercentLine
-        {
-            get
-            {
-                return _percentLine;
-            }
-            set
-            {
-                Set(ref _percentLine, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="ListConsoleData" /> property's name.
-        /// </summary>
-        public const string ListConsoleDataPropertyName = "ListConsoleData";
-        /// <summary>
-        /// Gets the ListConsoleData property. ListConsoleData is populated w/ TXLine/RXLine
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public List<GrblModel> ListConsoleData
-        {
-            get
-            {
-                return _listConsoleData;
-            }
-            set
-            {
-                Set(ref _listConsoleData, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="ConsoleData" /> property's name.
-        /// </summary>
-        public const string ConsoleDataPropertyName = "ConsoleData";
-        /// <summary>
-        /// Gets the ConsoleData property. ConsoleData is populated w/ data from ListConsoleData
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public ObservableCollection<GrblModel> ConsoleData
-        {
-            get
-            {
-                return _consoleData;
-            }
-            set
-            {
-                Set(ref _consoleData, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="IsManualSending" /> property's name.
-        /// </summary>
-        public const string IsManualSendingPropertyName = "IsManualSending";
-        /// <summary>
         /// Get the IsSendingFile property. When sending file we cannot use jog or send manual command.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
@@ -800,15 +461,10 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isManualSending, value);
+                logger.Info("MainViewModel|Manual sending: {0}", value);
             }
         }
-        #endregion
 
-        #region subregion G-code
-        /// <summary>
-        /// The <see cref="FeedRate" /> property's name.
-        /// </summary>
-        public const string FeedRatePropertyName = "FeedRate";
         /// <summary>
         /// Gets the FeedRate property. FeedRate is the motion speed F
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -830,7 +486,7 @@ namespace VDGrbl.ViewModel
                 {
                     _feedRate = MaxFeedRate;
                 }
-                logger.Info("MainViewModel|Manual speed rate value is {0}", _feedRate);
+                logger.Info("MainViewModel|Manual speed rate value is {0}", value);
             }
         }
 
@@ -839,10 +495,6 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public double MaxFeedRate { get; private set; } = 1000;
 
-        /// <summary>
-        /// The <see cref="Step" /> property's name.
-        /// </summary>
-        public const string StepPropertyName = "Step";
         /// <summary>
         /// Gets the Step property. Step is the motion step
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -861,10 +513,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="IsSelectedKeyboard" /> property's name.
-        /// </summary>
-        public const string IsSelectedKeyboardPropertyName = "IsSelectedKeyboard";
-        /// <summary>
         /// Gets the IsSelectedKeyboard property. IsSelectedKeyboard is checkbox Keyboard checked.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
@@ -878,22 +526,10 @@ namespace VDGrbl.ViewModel
             {
 
                 Set(ref _isSelectedKeyboard, value);
-                if (_isSelectedKeyboard == true)
-                {
-                    logger.Info("MainViewModel|Keyboard is selected");
-
-                }
-                else
-                {
-                logger.Info("MainViewModel|Keyboard is not selected");
-            }
+                logger.Info("MainViewModel|Keyboard is selected: {0}", value);
             }
         }
 
-        /// <summary>
-        /// The <see cref="IsSelectedMetric" /> property's name.
-        /// </summary>
-        public const string IsSelectedMetricPropertyName = "IsSelectedMetric";
         /// <summary>
         /// Gets the IsSelectedKeyboard property. IsSelectedKeyboard is checkbox Keyboard checked.
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -913,7 +549,7 @@ namespace VDGrbl.ViewModel
                     WriteString("G21");
                     logger.Info("MainViewModel|Metric is selected");
                 }
-                if(_isSelectedMetric == false && _serialPort.IsOpen)
+                if (_isSelectedMetric == false && _serialPort.IsOpen)
                 {
                     WriteString("G20");
                     logger.Info("MainViewModel|Metric is not selected");
@@ -921,10 +557,6 @@ namespace VDGrbl.ViewModel
             }
         }
 
-        /// <summary>
-        /// The <see cref="IsJogEnabled" /> property's name.
-        /// </summary>
-        public const string IsJogEnabledPropertyName = "IsJogEnabled";
         /// <summary>
         /// Gets the IsJogEnabled property. IsJogEnabled allows/disallows jogging button and keypad.
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -938,15 +570,24 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isJogEnabled, value);
+                logger.Info("MainViewModel|Jog is enabled: {0}", value);
             }
         }
-
+        
         /// <summary>
-        /// The <see cref="LaserPower" /> property's name.
+        /// Gets the ResponseStatus property. This is the current status of the software (Queued, Data received, Ok, Not Ok).
+        /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public const string LaserPowerPropertyName = "LaserPower";
+        public RespStatus ResponseStatus
+        {
+            get { return _responseStatus; }
+            set { Set(ref _responseStatus, value); }
+        }
+        #endregion
+
+        #region subregion laser
         /// <summary>
-        /// Gets the LaserPower property. LaserPower is the power of the laser.
+        /// Get the LaserPower property. LaserPower is the power of the laser.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public double LaserPower
@@ -966,7 +607,7 @@ namespace VDGrbl.ViewModel
                 {
                     _laserPower = MaxLaserPower;
                 }
-                WriteString(string.Format("S{0}",_laserPower));
+                WriteString(string.Format("S{0}", _laserPower));
                 logger.Info("MainViewModel|Manual laser power value is {0}", _laserPower);
             }
         }
@@ -982,11 +623,7 @@ namespace VDGrbl.ViewModel
         public bool IsLaserPower { get; private set; } = false;
 
         /// <summary>
-        /// The <see cref="MachineStatusColor" /> property's name.
-        /// </summary>
-        public const string LaserColorPropertyName = "LaserColor";
-        /// <summary>
-        /// Gets the LaserColor property. The color change depending of the current state of the laser (ON=Blue, OFF=Light Gray...)
+        /// Get the LaserColor property. The color change depending of the current state of the laser (ON=Blue, OFF=Light Gray...)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public SolidColorBrush LaserColor
@@ -1002,13 +639,346 @@ namespace VDGrbl.ViewModel
         }
         #endregion
 
-        #region subregion machine status, coordinate and version
+        #region subregion G-Code
         /// <summary>
-        /// The <see cref="MachineStatus" /> property's name.
+        /// Get the GroupBoxGCodeFileTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public const string MachineStatusPropertyName = "MachineStatus";
+        public string GroupBoxGCodeTitle
+        {
+            get
+            {
+                return _groupBoxGCodeTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxGCodeTitle, value);
+            }
+        }
+
         /// <summary>
-        /// Gets the MachineStatus property. This is the current state of the machine (Idle, Run, Hold, Alarm...)
+        /// Get the FileName property. FileName is the G-code file name.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string FileName
+        {
+            get
+            {
+                return _fileName;
+            }
+            set
+            {
+                Set(ref _fileName, value);
+                logger.Info("MainViewModel|File name is {0}", value);
+
+            }
+        }
+
+        /// <summary>
+        /// Get the EstimateJobTime property. It is the estimation of running time.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string EstimateJobTime
+        {
+            get
+            {
+                return _estimateJobTime;
+            }
+            set
+            {
+                Set(ref _estimateJobTime, value);
+                logger.Info("MainViewModel|Job time is : {0}", value);
+
+            }
+        }
+
+        /// <summary>
+        /// Get the FileQueue property. FileQueue is populated w/ lines of G-code file trimed.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Queue<string> FileQueue
+        {
+            get
+            {
+                return _fileQueue;
+            }
+            set
+            {
+                Set(ref _fileQueue, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the FileList property. FileList is populated w/ lines of G-code file.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public List<string> FileList
+        {
+            get
+            {
+                return _fileList;
+            }
+            set
+            {
+                Set(ref _fileList, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the NLine property. NLine is the number of lines in the G-code file.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double NLine
+        {
+            get
+            {
+                return _nLine;
+            }
+            set
+            {
+                Set(ref _nLine, value);
+                logger.Info("MainViewmodel|The number of line is {0}", _nLine);
+            }
+        }
+
+        /// <summary>
+        /// Get the RLine property. RLine is the number of lines remaining in the G-code queue.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double RLine
+        {
+            get
+            {
+                return _rLine;
+            }
+            set
+            {
+                Set(ref _rLine, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the Buf property. Buf is the number of motions queued in Grbl's planner buffer.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Buf
+        {
+            get
+            {
+                return _buf;
+            }
+            set
+            {
+                Set(ref _buf, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the RX property. RX is the number of characters queued in Grbl's serial RX receive buffer.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string RX
+        {
+            get
+            {
+                return _rx;
+            }
+            set
+            {
+                Set(ref _rx, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the IsSending property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsSending
+        {
+            get
+            {
+                return _isSending;
+            }
+            set
+            {
+                Set(ref _isSending, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the PercentLine property. PercentLine is the progress.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double PercentLine
+        {
+            get
+            {
+                return _percentLine;
+            }
+            set
+            {
+                Set(ref _percentLine, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the SelectedTransferDelay property. This is the delay between two lines.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string SelectedTransferDelay
+        {
+            get
+            {
+                return _selectedTransferDelay;
+            }
+            set
+            {
+                Set(ref _selectedTransferDelay, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the ListTransferDelay property. 
+        /// </summary>
+        public string[] ListTransferDelay { get; private set; } = { "Slow", "Normal", "Fast" };
+
+        /// <summary>
+        /// Gets the GCodeLine property. GCodeLine is the G-Code line displayed.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GCodeLine
+        {
+            get
+            {
+                return _gcodeLine;
+            }
+            set
+            {
+                Set(ref _gcodeLine, value);
+            }
+        }
+        #endregion
+
+        #region subregion port settings
+        /// <summary>
+        /// Get the GroupBoxPortSettingsTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxPortSettingTitle
+        {
+            get
+            {
+                return _groupBoxPortSettingTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxPortSettingTitle, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the SelectedPortName property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string SelectedPortName
+        {
+            get
+            {
+                return _selectedPortName;
+            }
+            set
+            {
+                Set(ref _selectedPortName, value);
+                logger.Info("MainViewModel|The selected port is: {0}", value);
+            }
+        }
+
+        /// <summary>
+        /// Get the ListPortName property. 
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string[] ListPortNames { get; private set; }
+
+        /// <summary>
+        /// Get the SelectedBaudRateName property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int SelectedBaudRate
+        {
+            get
+            {
+                return _selectedBaudRate;
+            }
+            set
+            {
+                Set(ref _selectedBaudRate, value);
+                logger.Info("MainViewModel|The selected baudrate is: {0}", value);
+
+            }
+        }
+
+        /// <summary>
+        /// Get the ListBaudRates property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int[] ListBaudRates { get; private set; } = { 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
+        #endregion
+
+        #region subregion info
+        /// <summary>
+        /// Get the Version property. This is the Grbl version get w/ '$I' command (0.9i or 1.1j)
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string VersionGrbl
+        {
+            get
+            {
+                return _versionGrbl;
+            }
+            set
+            {
+                Set(ref _versionGrbl, value);
+                logger.Info("MainViewModel|Grbl version is {0}", _buildInfo);
+            }
+        }
+
+        /// <summary>
+        /// Gets the Build property. This is the Grbl date of build information get w/ '$I' command (20150621).
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string BuildInfo
+        {
+            get
+            {
+                return _buildInfo;
+            }
+            set
+            {
+                Set(ref _buildInfo, value);
+                logger.Info("MainViewModel|Grbl build is {0}", _buildInfo);
+            }
+        }
+        #endregion
+
+        #region subregion coordinate
+        /// <summary>
+        /// Get the GroupBoxCoordinateTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxCoordinateTitle
+        {
+            get
+            {
+                return _groupBoxCoordinateTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxCoordinateTitle, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the MachineStatus property. This is the current state of the machine (Idle, Run, Hold, Alarm...)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public MachStatus MachineStatus
@@ -1024,51 +994,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="ResponseStatus" /> property's name.
-        /// </summary>
-        public const string ResponseStatusPropertyName = "ResponseStatus";
-        /// <summary>
-        /// Gets the ResponseStatus property. This is the current status of the software (Queued, Data received, Ok, Not Ok).
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public RespStatus ResponseStatus
-        {
-            get { return _responseStatus; }
-            set { Set(ref _responseStatus, value); }
-        }
-
-        /// <summary>
-        /// The <see cref="SelectedTransferSpeed" /> property's name.
-        /// </summary>
-        public const string SelectedTransferSpeedPropertyName = "SelectedTransferSpeed";
-        /// <summary>
-        /// Get the SelectedTransferSpeed property. This is the speed selected to send G-Code lines of a file.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string SelectedTransferSpeed
-        {
-            get
-            {
-                return _selectedTransferSpeed;
-            }
-            set
-            {
-                Set(ref _selectedTransferSpeed, value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ListTransferSpeed property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string[] ListTransferSpeed { get; private set; } = { "Slow", "Normal", "Fast" };
-
-        /// <summary>
-        /// The <see cref="MachineStatusColor" /> property's name.
-        /// </summary>
-        public const string MachineStatusColorPropertyName = "MachineStatusColor";
-        /// <summary>
-        /// Gets the MachineStatusColor property. The color change depending of the current state of the machin (Idle=Beige, Run=Light Green...)
+        /// Get the MachineStatusColor property. The color change depending of the current state of the machin (Idle=Beige, Run=Light Green...)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public SolidColorBrush MachineStatusColor
@@ -1084,51 +1010,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="VersionGrbl" /> property's name.
-        /// </summary>
-        public const string VersionPropertyName = "Version";
-        /// <summary>
-        /// Gets the Version property. This is the Grbl version get w/ '$I' command (0.9i or 1.1j)
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string VersionGrbl
-        {
-            get
-            {
-                return _versionGrbl;
-            }
-            set
-            {
-                Set(ref _versionGrbl, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="Buid" /> property's name.
-        /// </summary>
-        public const string BuildPropertyName = "Build";
-        /// <summary>
-        /// Gets the Build property. This is the Grbl date of build information get w/ '$I' command (20150621).
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string BuildInfo
-        {
-            get
-            {
-                return _buildInfo;
-            }
-            set
-            {
-                Set(ref _buildInfo, value);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="MPosX" /> property's name.
-        /// </summary>
-        public const string MPosXPropertyName = "MPosX";
-        /// <summary>
-        /// Gets the PosX property. PosX is the X coordinate of the machin get w/ '?' Grbl real-time command.
+        /// Get the MPosX property. MPosX is the X machine coordinate get w/ '?' Grbl real-time command.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string MPosX
@@ -1144,11 +1026,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="MPosY" /> property's name.
-        /// </summary>
-        public const string MPosYPropertyName = "MPosY";
-        /// <summary>
-        /// Gets the PosY property. PosY is the Y coordinate received the machin get w/ '?' Grbl real-time command.
+        /// Get the MPosY property. MPosY is the Y machine coordinate get w/ '?' Grbl real-time command.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string MPosY
@@ -1164,11 +1042,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="WPosX" /> property's name.
-        /// </summary>
-        public const string WPosXPropertyName = "WPosX";
-        /// <summary>
-        /// Gets the PosX property. PosX is the X coordinate of the machin get w/ '?' Grbl real-time command.
+        /// Get the WPosX property. WPosX is the X work coordinate w/ '?' Grbl real-time command.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string WPosX
@@ -1184,11 +1058,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="WPosY" /> property's name.
-        /// </summary>
-        public const string WPosYPropertyName = "WPosY";
-        /// <summary>
-        /// Gets the PosY property. PosY is the Y coordinate received the machin get w/ '?' Grbl real-time command.
+        /// Get the WPosY property. WPosY is the Y work coordinate w/ '?' Grbl real-time command.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string WPosY
@@ -1250,7 +1120,7 @@ namespace VDGrbl.ViewModel
                             return;
                         }
                         GroupBoxGCodeTitle = item.GCodeHeader;
-                        SelectedTransferSpeed = ListTransferSpeed[1];
+                        SelectedTransferDelay = ListTransferDelay[1];
                     });
 
                 _dataService.GetCoordinate(
@@ -1397,7 +1267,7 @@ namespace VDGrbl.ViewModel
         {
             GetSerialPortSettings();
             DefaultPortSettings();
-            logger.Info("MainViewModel|Refresh Port COM");
+            logger.Info("MainViewModel|Refresh serial port");
         }
         /// <summary>
 /// Allows/Disallows RefreshSerialPort method to be executed.
@@ -1429,6 +1299,11 @@ namespace VDGrbl.ViewModel
                     _serialPort.Open();
                     GrblReset(); //Do a soft reset before starting a new job?
                     GrblBuildInfo();
+                    VersionGrbl = "1.1";
+                if(VersionGrbl== "-")
+                {
+                    _serialPort.Close();
+                }
                     logger.Info("MainViewModel|Port COM open");
             }
             catch (Exception ex)
@@ -1664,6 +1539,7 @@ namespace VDGrbl.ViewModel
                 Thread.Sleep(50);
                 RXLine = string.Empty;
                 TXLine = string.Empty;
+                GCodeLine = string.Empty;
                 ListGrblSetting.Clear();
                 ListConsoleData.Clear();
                 NLine = 0;
@@ -2181,7 +2057,6 @@ namespace VDGrbl.ViewModel
         private void InitializeDispatcherTimer()
         {
             currentStatusTimer.Tick += new EventHandler(DispatcherTimer_Tick);
-            //dispatcherTimer.Interval = TimeSpan.FromSeconds(0.25);
             currentStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 250);
             currentStatusTimer.Start();
             logger.Info("MainViewModel|Initialize Dispatcher Timer");
@@ -2241,14 +2116,15 @@ namespace VDGrbl.ViewModel
                 {
                     FileQueue.Enqueue(gcodeToolBasic.TrimGcode(line));
                     FileList.Add(line);
+                    GCodeLine += line + Environment.NewLine;
                 }
             }
+            logger.Info(GCodeLine);
             NLine = FileQueue.Count;
             RLine = NLine;
             Tools.GCodeTool gcodeTool = new Tools.GCodeTool(FileList);
             TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
             EstimateJobTime = time.ToString(@"hh\:mm\:ss");
-            
         }
 
         /// <summary>
@@ -2281,7 +2157,7 @@ namespace VDGrbl.ViewModel
                         }
                     }
                 },token);
-            switch (SelectedTransferSpeed)
+            switch (SelectedTransferDelay)
             {
                 case "Slow":
                     transferDelay = 2000;
@@ -2293,7 +2169,7 @@ namespace VDGrbl.ViewModel
                     transferDelay = 250;
                     break;
             }
-            logger.Info("MainViewModel|Transfer speed:", SelectedTransferSpeed);
+            logger.Info("MainViewModel|Transfer speed:", SelectedTransferDelay);
             try
             {
                 await t;
@@ -2302,7 +2178,7 @@ namespace VDGrbl.ViewModel
 
             catch (AggregateException)
             {
-                logger.Info("MainViewModel|Task1 sending file cancelled");
+                logger.Info("MainViewModel|Task sending file cancelled");
             }
 
             finally
@@ -2396,7 +2272,6 @@ namespace VDGrbl.ViewModel
                 }
             return false;
         }
-       
         #endregion
 
         /// <summary>

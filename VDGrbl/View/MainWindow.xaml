@@ -8,7 +8,7 @@
         mc:Ignorable="d ignore"
         Height="520"
         Width="890"
-        Title="VDGrbl v0.3" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Title="VDGrbl v0.3.1" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
@@ -43,7 +43,7 @@
                         <StackPanel Orientation="Horizontal">
                             <!--Send file area-->
                             <StackPanel Orientation="Horizontal">
-                                <local:GCodeView Margin="1" Width="Auto" Height="Auto"/>
+                                <local:GCodeView Margin="1" Width="570" Height="Auto"/>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
