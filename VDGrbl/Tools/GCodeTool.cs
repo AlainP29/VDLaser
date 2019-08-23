@@ -26,7 +26,7 @@ namespace VDGrbl.Tools
         public string GCodeLine { get; private set; }
 
         /// <summary>
-        /// Gets the FileList property. FileList is populated w/ lines of G-code file.
+        /// Get the FileList property. FileList is populated w/ lines of G-code file.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public List<string> FileList { get; private set; }
@@ -232,39 +232,58 @@ namespace VDGrbl.Tools
         }
 
         /// <summary>
-        /// Parse Gcode line.
+        /// Parse Gcode line. Get values of G-Code commands
         /// </summary>
         public void ParseGCode()
         {
-            var arr = GCodeLine.Split(' ');
-            for (int i = 0; i < arr.Length; i++)
+            var arr = GCodeLine.ToUpper().Split(' ');
+            try
             {
-                if (arr[i].Contains("X"))
+                for (int i = 0; i < arr.Length; i++)
                 {
-                    X = arr[i].Remove(0, 1);
+                    if (arr[i].Contains("X"))
+                    {
+                        X = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("Y"))
+                    {
+                        Y = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("I"))
+                    {
+                        I = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("J"))
+                    {
+                        J = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("F"))
+                    {
+                        F = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("S"))
+                    {
+                        S = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("G"))
+                    {
+                        G = arr[i].Remove(0, 1);
+                        ProcessGCode(G);
+                    }
+                    else if (arr[i].Contains("M"))
+                    {
+                        M = arr[i].Remove(0, 1);
+                        ProcessMCode(M);
+                    }
+                    else
+                    {
+                        arr[i] = string.Empty;
+                    }
                 }
-                else if (arr[i].Contains("Y"))
-                {
-                    Y = arr[i].Remove(0, 1);
-                }
-                else if (arr[i].Contains("F"))
-                {
-                    F = arr[i].Remove(0, 1);
-                }
-                else if (arr[i].Contains("S"))
-                {
-                    S = arr[i].Remove(0, 1);
-                }
-                else if (arr[i].Contains("G"))
-                {
-                    G = arr[i].Remove(0, 1);
-                    ProcessGCode(G);
-                }
-                else if (arr[i].Contains("M"))
-                {
-                    M = arr[i].Remove(0, 1);
-                    ProcessMCode(M);
-                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error("Method ParseGCode raised: {0}", ex.ToString());
             }
         }
 

@@ -57,6 +57,7 @@ namespace VDGrbl.Tools
         {
 
         }
+
         public GrblTool(string grblData)
         {
             GrblData = grblData;
@@ -267,24 +268,32 @@ namespace VDGrbl.Tools
             {
                 ResponseStatus = RespStatus.Q;//Wait until we get all settings before sending new line of code
                 string[] arr = data.Split(new Char[] { '=', '(', ')', '\r', '\n' });
-                if (data.Contains("N"))
+                if (arr.Length > 0)
                 {
-                    InfoMessage = "Startup block";//$N0=...
+                    if (data.Contains("N"))
+                    {
+                        InfoMessage = "Startup block";//$N0=...
+                    }
+                    else
+                    {
+                        if (arr.Length > 2)//Grbl version 0.9 (w/ setting description)
+                        {
+                            GrblM = new GrblModel(arr[0], arr[1], arr[2]);
+                            ListGrblSettingModel.Add(GrblM);
+                        }
+                        else//Grbl version 1.1 (w/o setting description)
+                        {
+                            GrblM = new GrblModel(arr[0], arr[1], "");
+                            ListGrblSettingModel.Add(GrblM);
+                        }
+                    }
+                    logger.Info("GrblTool|ProcessGrblSettingResponse|GrblSetting Value:{0}|RespStatus:{1}|MachStatus{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
                 }
                 else
                 {
-                    if (arr.Length > 2)//Grbl version 0.9 (w/ setting description)
-                    {
-                        GrblM = new GrblModel(arr[0], arr[1], arr[2]);
-                        ListGrblSettingModel.Add(GrblM);
-                    }
-                    else//Grbl version 1.1 (w/o setting description)
-                    {
-                        GrblM = new GrblModel(arr[0], arr[1], "");
-                        ListGrblSettingModel.Add(GrblM);
-                    }
+                    logger.Info("GrblTool|ProcessGrblSettingResponse|Unknown");
+                    ResponseStatus = RespStatus.NOk;
                 }
-                logger.Info("GrblTool|ProcessGrblSettingResponse|GrblSetting Value:{0}|RespStatus:{1}|MachStatus{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
             }
             catch (Exception ex)
             {
@@ -294,7 +303,7 @@ namespace VDGrbl.Tools
         }
 
         /// <summary>
-        /// Gets machine coordinates and status depending of Grbl version.
+        /// Get coordinates and status depending of Grbl version 0.9 or 1.1.
         /// </summary>
         /// <param name="_data"></param>
         public void ProcessCurrentStatusResponse(string _data)
@@ -353,54 +362,62 @@ namespace VDGrbl.Tools
                 else//Report state Grbl v0.9 <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000,Buf:0,RX:0>
                 {
                     string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n' });
-                    if (arr.Length > 3)
+                    if (arr.Length>0)
                     {
-                        MachinePositionX = arr[3];
-                        MachinePositionY = arr[4];
+                        if (arr.Length > 3)
+                        {
+                            MachinePositionX = arr[3];
+                            MachinePositionY = arr[4];
+                        }
+                        if (arr.Length > 7)
+                        {
+                            WorkPositionX = arr[7];
+                            WorkPositionY = arr[8];
+                        }
+                        if (arr.Length > 11)
+                        {
+                            PlannerBuffer = arr[11];
+                        }
+                        if (arr.Length > 13)
+                        {
+                            RxBuffer = arr[13];
+                        }
+                        switch (arr[1])
+                        {
+                            case "idle":
+                                MachineStatus = MachStatus.Idle;
+                                MachineStatusColor = Brushes.Beige;
+                                break;
+                            case "run":
+                                MachineStatus = MachStatus.Run;
+                                MachineStatusColor = Brushes.LightGreen;
+                                break;
+                            case "hold":
+                                MachineStatus = MachStatus.Hold;
+                                MachineStatusColor = Brushes.LightBlue;
+                                break;
+                            case "alarm":
+                                MachineStatus = MachStatus.Alarm;
+                                MachineStatusColor = Brushes.Red;
+                                break;
+                            case "door":
+                                MachineStatus = MachStatus.Door;
+                                MachineStatusColor = Brushes.LightYellow;
+                                break;
+                            case "check":
+                                MachineStatus = MachStatus.Check;
+                                MachineStatusColor = Brushes.LightCyan;
+                                break;
+                            case "home":
+                                MachineStatus = MachStatus.Home;
+                                MachineStatusColor = Brushes.LightPink;
+                                break;
+                        }
                     }
-                    if (arr.Length > 7)
+                    else
                     {
-                        WorkPositionX = arr[7];
-                        WorkPositionY = arr[8];
-                    }
-                    if (arr.Length > 11)
-                    {
-                        PlannerBuffer = arr[11];
-                    }
-                    if (arr.Length > 13)
-                    {
-                        RxBuffer = arr[13];
-                    }
-                    switch (arr[1])
-                    {
-                        case "idle":
-                            MachineStatus = MachStatus.Idle;
-                            MachineStatusColor = Brushes.Beige;
-                            break;
-                        case "run":
-                            MachineStatus = MachStatus.Run;
-                            MachineStatusColor = Brushes.LightGreen;
-                            break;
-                        case "hold":
-                            MachineStatus = MachStatus.Hold;
-                            MachineStatusColor = Brushes.LightBlue;
-                            break;
-                        case "alarm":
-                            MachineStatus = MachStatus.Alarm;
-                            MachineStatusColor = Brushes.Red;
-                            break;
-                        case "door":
-                            MachineStatus = MachStatus.Door;
-                            MachineStatusColor = Brushes.LightYellow;
-                            break;
-                        case "check":
-                            MachineStatus = MachStatus.Check;
-                            MachineStatusColor = Brushes.LightCyan;
-                            break;
-                        case "home":
-                            MachineStatus = MachStatus.Home;
-                            MachineStatusColor = Brushes.LightPink;
-                            break;
+                        logger.Info("GrblTool|ProcessCurrentStatusResponse|Unknown");
+                        ResponseStatus = RespStatus.NOk;
                     }
                 }
                 //logger.Info("GrblTool|ProcessCurrentStatusResponse|Current state:{0}|RespStatus:{1}|MachStatus:{2}|Color:{3}", _data, ResponseStatus.ToString(), MachineStatus.ToString(), MachineStatusColor.ToString());

@@ -9,12 +9,17 @@ namespace VDGrbl.Tools
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
+            string v = (string)value;
+            v.Replace('.', ',');
+
             if (targetType != typeof(string))
             {
                 //throw new InvalidOperationException("The target must be a boolean");
             }
-            string v = (string)value;
-            v.Replace('.', ',');
+            if (parameter != null)
+            {
+                return v;
+            }
             return v;
             }
 

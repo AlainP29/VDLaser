@@ -8,7 +8,7 @@ namespace VDGrbl.Codes
     public class AlarmCodes
     {
         /// <summary>
-        /// Description of the alarm messages Grbl version 0.9 and 1.1
+        /// Description of the alarm messages for Grbl version 0.9 (AlarmDict09) and 1.1 (AlarmDict11) only
         /// </summary>
         public AlarmCodes()
         {
@@ -39,4 +39,3 @@ namespace VDGrbl.Codes
         public Dictionary<string, string> AlarmDict11 { get; set; } = new Dictionary<string, string>();
     }
 }
-

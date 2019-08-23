@@ -14,11 +14,16 @@ namespace VDGrbl.Tools
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            int b = (int)value;
+
             if (targetType != typeof(int))
             {
                 //throw new InvalidOperationException("The target must be an integer");
             }
-            int b = (int)value;
+            if (parameter != null)
+            {
+                return new TimeSpan(b);
+            }
             return new TimeSpan(b);
         }
 

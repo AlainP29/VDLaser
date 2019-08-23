@@ -3,14 +3,11 @@
 namespace VDGrbl.Model
 {
     /// <summary>
-    /// G-Code class model
+    /// G-Code class model: add GCodeFileName, GCodeLine and GCodeFileList properties.
     /// </summary>
     public class GCodeModel
     {
         public string GCodeHeader { get; private set; }
-        public string GCodeFileName { get; private set; }
-        public string GCodeLine { get; private set; }
-        public List<string> GCodeFileList { get; private set; }
 
         public GCodeModel(string gcodeFileHeader)
         {

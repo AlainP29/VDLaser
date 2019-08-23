@@ -15,7 +15,7 @@ namespace VDGrbl.Design
 
         public void GetGrbl(Action<GrblModel, Exception> callback)
         {
-            var item = new GrblModel(" [design]");
+            var item = new GrblModel("Grbl [design]");
             callback(item, null);
         }
 
@@ -34,6 +34,12 @@ namespace VDGrbl.Design
         public void GetCoordinate(Action<CoordinateModel, Exception> callback)
         {
             var item = new CoordinateModel("X-Y Coordinate [design]");
+            callback(item, null);
+        }
+
+        public void GetImage(Action<ImageModel, Exception> callback)
+        {
+            var item = new ImageModel("Image [design]");
             callback(item, null);
         }
     }

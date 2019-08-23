@@ -8,7 +8,7 @@
         mc:Ignorable="d ignore"
         Height="520"
         Width="890"
-        Title="VDGrbl v0.3.1" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Title="VDGrbl v0.3.2" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
@@ -31,8 +31,7 @@
                         <StackPanel Orientation="Horizontal">
                             <!--Send/receive data area-->
                             <StackPanel>
-                                <local:SendDataView Margin="1"
-                                                Width="Auto" Height="Auto"/>
+                                <local:SendDataView Margin="1" Width="Auto" Height="Auto"/>
                             </StackPanel>
                             <local:JoggingView Margin="1" VerticalAlignment="Top"/>
                         </StackPanel>
@@ -43,7 +42,7 @@
                         <StackPanel Orientation="Horizontal">
                             <!--Send file area-->
                             <StackPanel Orientation="Horizontal">
-                                <local:GCodeView Margin="1" Width="570" Height="Auto"/>
+                                <local:GCodeFileView Margin="1" Width="570" Height="Auto"/>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
@@ -54,6 +53,14 @@
                         <StackPanel Orientation="Horizontal">
                             <local:GrblCommandView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
                             <local:GrblSettingView Margin="1" Height="Auto" Width="Auto"/>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Laser image" Style="{DynamicResource ControlStyleVD}">
+                    <Grid Background="#FFE5E5E5" Height="300" Margin="0">
+                        <!-- Grbl laser image-->
+                        <StackPanel Orientation="Horizontal">
+                            <local:ImageView Margin="1,1,1,0" Height="290" Width="560" VerticalAlignment="Top"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>

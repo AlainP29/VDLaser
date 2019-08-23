@@ -9,7 +9,7 @@ namespace VDGrbl.Codes
     public class SettingCodes
     {
         /// <summary>
-        /// List of the system settings of Grbl version 0.9 and 1.1 (get after sending $$ command).
+        /// List of the system settings for Grbl version 0.9 and 1.1 (SettingDict) only (get after sending $$ command).
         /// In Grbl version 1.1 the description is not save in the Arduino.
         /// </summary>
         public SettingCodes()
@@ -56,8 +56,8 @@ namespace VDGrbl.Codes
         public Dictionary<string, string> SettingDict { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
-/// List of $XX settings value
-/// </summary>
+        /// List of $XX settings value
+        /// </summary>
         private readonly List<string> _settingCode = new List<string> { "$0", "$1", "$2", "$3", "$4", "$5", "$6", "$10", "$11", "$12", "$13", "$20", "$21", "$22", "$23", "$24", "$25", "$26", "$27","$30","$31","$32","$100","$101","$102","$110","$111","$112","$120","$121","$122","$130","$131","$132" };
 
         /// <summary>
@@ -99,6 +99,5 @@ namespace VDGrbl.Codes
             "Y Max travel, mm.",
             "Z Max travel, mm.",
         };
-        
     }
 }

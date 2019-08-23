@@ -102,6 +102,7 @@
     <Compile Include="Model\CoordinateModel.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
+    <Compile Include="Model\ImageModel.cs" />
     <Compile Include="Model\SerialPortSettingModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
@@ -109,7 +110,9 @@
     <Compile Include="Tools\BrushColorConverter.cs" />
     <Compile Include="Tools\DoubleConverter.cs" />
     <Compile Include="Tools\GCodeTool.cs" />
+    <Compile Include="Tools\GrayImageConverter.cs" />
     <Compile Include="Tools\GrblTool.cs" />
+    <Compile Include="Tools\RasterImageTool.cs" />
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\MathTool.cs" />
     <Compile Include="Tools\MultiBooleanConverter.cs" />
@@ -119,8 +122,8 @@
     <Compile Include="View\GrblCommandView.xaml.cs">
       <DependentUpon>GrblCommandView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\GCodeView.xaml.cs">
-      <DependentUpon>GCodeView.xaml</DependentUpon>
+    <Compile Include="View\GCodeFileView.xaml.cs">
+      <DependentUpon>GCodeFileView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\GrblInfoView.xaml.cs">
       <DependentUpon>GrblInfoView.xaml</DependentUpon>
@@ -129,6 +132,9 @@
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="View\CoordinateView.xaml.cs">
       <DependentUpon>CoordinateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ImageView.xaml.cs">
+      <DependentUpon>ImageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\JoggingView.xaml.cs">
       <DependentUpon>JoggingView.xaml</DependentUpon>
@@ -152,7 +158,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\GCodeView.xaml">
+    <Page Include="View\GCodeFileView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -161,6 +167,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\CoordinateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ImageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -276,6 +286,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Skins\Images\iconStopFile40.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Skins\Images\iconImage40.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

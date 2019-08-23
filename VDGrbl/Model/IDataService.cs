@@ -11,5 +11,6 @@ namespace VDGrbl.Model
         void GetGrbl(Action<GrblModel, Exception> callback);
         void GetGCode(Action<GCodeModel, Exception> callback);
         void GetCoordinate(Action<CoordinateModel, Exception> callback);
+        void GetImage(Action<ImageModel, Exception> callback);
     }
 }

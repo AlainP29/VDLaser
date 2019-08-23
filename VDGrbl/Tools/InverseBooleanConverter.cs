@@ -16,6 +16,10 @@ namespace VDGrbl.Tools
             {
                 //throw new InvalidOperationException("The target must be a boolean");
             }
+            if (parameter != null)
+            {
+                return !System.Convert.ToBoolean(value);
+            }
             return !System.Convert.ToBoolean(value);
         }
 

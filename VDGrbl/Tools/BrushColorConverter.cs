@@ -1,6 +1,6 @@
-﻿using System.Windows.Data;
+﻿using System.Globalization;
+using System.Windows.Data;
 using System.Windows.Media;
-using System.Globalization;
 
 namespace VDGrbl.Tools
 {
@@ -12,11 +12,15 @@ namespace VDGrbl.Tools
     {
         public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
         {
+            bool b = (bool)value;
             if (targetType != typeof(bool))
             {
                 //throw new InvalidOperationException("The target must be a boolean");
             }
-            bool b = (bool)value;
+            if (parameter != null)
+            {
+                return b ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.OrangeRed);
+            }
             return b ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.OrangeRed);
         }
 

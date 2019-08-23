@@ -13,7 +13,6 @@ namespace VDGrbl.Model
         public string PortName { get; private set; }
         public int BaudRateValue { get; private set; }
         public string BaudRateName { get; private set; }
-
         public SerialPortSettingModel(string serialPortSettingHeader)
         {
             SerialPortSettingHeader = serialPortSettingHeader;

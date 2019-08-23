@@ -14,6 +14,21 @@ namespace VDGrbl.Tools
         {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (targetType != typeof(bool))
+            {
+                //throw new InvalidOperationException("The target must be a boolean");
+            }
+            if (parameter != null)
+            {
+                foreach (object value in values)
+                {
+                    if ((value is bool) && (bool)value == true)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
             foreach (object value in values)
             {
                 if ((value is bool) && (bool)value == true)

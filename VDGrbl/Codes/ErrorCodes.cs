@@ -12,7 +12,7 @@ namespace VDGrbl.Codes
     class ErrorCodes
     {
         /// <summary>
-        /// Description of the error messages of Grbl version 0.9 and 1.1
+        /// Description of the error messages of Grbl version 0.9 (ErrorDict09) and 1.1 (ErrorDict11) only
         /// </summary>
         public ErrorCodes()
         {
@@ -45,7 +45,6 @@ namespace VDGrbl.Codes
             ErrorDict09.Add("35", "	A G2 or G3 arc, traced with the offset definition, is missing the IJK offset word in the selected plane to trace the arc.");
             ErrorDict09.Add("36", "	There are unused, leftover G-code words that aren't used by any command in the block.");
             ErrorDict09.Add("37", "	The G43.1 dynamic tool length offset command cannot apply an offset to an axis other than its configured axis. The Grbl default axis is the Z-axis.");
-
 
             ErrorDict11.Add("1", "G-code words consist of a letter and a value. Letter was not found.");
             ErrorDict11.Add("2", "Numeric value format is not valid or missing an expected value.");

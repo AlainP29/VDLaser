@@ -5,9 +5,9 @@ namespace VDGrbl.View
     /// <summary>
     /// Logique d'interaction pour GCodeView.xaml
     /// </summary>
-    public partial class GCodeView : UserControl
+    public partial class GCodeFileView : UserControl
     {
-        public GCodeView()
+        public GCodeFileView()
         {
             InitializeComponent();
         }
