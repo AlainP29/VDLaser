@@ -71,7 +71,7 @@ namespace VDGrbl.ViewModel
         private bool _isManualSending = true;
         private bool _isSending = false;
 
-        private BitmapSource _imgSource = null;
+        //private BitmapSource _imgSource = null;
         private BitmapSource _imgTransform=null;
 
         private SerialPort _serialPort;
@@ -814,6 +814,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isSending, value);
+                logger.Info("MainViewModel|Is sending {0}", value);
             }
         }
 
@@ -951,7 +952,6 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _versionGrbl, value);
-                logger.Info("MainViewModel|Grbl version : {0}", value);
             }
         }
 
@@ -968,7 +968,6 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _buildInfoGrbl, value);
-                logger.Info("MainViewModel|Grbl build : {0}", value);
             }
         }
         #endregion
@@ -1003,7 +1002,6 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _machineStatus, value);
-                logger.Info("MainViewModel|Machine status : {0}", value);
             }
         }
 
@@ -1020,7 +1018,6 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _machineStatusColor, value);
-                logger.Info("MainViewModel|Machine status color is {0}", _machineStatusColor);
             }
         }
 
@@ -1375,15 +1372,8 @@ namespace VDGrbl.ViewModel
                 _serialPort.DiscardNull = false;
                 _serialPort.DataReceived += _serialPort_DataReceived;
                 _serialPort.Open();
-                logger.Info("MainViewModel|Port COM opened");
-                GrblReset(); //Do a soft reset before starting a new job?
-                GrblBuildInfo();
-                VersionGrbl = "1.1";
-                if(VersionGrbl== "-")
-                {
-                    _serialPort.Close();
-                    logger.Info("MainViewModel|Port COM closed");
-                }
+                logger.Info("MainViewModel|Port COM open");
+                CheckCommunication();
             }
             catch (Exception ex)
             {
@@ -1399,6 +1389,26 @@ namespace VDGrbl.ViewModel
             return !_serialPort.IsOpen && !String.IsNullOrEmpty(SelectedPortName);
         }
 
+        public void CheckCommunication()
+        {
+            if(_serialPort.IsOpen)
+            {
+                GrblReset(); //Do a soft reset before starting a new job?
+                GrblBuildInfo();
+                //Thread.Sleep(1000);
+                if (VersionGrbl != "0.9" || VersionGrbl != "1.1")
+                {
+                    //CloseSerialPort();
+                    logger.Info("MainViewModel| Unknown device or Bad Grbl version {0}", VersionGrbl);
+                }
+            }
+            else
+            {
+                CloseSerialPort();
+                logger.Info("MainViewModel| Wrong com port", VersionGrbl);
+            }
+        }
+
         /// <summary>
         /// End serial port communication
         /// </summary>
@@ -1409,6 +1419,7 @@ namespace VDGrbl.ViewModel
                 _serialPort.DataReceived -= _serialPort_DataReceived;
                 _serialPort.Dispose();
                 _serialPort.Close();
+                Cleanup();
                 logger.Info("MainViewModel|Port COM closed");
             }
             catch (Exception ex)
@@ -1619,6 +1630,7 @@ namespace VDGrbl.ViewModel
                 RXLine = string.Empty;
                 TXLine = string.Empty;
                 GCodeLine = string.Empty;
+                FileQueue.Clear();
                 ListGrblSetting.Clear();
                 ListConsoleData.Clear();
                 NLine = 0;
@@ -1653,6 +1665,7 @@ namespace VDGrbl.ViewModel
         public void GrblReset()
         {
             WriteByte(24);
+            logger.Info("MainViewModel|Soft reset");
         }
        
         /// <summary>
@@ -1661,6 +1674,7 @@ namespace VDGrbl.ViewModel
         public void GrblStartCycle()
         {
             WriteByte(126);
+            logger.Info("MainViewModel|Start machin");
         }
         
         /// <summary>
@@ -1669,6 +1683,7 @@ namespace VDGrbl.ViewModel
         public void GrblFeedHold()
         {
             WriteByte(33);
+            logger.Info("MainViewModel|Pause");
         }
 
         /// <summary>
@@ -1685,6 +1700,7 @@ namespace VDGrbl.ViewModel
         public void GrblKillAlarm()
         {
             WriteString("$X");
+            logger.Info("MainViewModel|Kill alarm mode");
         }
 
         /// <summary>
@@ -1706,6 +1722,7 @@ namespace VDGrbl.ViewModel
             WriteString("$$");
             Thread.Sleep(100);//Waits for ListSettingModel to populate all setting values
             SettingCollection = new ObservableCollection<GrblModel>(ListGrblSetting);
+            logger.Info("MainViewModel|Grbl settings");
         }
 
         /// <summary>
@@ -1714,6 +1731,7 @@ namespace VDGrbl.ViewModel
         public void GrblParameters()
         {
             WriteString("$#");
+            logger.Info("MainViewModel|Grbl parameter");
         }
 
         /// <summary>
@@ -1722,6 +1740,7 @@ namespace VDGrbl.ViewModel
         public void GrblParserState()
         {
             WriteString("$G");
+            logger.Info("MainViewModel|Grbl parser mode");
         }
 
         /// <summary>
@@ -1730,6 +1749,7 @@ namespace VDGrbl.ViewModel
         public void GrblBuildInfo()
         {
             WriteString("$I");
+            logger.Info("MainViewModel|Grbl infos");
         }
 
         /// <summary>
@@ -1738,6 +1758,7 @@ namespace VDGrbl.ViewModel
         public void GrblStartupBlocks()
         {
             WriteString("$N");
+            logger.Info("MainViewModel|Grbl startup block");
         }
 
         /// <summary>
@@ -1746,6 +1767,7 @@ namespace VDGrbl.ViewModel
         public void GrblCheck()
         {
             WriteString("$C");
+            logger.Info("MainViewModel|Grbl check mode");
         }
 
         /// <summary>
@@ -1754,6 +1776,7 @@ namespace VDGrbl.ViewModel
         public void GrblHoming()
         {
             WriteString("$H");
+            logger.Info("MainViewModel|Grbl homing");
         }
 
         /// <summary>
@@ -1762,6 +1785,7 @@ namespace VDGrbl.ViewModel
         public void GrblSleep()
         {
             WriteString("$SLP");
+            logger.Info("MainViewModel|Grbl sleep mode");
         }
 
         /// <summary>
@@ -1770,6 +1794,7 @@ namespace VDGrbl.ViewModel
         public void GrblHelp()
         {
             WriteString("$");
+            logger.Info("MainViewModel|Grbl help");
         }
 
         /// <summary>
@@ -2127,7 +2152,7 @@ namespace VDGrbl.ViewModel
         public override void Cleanup()
         {
             // Clean up if needed
-
+            currentStatusTimer.Stop();
             base.Cleanup();
         }
 
@@ -2149,7 +2174,8 @@ namespace VDGrbl.ViewModel
         {
             if(FileQueue!=null)
             {
-                FileQueue.Clear();
+                //FileQueue.Clear();
+                ClearData();
             }
             OpenFileDialog openFile = new OpenFileDialog();
             try
@@ -2213,7 +2239,7 @@ namespace VDGrbl.ViewModel
         private async void StartSendingFileAsync()
         {
             cts = new CancellationTokenSource();
-            var token = cts.Token;
+            CancellationToken token = cts.Token;
             var progressHandler = new Progress<double>(value => PercentLine = value);
             var progress = progressHandler as IProgress<double>;
             var t = Task.Run(() =>
@@ -2237,6 +2263,7 @@ namespace VDGrbl.ViewModel
                         }
                         if (token.IsCancellationRequested)
                         {
+                            logger.Info("MainViewModel|Sending file canceled at line {0}", i.ToString());
                             break;
                         }
                     }
@@ -2267,7 +2294,7 @@ namespace VDGrbl.ViewModel
 
             finally
             {
-                //cts.Dispose();
+                cts.Dispose();
             }
         }
 
@@ -2446,6 +2473,7 @@ namespace VDGrbl.ViewModel
                 RX = grbltool.RxBuffer;
                 VersionGrbl = grbltool.VersionGrbl;
                 BuildInfoGrbl = grbltool.BuildInfo;
+                InfoMessage = grbltool.InfoMessage;
                 if(ListConsoleData.Count>4)//Number of lines showed in data console
                 {
                     ListConsoleData.RemoveAt(0);

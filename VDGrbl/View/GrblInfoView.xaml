@@ -20,7 +20,7 @@
                 <Label Grid.Column="0" Content="Version:" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                 <Label Grid.Column="2" Content="Build:" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                 <Label Grid.Column="1" Content="{Binding Main.VersionGrbl}" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                <Label Grid.Column="3" Grid.Row="1" Content="{Binding Main.BuildInfo}" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                <Label Grid.Column="3" Grid.Row="1" Content="{Binding Main.BuildInfoGrbl}" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
             </Grid>
         </GroupBox>
     </Grid>

@@ -126,7 +126,7 @@ namespace VDGrbl.Tools
             try
             {
                 ResponseStatus = RespStatus.Ok;
-                logger.Info("GrblTool|ProcessInfoResponse|Data:{0}|RespStatus:{1}|MachStatus:{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
+                logger.Info("GrblTool|ProcessInfoResponse|Data:{0}", data);
                 switch (data.Length)
                 {
                     case 9:
@@ -180,39 +180,39 @@ namespace VDGrbl.Tools
         /// <param name="_data"></param>
         /// <param name="_isError"></param>
         /// <returns></returns>
-        public void ProcessResponse(string _data)
+        public void ProcessResponse(string data)
         {
             ResponseStatus = RespStatus.Ok;
             CanSend=true;
-            logger.Info("GrblTool|ProcessResponse|Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
+            logger.Info("GrblTool|ProcessResponse|Data:{0}", data);
         }
 
         /// <summary>
         /// Processes the serial port error message reply.
         /// </summary>
-        /// <param name="_data"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
-        public void ProcessErrorResponse(string _data)
+        public void ProcessErrorResponse(string data)
         {
             try
             {
                 ErrorCodes ec = new ErrorCodes();
                 if (VersionGrbl.StartsWith("1"))//In version 1.1 all error codes have ID
                 {
-                    ErrorMessage = ec.ErrorDict11[_data.Split(':')[1]];
-                    logger.Info("GrblTool|ProcessErrorResponse|Error key:{0} | description:{1}", _data.Split(':')[1], ErrorMessage);
+                    ErrorMessage = ec.ErrorDict11[data.Split(':')[1]];
+                    logger.Info("GrblTool|ProcessErrorResponse|Error key:{0} | description:{1}", data.Split(':')[1], ErrorMessage);
                 }
                 else
                 {
-                    if (_data.Contains("ID"))//In version 0.9 only error code from 23 to 37 have ID
+                    if (data.Contains("ID"))//In version 0.9 only error code from 23 to 37 have ID
                     {
-                        ErrorMessage = ec.ErrorDict09[_data.Split(':')[2]];
-                        logger.Info("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", _data.Split(':')[2], ErrorMessage);
+                        ErrorMessage = ec.ErrorDict09[data.Split(':')[2]];
+                        logger.Info("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[2], ErrorMessage);
                     }
                     else//Error codes w/o ID
                     {
-                        ErrorMessage = ec.ErrorDict09[_data.Split(':')[1]];
-                        logger.Info("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", _data.Split(':')[1], ErrorMessage);
+                        ErrorMessage = ec.ErrorDict09[data.Split(':')[1]];
+                        logger.Info("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[1], ErrorMessage);
                     }
                 }
                 ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command + try/catch
@@ -228,26 +228,26 @@ namespace VDGrbl.Tools
         /// <summary>
         /// Processes the serial port alarm message reply.
         /// </summary>
-        /// <param name="_data"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
-        public void ProcessAlarmResponse(string _data)
+        public void ProcessAlarmResponse(string data)
         {
             ResponseStatus = RespStatus.NOk;
             MachineStatusColor = Brushes.Red;
             CanSend = false;
-            logger.Info("GrblTool|ProcessResponse|Data:{0}|RespStatus:{1}|MachStatus:{2}", _data, ResponseStatus.ToString(), MachineStatus.ToString());
+            logger.Info("GrblTool|ProcessResponse|Data:{0}|RespStatus:{1}|MachStatus:{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
             AlarmCodes ac = new AlarmCodes();
             try
             {
                 if (VersionGrbl.StartsWith("1"))
                 {
-                    AlarmMessage = ac.AlarmDict11[_data.Split(':')[1]];
-                    logger.Info("GrblTool|ProcessAlarmResponse11|Alarm key {0} | description:{1}", _data.Split(':')[1], AlarmMessage);
+                    AlarmMessage = ac.AlarmDict11[data.Split(':')[1]];
+                    logger.Info("GrblTool|ProcessAlarmResponse11|Alarm key {0} | description:{1}", data.Split(':')[1], AlarmMessage);
                 }
                 else
                 {
-                    AlarmMessage = ac.AlarmDict09[_data.Split(':')[1]];
-                    logger.Info("GrblTool|ProcessAlarmResponse09|Alarm key {0} | description:{1}", _data.Split(':')[1], AlarmMessage);
+                    AlarmMessage = ac.AlarmDict09[data.Split(':')[1]];
+                    logger.Info("GrblTool|ProcessAlarmResponse09|Alarm key {0} | description:{1}", data.Split(':')[1], AlarmMessage);
 
                 }
             }
@@ -305,15 +305,15 @@ namespace VDGrbl.Tools
         /// <summary>
         /// Get coordinates and status depending of Grbl version 0.9 or 1.1.
         /// </summary>
-        /// <param name="_data"></param>
-        public void ProcessCurrentStatusResponse(string _data)
+        /// <param name="data"></param>
+        public void ProcessCurrentStatusResponse(string data)
         {
             try
             {
                 ResponseStatus = RespStatus.Ok;
-                if (_data.Contains("|") || VersionGrbl.StartsWith("1"))//Report state Grbl v1.1 < Idle|MPos:0.000,0.000,0.000>
+                if (data.Contains("|") || VersionGrbl.StartsWith("1"))//Report state Grbl v1.1 < Idle|MPos:0.000,0.000,0.000>
                 {
-                    string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n', '|' });
+                    string[] arr = data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n', '|' });
                     MachinePositionX = arr[3];
                     MachinePositionY = arr[4];
                     //WPosX = arr[7];
@@ -361,7 +361,7 @@ namespace VDGrbl.Tools
                 }
                 else//Report state Grbl v0.9 <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000,Buf:0,RX:0>
                 {
-                    string[] arr = _data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n' });
+                    string[] arr = data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n' });
                     if (arr.Length>0)
                     {
                         if (arr.Length > 3)

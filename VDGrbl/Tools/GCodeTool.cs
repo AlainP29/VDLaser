@@ -279,6 +279,7 @@ namespace VDGrbl.Tools
                     {
                         arr[i] = string.Empty;
                     }
+                    logger.Info("GCodeTool"+arr[i].ToString());
                 }
             }
             catch(Exception ex)
