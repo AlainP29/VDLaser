@@ -9,12 +9,13 @@ using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using VDGrbl.Model;
 using VDGrbl.Tools;
+using System.Windows.Controls;
+
 
 namespace VDGrbl.ViewModel
 {
@@ -71,8 +72,13 @@ namespace VDGrbl.ViewModel
         private bool _isManualSending = true;
         private bool _isSending = false;
 
-        //private BitmapSource _imgSource = null;
-        private BitmapSource _imgTransform=null;
+        private BitmapSource _imageTransform=null;
+        private Image _imageLaser= new Image();
+        private double _imageHeight;
+        private double _imageWidht;
+        private double _imageDpiX;
+        private double _imageDpiY;
+        private PixelFormat _imageFormat;
 
         private SerialPort _serialPort;
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -585,7 +591,7 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Jog is enabled: {0}", value);
             }
         }
-        
+
         /// <summary>
         /// Gets the ResponseStatus property. This is the current status of the software (Queued, Data received, Ok, Not Ok).
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -1117,30 +1123,119 @@ namespace VDGrbl.ViewModel
             {
                 Set(ref _imagePath, value);
                 logger.Info("MainViewModel|Image path : {0}", value);
-
             }
         }
 
         /// <summary>
-        /// Get the ImgSource property.
+        /// Get the ImageTransform property.
+        /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public BitmapSource ImgSource { get; set; }
+        public BitmapSource ImageTransform
+        {
+            get
+            {
+                return _imageTransform;
+            }
+            set
+            {
+                Set(ref _imageTransform, value);
+                logger.Info("MainViewModel|Image transform");
+            }
+        }
 
         /// <summary>
         /// Get the ImgTransform property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public BitmapSource ImgTransform
+        public Image ImageLaser
         {
             get
             {
-                return _imgTransform;
+                return _imageLaser;
             }
             set
             {
-                Set(ref _imgTransform, value);
-                logger.Info("MainViewModel|Image transform");
+                Set(ref _imageLaser, value);
+                logger.Info("MainViewModel|Image laser");
+            }
+        }
+        /// <summary>
+        /// Get the ImageHeight property.
+        /// </summary>
+        public double ImageHeight
+        {
+            get
+            {
+                return _imageHeight;
+            }
+            set
+            {
+                Set(ref _imageHeight, value);
+                logger.Info("MainViewModel|Image height");
+            }
+        }
 
+        /// <summary>
+        /// Get the ImageWidht property.
+        /// </summary>
+        public double ImageWidth
+        {
+            get
+            {
+                return _imageWidht;
+            }
+            set
+            {
+                Set(ref _imageWidht, value);
+                logger.Info("MainViewModel|Image widht");
+            }
+        }
+
+        /// <summary>
+        /// Get the ImageDpiX property.
+        /// </summary>
+        public double ImageDpiX
+        {
+            get
+            {
+                return _imageDpiX;
+            }
+            set
+            {
+                Set(ref _imageDpiX, value);
+                logger.Info("MainViewModel|Image DpiX");
+            }
+        }
+
+        /// <summary>
+        /// Get the ImageDpiY property.
+        /// </summary>
+        public double ImageDpiY
+        {
+            get
+            {
+                return _imageDpiY;
+            }
+            set
+            {
+                Set(ref _imageDpiY, value);
+                logger.Info("MainViewModel|Image DpiY");
+            }
+        }
+
+        /// <summary>
+        /// Get the ImageDpiY property.
+        /// </summary>
+        public PixelFormat ImageFormat
+        {
+            get
+            {
+                return _imageFormat;
+            }
+            set
+            {
+                Set(ref _imageFormat, value);
+                logger.Info("MainViewModel|Image Format");
             }
         }
         #endregion
@@ -1720,9 +1815,9 @@ namespace VDGrbl.ViewModel
         {
             ListGrblSetting.Clear();
             WriteString("$$");
+            logger.Info("MainViewModel|Grbl settings");
             Thread.Sleep(100);//Waits for ListSettingModel to populate all setting values
             SettingCollection = new ObservableCollection<GrblModel>(ListGrblSetting);
-            logger.Info("MainViewModel|Grbl settings");
         }
 
         /// <summary>
@@ -1944,7 +2039,8 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteJog(bool parameter)
         {
-            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && VersionGrbl.StartsWith("0"))
+            //if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && VersionGrbl.StartsWith("0"))
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
             {
                 if (parameter)
                 {
@@ -2397,15 +2493,15 @@ namespace VDGrbl.ViewModel
         private void OpenImage()
         {
             OpenFileDialog openImage = new OpenFileDialog();
-            openImage.DefaultExt = ".jpeg";
-            openImage.Filter = "Images |*.jpeg;*.jpeg;*.png;*.bmp";
+            openImage.DefaultExt = ".jpg";
+            openImage.Filter = "Images |*.jpg;*.jpeg;*.jpeg;*.png;*.bmp";
             try
             {
-                if(openImage.ShowDialog().Value&&openImage.FileName.Length>0)
+                if(openImage.ShowDialog().Value && openImage.FileName.Length>0)
                 {
                     ImagePath = openImage.FileName;
                     logger.Info("MainViewModel|Load image, filename: {0}", FileName);
-                    LoadImage(ImagePath);
+                    LoadRasterImage(ImagePath);
                 }
             }
             catch(Exception ex)
@@ -2420,9 +2516,22 @@ namespace VDGrbl.ViewModel
             return true;
         }
 
-        public void LoadImage(string fileName)
+        public void LoadRasterImage(string fileName)
         {
-            
+            BitmapImage ImgSource = new BitmapImage();
+            ImgSource.BeginInit();
+            ImgSource.UriSource = new Uri(fileName);
+            RenderOptions.SetBitmapScalingMode(ImgSource, BitmapScalingMode.HighQuality);
+            ImgSource.CacheOption = BitmapCacheOption.Default;
+            ImgSource.EndInit();
+            RasterImageTool RIT = new RasterImageTool();
+            ImageTransform = RIT.BSToBlackWhite(ImgSource);
+
+            ImageHeight = ImgSource.Height;
+            ImageWidth = ImageTransform.Width;
+            ImageDpiX = ImageTransform.DpiX;
+            ImageDpiY = ImageTransform.DpiY;
+            ImageFormat = ImageTransform.Format;
         }
         #endregion  
 
@@ -2504,6 +2613,7 @@ namespace VDGrbl.ViewModel
         /// Disposes the serial communication
         /// </summary>
         private bool disposedValue = false; // Pour détecter les appels redondants
+        private bool _isLimitEnabled;
 
         protected virtual void Dispose(bool disposing)
         {

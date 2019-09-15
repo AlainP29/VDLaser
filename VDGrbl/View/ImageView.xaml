@@ -11,18 +11,27 @@
             <Grid Margin="5" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="4*"/>
+                    <ColumnDefinition Width="3*"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel>
-                <Button Grid.Column="0" VerticalAlignment="Center" Height="25" Width="25" Margin="5" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.LoadImageCommand, Mode=OneWay}">
-                        <StackPanel Height="20" Width="20">
-                            <Image Source="/VDGrbl;component/Skins/Images/iconImage40.png"/>
-                        </StackPanel>
+                <Button Grid.Column="0" Width="25" Margin="50,20,0,0" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.LoadImageCommand, Mode=OneWay}" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top">
+                    <StackPanel Height="20" Width="20">
+                        <Image Source="/VDGrbl;component/Skins/Images/iconImage40.png"/>
+                    </StackPanel>
                 </Button>
-                </StackPanel>
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1">
-                    <Image Source="{Binding Main.ImagePath}"/>
+                    <Image Source="{Binding Main.ImageTransform}" />
                 </Border>
+                <Label Content="Dim:" HorizontalAlignment="Left" Margin="0,50,0,0" VerticalAlignment="Top"/>
+                <Label Content="{Binding Main.ImageHeight}" HorizontalAlignment="Left" Margin="50,50,0,0" VerticalAlignment="Top"/>
+
+                <Label Content="Pixel:" HorizontalAlignment="Left" Margin="0,84,0,0" VerticalAlignment="Top"/>
+                <Label Content="{Binding Main.ImageDpiX}" HorizontalAlignment="Left" Margin="50,84,0,0" VerticalAlignment="Top"/>
+
+                <Label Content="Format:" HorizontalAlignment="Left" Margin="0,118,0,0" VerticalAlignment="Top"/>
+                <Label Content="{Binding Main.ImageFormat}" HorizontalAlignment="Left" Margin="60,118,0,0" VerticalAlignment="Top"/>
+                
+                <Label Content="Format:" HorizontalAlignment="Left" Margin="0,152,0,0" VerticalAlignment="Top"/>
+                <Label Content="{Binding Main.ImageFormat}" HorizontalAlignment="Left" Margin="59,152,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
     </Grid>

@@ -21,7 +21,7 @@
                           IsReadOnly="True" Width="280"
                           ItemsSource="{Binding Main.SettingCollection}" Margin="0,0,0,0" Grid.RowSpan="2">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Code" Binding="{Binding GrblSettingCode, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Code" Binding="{Binding GrblSettingCode}"/>
                         <DataGridTextColumn Header="Value" Binding="{Binding GrblSettingValue}"/>
                         <DataGridTextColumn Header="Settings Description, Units" Binding="{Binding GrblSettingDescription}"/>
                     </DataGrid.Columns>

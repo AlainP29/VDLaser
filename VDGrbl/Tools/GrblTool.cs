@@ -147,6 +147,11 @@ namespace VDGrbl.Tools
                         break;
 
                     case 20:
+                        VersionGrbl = data.Substring(5, 4);//[Ver:1.1h.20150620:]
+                        BuildInfo = data.Substring(10, 8);
+                        break;
+
+                    case 21:
                         InfoMessage = "Kill alarm lock or homing to continue";//['$H'|'$X' to unlock]
                         break;
 
@@ -280,10 +285,11 @@ namespace VDGrbl.Tools
                         {
                             GrblM = new GrblModel(arr[0], arr[1], arr[2]);
                             ListGrblSettingModel.Add(GrblM);
+                            logger.Info(ListGrblSettingModel.Count);
                         }
                         else//Grbl version 1.1 (w/o setting description)
                         {
-                            GrblM = new GrblModel(arr[0], arr[1], "");
+                            GrblM = new GrblModel(arr[0], arr[1], "v1.1");
                             ListGrblSettingModel.Add(GrblM);
                         }
                     }
