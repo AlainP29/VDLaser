@@ -27,12 +27,12 @@
                     <Label Content="Port COM" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
                     <ComboBox Grid.Column="1" ItemsSource="{Binding ListPortNames}" SelectedValue="{Binding SelectedPortName,Mode=TwoWay}" 
                               HorizontalAlignment="Center" Width="75" VerticalContentAlignment="Center" Margin="0" 
-                              VerticalAlignment="Center"/>
+                              VerticalAlignment="Center" IsEnabled="{Binding IsPortEnabled}"/>
                     <Label Grid.Row="1" Content="Baud rate" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" 
                            VerticalContentAlignment="Center"/>
                     <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding ListBaudRates}"  Width="75" Margin="0" 
                               SelectedValue="{Binding SelectedBaudRate, Mode=TwoWay}" VerticalAlignment="Center" 
-                              VerticalContentAlignment="Center"/>
+                              VerticalContentAlignment="Center" IsEnabled="{Binding IsBaudEnabled}"/>
                     <Ellipse Grid.Column="2" Grid.Row="0" Height="20" Margin="0,0,0,0" Stroke="#FFABADB3" VerticalAlignment="Center" Width="20" 
                              Fill="{Binding ElementName=DisconnectButton, Path=IsEnabled, Converter={StaticResource Convertbrush}, Mode=OneWay}"/>
                 </Grid>

@@ -65,15 +65,17 @@ namespace VDGrbl.ViewModel
         private double _percentLine = 0;
         private double _laserPower = 0;
 
-        private bool _isSelectedKeyboard=false;
+        private bool _isSelectedKeyboard = false;
         private bool _isSelectedMetric = true;
-        private bool _isJogEnabled=true;
+        private bool _isJogEnabled = true;
         private bool _isVerbose = false;
         private bool _isManualSending = true;
         private bool _isSending = false;
+        private bool _isPortEnabled = true;
+        private bool _isBaudEnabled = true;
 
-        private BitmapSource _imageTransform=null;
-        private Image _imageLaser= new Image();
+        private BitmapSource _imageTransform = null;
+        private Image _imageLaser = new Image();
         private double _imageHeight;
         private double _imageWidht;
         private double _imageDpiX;
@@ -94,7 +96,7 @@ namespace VDGrbl.ViewModel
         private List<string> _fileList = new List<string>();
         private ObservableCollection<GrblModel> _consoleData;
         private List<GrblModel> _listConsoleData = new List<GrblModel>();
-        private GrblModel _grblModel=new GrblModel("TX","RX");
+        private GrblModel _grblModel = new GrblModel("TX", "RX");
         private GrblTool grbltool = new GrblTool();
         private Tools.GCodeTool gcodeToolBasic = new Tools.GCodeTool();
         #region subregion enum
@@ -111,7 +113,7 @@ namespace VDGrbl.ViewModel
         /// <summary>
         /// Enumeration of the speed state : delay between two G-code lines.
         /// </summary>
-        public enum SendSpeedStatus { Slow, Normal, Fast};
+        public enum SendSpeedStatus { Slow, Normal, Fast };
         #endregion
         #endregion
 
@@ -365,7 +367,7 @@ namespace VDGrbl.ViewModel
                 Set(ref _grblModel, value);
             }
         }
-        
+
         /// <summary>
         /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -381,7 +383,7 @@ namespace VDGrbl.ViewModel
                 Set(ref _txLine, value);
             }
         }
-   
+
         /// <summary>
         /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -398,7 +400,7 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Macro 1: {0}", value);
             }
         }
-      
+
         /// <summary>
         /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -449,7 +451,7 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Macro 4: {0}", value);
             }
         }
-       
+
         /// <summary>
         /// Gets the RXLine property. RXLine is the data received from the Arduino
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -942,6 +944,36 @@ namespace VDGrbl.ViewModel
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public int[] ListBaudRates { get; private set; } = { 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
+
+        /// <summary>
+        /// Disable/enable combobox port name when serial port is open/close
+        /// </summary>
+        public bool IsPortEnabled
+        {
+            get
+            {
+                return _isPortEnabled;
+            }
+            set
+            {
+                Set(ref _isPortEnabled, value);
+            }
+        }
+
+        /// <summary>
+        /// Disable/enable combobox baud rate when serial port is open/close
+        /// </summary>
+        public bool IsBaudEnabled
+        {
+            get
+            {
+                return _isBaudEnabled;
+            }
+            set
+            {
+                Set(ref _isBaudEnabled, value);
+            }
+        }
         #endregion
 
         #region subregion grbl info
@@ -1317,7 +1349,6 @@ namespace VDGrbl.ViewModel
                    });
                 DefaultPortSettings();
                 MyRelayCommands();
-                InitializeDispatcherTimer();
                 logger.Info("MainViewModel|MainWindow initialization finished");
             }
             catch (Exception ex)
@@ -1353,7 +1384,7 @@ namespace VDGrbl.ViewModel
             GrblStartupBlocksCommand = new RelayCommand(GrblStartupBlocks, CanExecuteOtherCommand);
             GrblCheckCommand = new RelayCommand(GrblCheck, CanExecuteOtherCommand);
             GrblKillAlarmCommand = new RelayCommand(GrblKillAlarm, CanExecuteOtherCommand);
-            GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteOtherCommand);
+            GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteHomingCommand);
             GrblSleepCommand = new RelayCommand(GrblSleep, CanExecuteOtherCommand);
             GrblTestCommand = new RelayCommand(GrblTest, CanExecuteGrblTest);
             GrblHelpCommand = new RelayCommand(GrblHelp, CanExecuteOtherCommand);
@@ -1414,6 +1445,8 @@ namespace VDGrbl.ViewModel
             try
             {
                 SelectedBaudRate = 115200;
+                IsBaudEnabled = true;
+                IsPortEnabled = true;
                 if (ListPortNames != null && ListPortNames.Length > 0)
                 {
                     SelectedPortName = ListPortNames[0];
@@ -1468,6 +1501,8 @@ namespace VDGrbl.ViewModel
                 _serialPort.DataReceived += _serialPort_DataReceived;
                 _serialPort.Open();
                 logger.Info("MainViewModel|Port COM open");
+                IsBaudEnabled = false;
+                IsPortEnabled = false;
                 CheckCommunication();
             }
             catch (Exception ex)
@@ -1490,15 +1525,21 @@ namespace VDGrbl.ViewModel
             {
                 GrblReset(); //Do a soft reset before starting a new job?
                 GrblBuildInfo();
+                InitializeDispatcherTimer();
                 //Thread.Sleep(1000);
                 if (VersionGrbl != "0.9" || VersionGrbl != "1.1")
                 {
                     //CloseSerialPort();
                     logger.Info("MainViewModel| Unknown device or Bad Grbl version {0}", VersionGrbl);
                 }
+                if(!currentStatusTimer.IsEnabled)
+                {
+                    InitializeDispatcherTimer();
+                }
             }
             else
             {
+                Cleanup();
                 CloseSerialPort();
                 logger.Info("MainViewModel| Wrong com port", VersionGrbl);
             }
@@ -1514,6 +1555,8 @@ namespace VDGrbl.ViewModel
                 _serialPort.DataReceived -= _serialPort_DataReceived;
                 _serialPort.Dispose();
                 _serialPort.Close();
+                IsBaudEnabled = true;//In cleanup?
+                IsPortEnabled = true;
                 Cleanup();
                 logger.Info("MainViewModel|Port COM closed");
             }
@@ -1573,7 +1616,7 @@ namespace VDGrbl.ViewModel
         }
         public bool CanExecuteSendM1Data()
         {
-            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro1))
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro1) && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
                 //if (PlannerBuffer == "0" && ResponseStatus == RespStatus.Ok)
                 if (ResponseStatus == RespStatus.Ok)
@@ -1594,8 +1637,8 @@ namespace VDGrbl.ViewModel
         }
         public bool CanExecuteSendM2Data()
         {
-            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro2))
-            {
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro2) && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
+                {
                 if (ResponseStatus == RespStatus.Ok)
                 {
                     return true;
@@ -1614,7 +1657,7 @@ namespace VDGrbl.ViewModel
         }
         public bool CanExecuteSendM3Data()
         {
-            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro3))
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro3) && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
                 if (ResponseStatus == RespStatus.Ok)
                 {
@@ -1634,7 +1677,7 @@ namespace VDGrbl.ViewModel
         }
         public bool CanExecuteSendM4Data()
         {
-            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro4))
+            if (_serialPort.IsOpen && !string.IsNullOrEmpty(Macro4) && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
                 if (ResponseStatus == RespStatus.Ok)
                 {
@@ -1866,15 +1909,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Write Grbl '$H' command to run homing cycle.
-        /// </summary>
-        public void GrblHoming()
-        {
-            WriteString("$H");
-            logger.Info("MainViewModel|Grbl homing");
-        }
-
-        /// <summary>
         /// Write Grbl '$SLP' command to enable sleep mode
         /// </summary>
         public void GrblSleep()
@@ -1899,7 +1933,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteOtherCommand()
         {
-            if (_serialPort.IsOpen)
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
                 if (ResponseStatus != RespStatus.NOk)
                 {
@@ -1908,6 +1942,36 @@ namespace VDGrbl.ViewModel
             }
             return false;
             //return true;
+        }
+        
+        /// <summary>
+        /// Write Grbl '$H' command to run homing cycle.
+        /// </summary>
+        public void GrblHoming()
+        {
+            if (MachineStatus == MachStatus.Alarm)//At startup, when homing is activated, machin is in alarm mode
+            {
+                GrblReset();
+                GrblKillAlarm();
+            }
+            WriteString("$H");
+            MachineStatus = MachStatus.Home;
+            MachineStatusColor = Brushes.LightPink;
+            logger.Info("MainViewModel|Grbl homing");
+        }
+
+        /// <summary>
+        /// Allows/disallows Grbl's Other '$' Commands. The other $ commands provide additional controls for the user, 
+        /// such as printing feedback on the current G-code parser modal state or running the homing cycle.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteHomingCommand()
+        {
+            if (_serialPort.IsOpen)
+            {
+                    return true;
+            }
+            return false;
         }
         #endregion
 
@@ -2040,7 +2104,7 @@ namespace VDGrbl.ViewModel
         private bool CanExecuteJog(bool parameter)
         {
             //if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && VersionGrbl.StartsWith("0"))
-            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus!=MachStatus.Home && MachineStatus!=MachStatus.Alarm)
             {
                 if (parameter)
                 {
@@ -2064,7 +2128,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteGetStep(string parameter)
         {
-                if (!string.IsNullOrEmpty(parameter))
+                if (!string.IsNullOrEmpty(parameter)&&_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
                 {
                     return true;
                 }
@@ -2100,7 +2164,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteFeedRate(bool parameter)
         {
-            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
                 if (parameter)
                 {
@@ -2139,7 +2203,10 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteLaser()
         {
-            return (_serialPort.IsOpen);
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
+                return true;
+            else
+                return false;
             ;
         }
 
@@ -2170,7 +2237,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteLaserPower(bool parameter)
         {
-            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
                 if (parameter)
                 {
@@ -2186,7 +2253,9 @@ namespace VDGrbl.ViewModel
         public void ResetAxisX()
         {
             //string line = "G10 P0 L20 X0";
-            string line = "G10 P0 L2 X0";
+            //string line = "G10 L2 P1 X0";
+            //string line = "G10 P0 L2 X0";
+            string line = "G92 X0";
             WriteString(line);
             logger.Info("MainViewModel|Reset X: {0}", line);
             TXLine = line;
@@ -2197,7 +2266,8 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void ResetAxisY()
         {
-            string line = "G10 P0 L20 Y0";
+            //string line = "G10 P0 L20 Y0";
+            string line = "G92 X0";
             WriteString(line);
             logger.Info("MainViewModel|Reset Y: {0}", line);
         }
@@ -2230,14 +2300,18 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteResetAxis()
         {
-            if (VersionGrbl.Contains("1"))
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
-                return true;
+                if (VersionGrbl.Contains("1"))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
         #endregion
 
@@ -2250,6 +2324,7 @@ namespace VDGrbl.ViewModel
             // Clean up if needed
             currentStatusTimer.Stop();
             base.Cleanup();
+            logger.Info("MainViewModel|Clean...");
         }
 
         /// <summary>
@@ -2300,7 +2375,11 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         private bool CanExecuteOpenFile()
         {
-            return true;
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
+            {
+                return true;
+            }
+            else return false;
         }
 
         /// <summary>
@@ -2414,7 +2493,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteAsyncTask()
         {
-            if (FileQueue.Count > 0 && _serialPort.IsOpen)
+            if (FileQueue.Count > 0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
                 return true;
             }
@@ -2457,7 +2536,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteSendFile()
         {
-            if (FileQueue.Count>0 && _serialPort.IsOpen)
+            if (FileQueue.Count>0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
                 return true;
             }
@@ -2613,7 +2692,6 @@ namespace VDGrbl.ViewModel
         /// Disposes the serial communication
         /// </summary>
         private bool disposedValue = false; // Pour détecter les appels redondants
-        private bool _isLimitEnabled;
 
         protected virtual void Dispose(bool disposing)
         {

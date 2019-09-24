@@ -96,7 +96,8 @@ namespace VDGrbl.Tools
                     {
                         ProcessGrblSettingResponse(_line);
                     }
-                    else if (line.StartsWith("[") || line.EndsWith("]"))
+                    //else if (line.StartsWith("[") || line.EndsWith("]"))
+                    else if (line.StartsWith("[") && line.EndsWith("]"))
                     {
                         ProcessInfoResponse(line);
                     }
@@ -239,6 +240,7 @@ namespace VDGrbl.Tools
         {
             ResponseStatus = RespStatus.NOk;
             MachineStatusColor = Brushes.Red;
+            MachineStatus = MachStatus.Alarm;
             CanSend = false;
             logger.Info("GrblTool|ProcessResponse|Data:{0}|RespStatus:{1}|MachStatus:{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
             AlarmCodes ac = new AlarmCodes();

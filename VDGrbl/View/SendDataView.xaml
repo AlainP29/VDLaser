@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.Tools"
-             mc:Ignorable="d" Height="250" Width="300">
+             mc:Ignorable="d" Height="300" Width="300">
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
     </UserControl.Resources>
@@ -14,7 +14,7 @@
             <Grid IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="4*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal">
                     <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
@@ -60,6 +60,7 @@
                         </TextBox>
                     </StackPanel>
                 </StackPanel>
+                
             </Grid>
         </GroupBox>
     </Grid>
