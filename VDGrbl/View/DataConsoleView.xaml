@@ -31,8 +31,8 @@
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}"/>
                     </DataGrid.HorizontalGridLinesBrush>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Line sent" Binding="{Binding GrblTXData, Mode=OneWay}" MinWidth="280" MaxWidth="280"/>
-                        <DataGridTextColumn Header="Status" Binding="{Binding GrblRXData, Mode=OneWay}" MinWidth="150" MaxWidth="150" CanUserResize="False" CanUserSort="False"/>
+                        <DataGridTextColumn Header="Line sent" Binding="{Binding GrblTXData, Mode=OneWay}" Width="280" MinWidth="70" MaxWidth="350"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding GrblRXData, Mode=OneWay}" Width="310" MinWidth="50" MaxWidth="320" CanUserResize="True" CanUserSort="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <!--Clear datagrid + kill alarm + verbose (all data received, machine position...)-->

@@ -40,7 +40,7 @@
                     <Slider x:Name="SliderPLaser" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Center" 
                             Width="150" TickPlacement="TopLeft" Maximum="{Binding Main.MaxLaserPower, Mode=OneWay}" 
                             IsSnapToTickEnabled="True" 
-                            LargeChange="10" 
+                            LargeChange="100" 
                             Height="30" BorderThickness="1" Cursor="Hand" SmallChange="1" SelectionEnd="100" 
                             Value="{Binding Main.LaserPower}"/>
                     <TextBox HorizontalAlignment="Left" Height="30" Margin="5,0,0,0" TextWrapping="Wrap" 

@@ -635,7 +635,7 @@ namespace VDGrbl.ViewModel
         /// <summary>
         /// Sets the maximum laser power allowed.
         /// </summary>
-        public double MaxLaserPower { get; private set; } = 100;
+        public double MaxLaserPower { get; private set; } = 1000;
 
         /// <summary>
         /// Check laser status.
@@ -1503,7 +1503,7 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Port COM open");
                 IsBaudEnabled = false;
                 IsPortEnabled = false;
-                CheckCommunication();
+                StartCommunication();
             }
             catch (Exception ex)
             {
@@ -1519,20 +1519,21 @@ namespace VDGrbl.ViewModel
             return !_serialPort.IsOpen && !String.IsNullOrEmpty(SelectedPortName);
         }
 
-        public void CheckCommunication()
+        /// <summary>
+        /// Start timer and infos
+        /// </summary>
+        public void StartCommunication()
         {
             if(_serialPort.IsOpen)
             {
                 GrblReset(); //Do a soft reset before starting a new job?
                 GrblBuildInfo();
-                InitializeDispatcherTimer();
-                //Thread.Sleep(1000);
-                if (VersionGrbl != "0.9" || VersionGrbl != "1.1")
+                if (!VersionGrbl.StartsWith("0.9") || !VersionGrbl.StartsWith("1.1"))//Does not work neither readline in GrblBuildInfo to check grbl version...
                 {
                     //CloseSerialPort();
                     logger.Info("MainViewModel| Unknown device or Bad Grbl version {0}", VersionGrbl);
                 }
-                if(!currentStatusTimer.IsEnabled)
+                if (!currentStatusTimer.IsEnabled)
                 {
                     InitializeDispatcherTimer();
                 }
@@ -1546,8 +1547,8 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// End serial port communication
-        /// </summary>
+    /// End serial port communication
+    /// </summary>
         public void CloseSerialPort()
         {
             try
@@ -1565,6 +1566,7 @@ namespace VDGrbl.ViewModel
                 logger.Error("MainViewModel|Exception CloseSerialPort raised: " + ex.ToString());
             }
         }
+
         /// <summary>
         /// Allow/Disallow CloseSerialPort method to be executed
         /// </summary>
@@ -1887,7 +1889,7 @@ namespace VDGrbl.ViewModel
         public void GrblBuildInfo()
         {
             WriteString("$I");
-            logger.Info("MainViewModel|Grbl infos");
+            logger.Info("MainViewModel|Grbl infos:{0}");
         }
 
         /// <summary>
@@ -1957,6 +1959,10 @@ namespace VDGrbl.ViewModel
             WriteString("$H");
             MachineStatus = MachStatus.Home;
             MachineStatusColor = Brushes.LightPink;
+            if (IsLaserPower)//By default during homing or G0 mode the laser is deactivated but still SXXX value. For safety I put it off.
+            {
+                StopLaser();
+            }
             logger.Info("MainViewModel|Grbl homing");
         }
 
@@ -2322,7 +2328,14 @@ namespace VDGrbl.ViewModel
         public override void Cleanup()
         {
             // Clean up if needed
-            currentStatusTimer.Stop();
+            if (currentStatusTimer.IsEnabled)
+            {
+                currentStatusTimer.Stop();
+            }
+            if (IsLaserPower)
+            {
+                StopLaser();
+            }
             base.Cleanup();
             logger.Info("MainViewModel|Clean...");
         }

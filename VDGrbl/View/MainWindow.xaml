@@ -8,7 +8,7 @@
         mc:Ignorable="d ignore"
         Height="520"
         Width="890"
-        Title="VDGrbl v0.3.3" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Title="VDGrbl v0.3.4" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
