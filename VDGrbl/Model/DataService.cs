@@ -8,13 +8,13 @@ namespace VDGrbl.Model
         {
             // Use this to connect to the actual data service
 
-            var item = new SerialPortSettingModel("Port Setting");
+            var item = new SerialPortSettingModel("Port Settings");
             callback(item, null);
         }
 
         public void GetGrbl(Action<GrblModel, Exception> callback)
         {
-            var item = new GrblModel("Grbl");
+            var item = new GrblModel(" Grbl");
             callback(item, null);
         }
 
@@ -24,9 +24,9 @@ namespace VDGrbl.Model
             callback(item, null);
         }
 
-        public void GetCoordinate(Action<CoordinateModel, Exception> callback)
+        public void GetMachineState(Action<MachineStateModel, Exception> callback)
         {
-            var item = new CoordinateModel("X-Y Coordinate");
+            var item = new MachineStateModel("Machine state");
             callback(item, null);
         }
 

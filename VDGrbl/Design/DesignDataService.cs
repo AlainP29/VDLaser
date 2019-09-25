@@ -15,13 +15,13 @@ namespace VDGrbl.Design
 
         public void GetGrbl(Action<GrblModel, Exception> callback)
         {
-            var item = new GrblModel("Grbl [design]");
+            var item = new GrblModel(" Grbl [design]");
             callback(item, null);
         }
 
         public void GetSerialPortSetting(Action<SerialPortSettingModel, Exception> callback)
         {
-            var item = new SerialPortSettingModel("Port setting [design]");
+            var item = new SerialPortSettingModel("Port settings [design]");
             callback(item, null);
         }
 
@@ -31,9 +31,9 @@ namespace VDGrbl.Design
             callback(item, null);
         }
 
-        public void GetCoordinate(Action<CoordinateModel, Exception> callback)
+        public void GetMachineState(Action<MachineStateModel, Exception> callback)
         {
-            var item = new CoordinateModel("X-Y Coordinate [design]");
+            var item = new MachineStateModel("Machine state [design]");
             callback(item, null);
         }
 

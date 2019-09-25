@@ -5,9 +5,9 @@ namespace VDGrbl.View
     /// <summary>
     /// Logique d'interaction pour CoordinateView.xaml
     /// </summary>
-    public partial class CoordinateView : UserControl
+    public partial class MachineStateView : UserControl
     {
-        public CoordinateView()
+        public MachineStateView()
         {
             InitializeComponent();
         }

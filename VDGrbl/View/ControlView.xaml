@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="VDGrbl.View.ControlView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDGrbl.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="110" d:DesignWidth="300">
+    <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <!--Report current machine state: status and coordinates-->
+        <GroupBox Header="{Binding Main.GroupBoxGrblControlTitle}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0">
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!--Homing button and pre-defined position 1 & 2-->
+                <StackPanel>
+                    <Button Content="Homing" Width="75" HorizontalAlignment="Center"
+                            Command="{Binding Main.GrblHomingCommand, Mode=OneWay}" Margin="0,10,0,0"/>
+                <StackPanel Orientation="Horizontal" >
+                    <Button Content="H1" Width="35" Height="22.4" ToolTip="Pre-defined position 1 set by G28.1 in Grbl settings"
+                            Command="{Binding Main.GrblHome1Command, Mode=OneWay}" Margin="20,20,0,0"/>
+                    <Button Content="H2" Width="35"  Height="22.4" ToolTip="Pre-defined position 2 set by G30.1 in Grbl settings"
+                            Command="{Binding Main.GrblHome2Command, Mode=OneWay}" Margin="25,20,0,0"/>
+                </StackPanel>
+                </StackPanel>
+                <!--Emergency stop and unlock-->
+                <StackPanel Grid.Column="1">
+                    <Button Height="40" Width="40" HorizontalAlignment="Center" Margin="0 0 0 10"
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblResetCommand, Mode=OneWay}">
+                        <StackPanel>
+                            <Image Source="/VDGrbl;component/Skins/Images/iconStop40.png" RenderTransformOrigin="0.5,0.5"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Content="Unlock" Margin="0 0 0 0" Width="50" 
+                            Command="{Binding Main.GrblKillAlarmCommand, Mode=OneWay}" 
+                        Style="{DynamicResource ControlStyleVD}"/>
+                </StackPanel>
+                
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

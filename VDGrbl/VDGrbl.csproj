@@ -99,7 +99,7 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
-    <Compile Include="Model\CoordinateModel.cs" />
+    <Compile Include="Model\MachineStateModel.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\ImageModel.cs" />
@@ -108,6 +108,7 @@
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Tools\BrushColorConverter.cs" />
+    <Compile Include="Tools\PercentageConverter.cs" />
     <Compile Include="Tools\DoubleConverter.cs" />
     <Compile Include="Tools\GCodeTool.cs" />
     <Compile Include="Tools\GrayImageConverter.cs" />
@@ -119,6 +120,9 @@
     <Compile Include="Tools\IntToTimeConverter.cs" />
     <Compile Include="Tools\PointToCommaConverter.cs" />
     <Compile Include="Tools\StringConverter.cs" />
+    <Compile Include="View\ControlView.xaml.cs">
+      <DependentUpon>ControlView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\GrblCommandView.xaml.cs">
       <DependentUpon>GrblCommandView.xaml</DependentUpon>
     </Compile>
@@ -130,8 +134,8 @@
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
-    <Compile Include="View\CoordinateView.xaml.cs">
-      <DependentUpon>CoordinateView.xaml</DependentUpon>
+    <Compile Include="View\MachineStateView.xaml.cs">
+      <DependentUpon>MachineStateView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ImageView.xaml.cs">
       <DependentUpon>ImageView.xaml</DependentUpon>
@@ -154,6 +158,10 @@
     <Compile Include="View\SerialPortSettingView.xaml.cs">
       <DependentUpon>SerialPortSettingView.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\ControlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\GrblCommandView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -166,7 +174,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\CoordinateView.xaml">
+    <Page Include="View\MachineStateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

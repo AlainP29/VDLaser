@@ -4,11 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.View"
-             xmlns:ViewModel="clr-namespace:VDGrbl.ViewModel" x:Class="VDGrbl.View.CoordinateView"
-             mc:Ignorable="d" Height="160" Width="300">
+             xmlns:ViewModel="clr-namespace:VDGrbl.ViewModel" x:Class="VDGrbl.View.MachineStateView"
+             mc:Ignorable="d" Height="200" Width="300">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Report current machine state: status and coordinates-->
-        <GroupBox Header="{Binding Main.GroupBoxCoordinateTitle}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0,0,0,0">
+        <GroupBox Header="{Binding Main.GroupBoxMachineStateTitle}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0,0,0,0">
                 <Grid Margin="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -17,13 +17,14 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="2.3*"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <!--Display the report state: current machine status-->
                 <TextBox Name="TextBoxMachineStatus" Grid.ColumnSpan="2" Margin="5" VerticalContentAlignment="Center" 
                          HorizontalContentAlignment="Center" Background="{Binding Main.MachineStatusColor}" 
                          Text="{Binding Main.MachineStatus, StringFormat={}{0}}" Height="24" Width="60" IsEnabled="False"/>
                 <!--Display the machine X-Y coordinates: real time machine position-->
-                <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Row="1">
+                <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Row="1" Margin="1">
                         <Grid >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -42,8 +43,7 @@
                         </Grid>
                 </Border>
                 <!--Display the work coordinates: real time work position-->
-                <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1" Grid.Row="1">
-                    <StackPanel>
+                <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="1">
                         <Grid >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -60,6 +60,20 @@
                         <Label Grid.Column="0" Grid.Row="2" Content="{Binding Main.WPosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                         <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.WPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                     </Grid>
+                </Border>
+                <!--Display feed and speed (laser power)-->
+                <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="0" Grid.Row="2" Margin="1">
+                    <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="2">
+                    <Label Content="Feed: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10 0 0 0"/>
+                    <Label Content="{Binding Main.Feed, Mode=OneWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+                </StackPanel>
+                    </Border>
+                <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1" Grid.Row="2" Margin="1">
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="2">
+                    <Label Content="Power: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10 0 0 0"/>
+                    <Label Content="{Binding Main.Speed, Mode=OneWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+                        <Ellipse Height="20" Margin="15,0,0,0" Stroke="#FFABADB3" VerticalAlignment="Center" Width="20" 
+                             Fill="{Binding Main.LaserColor}" />
                     </StackPanel>
                 </Border>
             </Grid>

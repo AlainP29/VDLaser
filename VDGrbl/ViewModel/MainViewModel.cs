@@ -37,6 +37,7 @@ namespace VDGrbl.ViewModel
         private string _versionGrbl = "-", _buildInfoGrbl = "-";
         private string _mposX = "0.000", _mposY = "0.000";
         private string _wposX = "0.000", _wposY = "0.000";
+        private string _feed = "0", _speed="0";
         private string _step = "1";
         private string _buf = "0", _rx = "0";
         private string _errorMessage = string.Empty;
@@ -48,22 +49,24 @@ namespace VDGrbl.ViewModel
         private string _groupBoxPortSettingTitle = string.Empty;
         private string _groupBoxGrblSettingTitle = string.Empty;
         private string _groupBoxGrblConsoleTitle = string.Empty;
+        private string _groupBoxGrblControlTitle = string.Empty;
         private string _groupBoxGrblCommandTitle = string.Empty;
         private string _groupBoxGCodeFileTitle = string.Empty;
-        private string _groupBoxCoordinateTitle = string.Empty;
+        private string _groupBoxMachineStateTitle = string.Empty;
         private string _groupBoxImageTitle = string.Empty;
         private string _selectedTransferDelay = string.Empty;
 
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
         private string _gcodeLine = string.Empty;
-        private string _macro1 = "G90 G0 X0", _macro2 = "G91 G1 X10 Y-20", _macro3 = "G90 G0 Y0 F2000", _macro4 = "G91 G1 X-20 Y10 F1000";
+        private string _macro1 = "G90 G0 X0", _macro2 = "G91 G1 X10 Y-20 F1000", _macro3 = "G90 G1 Y50 F5000", _macro4 = "G91 G1 X-20 Y10 F1000";
 
         private double _feedRate = 300;
         private double _nLine = 0;
         private double _rLine = 0;
         private double _percentLine = 0;
         private double _laserPower = 0;
+        private double _maxLaserPower = 500;
 
         private bool _isSelectedKeyboard = false;
         private bool _isSelectedMetric = true;
@@ -73,6 +76,7 @@ namespace VDGrbl.ViewModel
         private bool _isSending = false;
         private bool _isPortEnabled = true;
         private bool _isBaudEnabled = true;
+        private bool _isSelectedLaser500 = true;
 
         private BitmapSource _imageTransform = null;
         private Image _imageLaser = new Image();
@@ -140,6 +144,10 @@ namespace VDGrbl.ViewModel
         public RelayCommand GrblCheckCommand { get; private set; }
         public RelayCommand GrblKillAlarmCommand { get; private set; }
         public RelayCommand GrblHomingCommand { get; private set; }
+        public RelayCommand GrblHome1Command { get; private set; }
+        public RelayCommand GrblSetHome1Command { get; private set; }
+        public RelayCommand GrblHome2Command { get; private set; }
+        public RelayCommand GrblSetHome2Command { get; private set; }
         public RelayCommand GrblSleepCommand { get; private set; }
         public RelayCommand GrblTestCommand { get; private set; }
         public RelayCommand GrblHelpCommand { get; private set; }
@@ -635,7 +643,33 @@ namespace VDGrbl.ViewModel
         /// <summary>
         /// Sets the maximum laser power allowed.
         /// </summary>
-        public double MaxLaserPower { get; private set; } = 1000;
+        public double MaxLaserPower
+        {
+            get
+            {
+                return _maxLaserPower;
+            }
+            set
+            {
+                Set(ref _maxLaserPower, value);
+            } }
+
+        /// <summary>
+        /// Select the type of laser used.
+        /// </summary>
+        public bool IsSelectedLaser500
+        {
+            get
+              {
+                return _isSelectedLaser500;
+            }
+            set
+            {
+                Set(ref _isSelectedLaser500, value);
+                MaxLaserPower = 500;
+                WriteString("$30=500");
+            }
+        }
 
         /// <summary>
         /// Check laser status.
@@ -976,7 +1010,7 @@ namespace VDGrbl.ViewModel
         }
         #endregion
 
-        #region subregion grbl info
+        #region subregion grbl info et control
         /// <summary>
         /// Get the Version property. This is the Grbl version get w/ '$I' command (0.9i or 1.1j)
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -1008,22 +1042,37 @@ namespace VDGrbl.ViewModel
                 Set(ref _buildInfoGrbl, value);
             }
         }
+        /// <summary>
+        /// Get the GroupBoxGrblControlTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxGrblControlTitle
+        {
+            get
+            {
+                return _groupBoxGrblControlTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxGrblControlTitle, value);
+            }
+        }
         #endregion
 
-        #region subregion coordinate
+        #region subregion machine state
         /// <summary>
         /// Get the GroupBoxCoordinateTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string GroupBoxCoordinateTitle
+        public string GroupBoxMachineStateTitle
         {
             get
             {
-                return _groupBoxCoordinateTitle;
+                return _groupBoxMachineStateTitle;
             }
             set
             {
-                Set(ref _groupBoxCoordinateTitle, value);
+                Set(ref _groupBoxMachineStateTitle, value);
             }
         }
 
@@ -1122,6 +1171,39 @@ namespace VDGrbl.ViewModel
                 Set(ref _wposY, value);
             }
         }
+
+        /// <summary>
+        /// Get the Feed property. Feed is the real time feed of the machine get w/ '?' Grbl real-time command.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Feed
+        {
+            get
+            {
+                return _feed;
+            }
+            set
+            {
+                Set(ref _feed, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the Speed property. Speed is the real time spindle speed or laser power of the machine get w/ '?' Grbl real-time command.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string Speed
+        {
+            get
+            {
+                return _speed;
+            }
+            set
+            {
+                Set(ref _speed, value);
+            }
+        }
+
         #endregion
 
         #region subregion image
@@ -1309,6 +1391,7 @@ namespace VDGrbl.ViewModel
                         GroupBoxGrblSettingTitle = item.GrblSettingHeader;
                         GroupBoxGrblConsoleTitle = item.GrblConsoleHeader;
                         GroupBoxGrblCommandTitle = item.GrblCommandHeader;
+                        GroupBoxGrblControlTitle = item.GrblControlHeader;
                     });
 
                 _dataService.GetGCode(
@@ -1324,7 +1407,7 @@ namespace VDGrbl.ViewModel
                         SelectedTransferDelay = ListTransferDelay[1];
                     });
 
-                _dataService.GetCoordinate(
+                _dataService.GetMachineState(
                     (item, error) =>
                     {
                         if (error != null)
@@ -1333,7 +1416,7 @@ namespace VDGrbl.ViewModel
                             return;
                         }
                         logger.Info("MainViewModel|Load Coordinate window");
-                        GroupBoxCoordinateTitle = item.CoordinateHeader;
+                        GroupBoxMachineStateTitle = item.MachineStateHeader;
                     });
 
                 _dataService.GetImage(
@@ -1385,6 +1468,10 @@ namespace VDGrbl.ViewModel
             GrblCheckCommand = new RelayCommand(GrblCheck, CanExecuteOtherCommand);
             GrblKillAlarmCommand = new RelayCommand(GrblKillAlarm, CanExecuteOtherCommand);
             GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteHomingCommand);
+            GrblHome1Command = new RelayCommand(GrblHome1, CanExecuteHomingCommand);
+            GrblSetHome1Command = new RelayCommand(GrblSetHome1, CanExecuteHomingCommand);
+            GrblHome2Command = new RelayCommand(GrblHome2, CanExecuteHomingCommand);
+            GrblSetHome2Command = new RelayCommand(GrblSetHome2, CanExecuteHomingCommand);
             GrblSleepCommand = new RelayCommand(GrblSleep, CanExecuteOtherCommand);
             GrblTestCommand = new RelayCommand(GrblTest, CanExecuteGrblTest);
             GrblHelpCommand = new RelayCommand(GrblHelp, CanExecuteOtherCommand);
@@ -1967,6 +2054,46 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
+        /// Write Grbl 'G28' command to go to the pre-defined position 1 set by G28.1 command.
+        /// </summary>
+        public void GrblHome1()
+        {
+
+            WriteString("G28");
+            logger.Info("MainViewModel|Grbl home 1");
+        }
+
+        /// <summary>
+        /// Write Grbl 'G28.1' command to set the pre-defined position 1.
+        /// </summary>
+        public void GrblSetHome1()
+        {
+
+            WriteString("G28.1");
+            logger.Info("MainViewModel|Grbl set home 1");
+        }
+
+        /// <summary>
+        /// Write Grbl 'G30' command to go to the pre-defined position 1 set by G30.1 command.
+        /// </summary>
+        public void GrblHome2()
+        {
+
+            WriteString("G30");
+            logger.Info("MainViewModel|Grbl home 2");
+        }
+
+        /// <summary>
+        /// Write Grbl 'G30' command to set the pre-defined position 2.
+        /// </summary>
+        public void GrblSetHome2()
+        {
+
+            WriteString("G30.1");
+            logger.Info("MainViewModel|Grbl set home 2");
+        }
+
+        /// <summary>
         /// Allows/disallows Grbl's Other '$' Commands. The other $ commands provide additional controls for the user, 
         /// such as printing feedback on the current G-code parser modal state or running the homing cycle.
         /// </summary>
@@ -2187,6 +2314,7 @@ namespace VDGrbl.ViewModel
         {
             WriteString("M3");
             LaserPower = 10;
+            Speed = LaserPower.ToString();
             WriteString(string.Format("S{0}", _laserPower));
             LaserColor = Brushes.Blue;
             IsLaserPower = true;
@@ -2198,6 +2326,7 @@ namespace VDGrbl.ViewModel
         private void StopLaser()
         {
             LaserPower = 0;
+            Speed = LaserPower.ToString();
             WriteString(string.Format("S{0}", _laserPower));
             LaserColor = Brushes.LightGray;
             IsLaserPower = false;
@@ -2670,6 +2799,16 @@ namespace VDGrbl.ViewModel
                 MPosY = grbltool.MachinePositionY;
                 WPosX = grbltool.WorkPositionX;
                 WPosY = grbltool.WorkPositionY;
+                Feed = grbltool.MachineFeed;
+                Speed = grbltool.MachineSpeed;
+                if(Speed!="0"||String.IsNullOrEmpty(Speed))
+                {
+                    LaserColor = Brushes.Blue;
+                }
+                else
+                {
+                    LaserColor = Brushes.LightGray;
+                }
                 Buf = grbltool.PlannerBuffer;
                 RX = grbltool.RxBuffer;
                 VersionGrbl = grbltool.VersionGrbl;

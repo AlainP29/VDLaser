@@ -36,6 +36,10 @@ namespace VDGrbl.Tools
         public string MachinePositionY { get; private set; } = "0";
         public string WorkPositionX { get; private set; } = "0";
         public string WorkPositionY { get; private set; } = "0";
+        public string OffsetPositionY { get; private set; } = "0";
+        public string OffsetPositionX { get; private set; } = "0";
+        public string MachineFeed { get; private set; } = "0";
+        public string MachineSpeed { get; private set; } = "0";
         public string RxBuffer { get; private set; } = "0";
         public string PlannerBuffer { get; private set; } = "0";
         public string VersionGrbl { get; set; } = "0.0";
@@ -322,11 +326,48 @@ namespace VDGrbl.Tools
                 if (data.Contains("|") || VersionGrbl.StartsWith("1"))//Report state Grbl v1.1 < Idle|MPos:0.000,0.000,0.000>
                 {
                     string[] arr = data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n', '|' });
-                    MachinePositionX = arr[3];
-                    MachinePositionY = arr[4];
-                    //WPosX = arr[7];
-                    //WPosY = arr[8];
-                    //Buf = arr[11];
+                    if (data.Contains("mpos"))
+                    {
+                        MachinePositionX = arr[3];
+                        MachinePositionY = arr[4];
+                        WorkPositionX = "0";
+                        WorkPositionY = "0";
+                    }
+                    else
+                    {
+                        WorkPositionX = arr[3];
+                        WorkPositionY = arr[4];
+                        MachinePositionX = "0";
+                        MachinePositionY = "0";
+                    }
+
+                    if(!data.Contains("bf"))
+                    {
+                        MachineFeed = arr[7];
+                        MachineSpeed = arr[8];
+                        PlannerBuffer = "0";
+                        RxBuffer = "0";
+                        if (data.Contains("wco"))
+                        {
+                            OffsetPositionX = arr[10];
+                            OffsetPositionY = arr[11];
+                            //Normaly WorkPositionX = MachinePositionX - OffsetPositionX; use a converter string to int first and then calculate...
+                        }
+                    }
+                    else
+                    {
+                        PlannerBuffer = arr[7];
+                        RxBuffer = arr[8];
+                        MachineFeed = arr[10];
+                        MachineSpeed = arr[11];
+                        if (data.Contains("wco"))
+                        {
+                            OffsetPositionX = arr[13];
+                            OffsetPositionY = arr[14];
+                            //Normaly WorkPositionX = MachinePositionX - OffsetPositionX; use a converter string to int first and then calculate...
+                        }
+                    }
+                    
                     switch (arr[1])
                     {
                         case "idle":

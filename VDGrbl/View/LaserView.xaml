@@ -14,6 +14,7 @@
     <!--False => disable user control when keyboard is selected-->
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
+        <local:PercentageConverter x:Key="ConvertPercentage"/>
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Laser informations-->
@@ -31,21 +32,22 @@
                     <RadioButton x:Name="ToggleBoutonLaserOFF" Content="OFF" Margin="20,0,0,0" Height="30" Width="30" 
                                  Background="LightGray" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" 
                                  Command="{Binding Main.StopLaserCommand, Mode=OneWay}"/>
-                    <Ellipse Height="20" Margin="140,0,0,0" Stroke="#FFABADB3" VerticalAlignment="Center" Width="20" 
+                    <CheckBox VerticalAlignment="Center" Margin="40 0 0 0" Content="500mW" IsEnabled="False" IsChecked="True"/>
+                    <Ellipse Height="20" Margin="40,0,0,0" Stroke="#FFABADB3" VerticalAlignment="Center" Width="20" 
                              Fill="{Binding Main.LaserColor}" />
                 </StackPanel>
                 <!--laser power-->
                 <StackPanel Grid.Row="2" Orientation="Horizontal" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" >
                     <Label Content="Puissance:" VerticalContentAlignment="Center"/>
-                    <Slider x:Name="SliderPLaser" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Center" 
+                    <Slider x:Name="SliderPLaser" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center" 
                             Width="150" TickPlacement="TopLeft" Maximum="{Binding Main.MaxLaserPower, Mode=OneWay}" 
                             IsSnapToTickEnabled="True" 
                             LargeChange="100" 
                             Height="30" BorderThickness="1" Cursor="Hand" SmallChange="1" SelectionEnd="100" 
                             Value="{Binding Main.LaserPower}"/>
-                    <TextBox HorizontalAlignment="Left" Height="30" Margin="5,0,0,0" TextWrapping="Wrap" 
-                             Text="{Binding Value, ElementName=SliderPLaser, Mode=TwoWay, StringFormat=\{0:F0\}, UpdateSourceTrigger=PropertyChanged}" 
-                             VerticalAlignment="Center" Width="40" VerticalContentAlignment="Center" IsEnabled="False" 
+                    <TextBox HorizontalAlignment="Left" Height="30" Margin="0,0,0,0" TextWrapping="Wrap" 
+                             Text="{Binding Value, ConverterParameter=5, Converter={StaticResource ConvertPercentage}, ElementName=SliderPLaser, Mode=TwoWay, StringFormat=\{0:P\}, UpdateSourceTrigger=PropertyChanged}" 
+                             VerticalAlignment="Center" Width="60" VerticalContentAlignment="Center" IsEnabled="False" 
                              HorizontalContentAlignment="Center"/>
                 </StackPanel>
             </Grid>

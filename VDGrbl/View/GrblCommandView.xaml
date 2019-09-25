@@ -47,7 +47,9 @@
                     <Button Content="ResetAll" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAllAxisCommand, Mode=OneWay}" IsEnabled="False"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="4">
-                    <Button Content="TEST" HorizontalAlignment="Center" Margin="95, 0, 0, 0" VerticalAlignment="Center" Width="60" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblTestCommand, Mode=OneWay}" IsEnabled="False"/>
+                    <Button Content="G28.1" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.GrblSetHome1Command, Mode=OneWay}"/>
+                    <Button Content="G30.1" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.GrblSetHome2Command, Mode=OneWay}"/>
+                    <Button Content="TEST" HorizontalAlignment="Center" Margin="45, 0, 0, 0" VerticalAlignment="Center" Width="60" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblTestCommand, Mode=OneWay}" IsEnabled="False"/>
                 </StackPanel>
             </Grid>
         </GroupBox>

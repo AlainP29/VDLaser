@@ -6,8 +6,9 @@
     public class GrblModel
     {
         public string GrblConsoleHeader { get; private set; } = "Data console";
-        public string GrblSettingHeader { get; private set; } = "Grbl setting";
-        public string GrblCommandHeader { get; private set; } = "Grbl command";
+        public string GrblControlHeader { get; private set; } = "Machine Control";
+        public string GrblSettingHeader { get; private set; } = "Setting";
+        public string GrblCommandHeader { get; private set; } = "Command";
         public string GrblRXData { get; private set; }
         public string GrblTXData { get; private set; }
         public string GrblSettingCode { get; private set; }

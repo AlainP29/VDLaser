@@ -19,7 +19,6 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="5*"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <DataGrid Grid.Row="0" Grid.Column="0" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
                           IsReadOnly="True" Width="Auto" Height="120" SelectedIndex="1"
@@ -31,29 +30,18 @@
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}"/>
                     </DataGrid.HorizontalGridLinesBrush>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Line sent" Binding="{Binding GrblTXData, Mode=OneWay}" Width="280" MinWidth="70" MaxWidth="350"/>
-                        <DataGridTextColumn Header="Status" Binding="{Binding GrblRXData, Mode=OneWay}" Width="310" MinWidth="50" MaxWidth="320" CanUserResize="True" CanUserSort="True"/>
+                        <DataGridTextColumn Header="Line sent" Binding="{Binding GrblTXData, Mode=OneWay}" Width="300" MinWidth="70" MaxWidth="380"/>
+                        <DataGridTextColumn Header="Response" Binding="{Binding GrblRXData, Mode=OneWay}" Width="300" MinWidth="60" MaxWidth="380" CanUserResize="True" CanUserSort="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
-                <!--Clear datagrid + kill alarm + verbose (all data received, machine position...)-->
+                <!--Clear datagrid + verbose (all data received, machine position...)-->
                 <StackPanel Grid.Row="0" Grid.Column="1">
                     <Button Content="Clear" Margin="0 25 0 5" Width="50" 
                             Command="{Binding Main.ClearCommand, Mode=OneWay}" 
                         Style="{DynamicResource ControlStyleVD}"/>
-                    <CheckBox Content="Verbose" Margin="5,30,5,5" 
+                    <CheckBox Content="Verbose" Margin="10,30,5,0" 
                               VerticalContentAlignment="Center" 
                               IsChecked="{Binding Main.IsVerbose, Mode=TwoWay}"/>
-                </StackPanel>
-                <!--Emergency stop and full homing-->
-                <StackPanel Grid.Column="2" >
-                    <Button Height="40" Width="40" HorizontalAlignment="Center" Margin="15"
-                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblResetCommand, Mode=OneWay}">
-                            <StackPanel>
-                                <Image Source="/VDGrbl;component/Skins/Images/iconStop40.png" RenderTransformOrigin="0.5,0.5"/>
-                            </StackPanel>
-                    </Button>
-                    <Button Content="Homing" Width="75" VerticalAlignment="Center" HorizontalAlignment="Center"
-                            Command="{Binding Main.GrblHomingCommand, Mode=OneWay}" Margin="0, 10,0,0"/>
                 </StackPanel>
             </Grid>
         </GroupBox>

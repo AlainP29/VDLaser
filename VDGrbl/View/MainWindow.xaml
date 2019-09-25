@@ -6,9 +6,9 @@
         xmlns:ignore="http://www.galasoft.ch/ignore"
         xmlns:local="clr-namespace:VDGrbl.View"
         mc:Ignorable="d ignore"
-        Height="520"
+        Height="540"
         Width="890"
-        Title="VDGrbl v0.3.4" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Title="VDLaser v0.3.5" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
@@ -19,19 +19,19 @@
         <!--Connection and display area-->
         <StackPanel>
             <local:SerialPortSettingView Margin="1,1,1.4,1" Width="Auto" Height="149"/>
-            <local:CoordinateView Margin="1" Width="Auto" Height="Auto"/>
-            <local:GrblInfoView Margin="1"/>
-            <local:LaserView Margin="1,1,1.4,1"/>
+            <local:MachineStateView Margin="1" Width="Auto" Height="Auto"/>
+            <local:ControlView Margin="1" Width="Auto" Height="Auto"/>
         </StackPanel>
         <!--Jogging area + settings informations-->
         <StackPanel Grid.Column="2">
             <TabControl >
                 <TabItem Header="Jogging" Style="{DynamicResource ControlStyleVD}">
-                    <Grid Background="#FFE5E5E5" Height="300">
+                    <Grid Background="#FFE5E5E5" Height="320">
                         <StackPanel Orientation="Horizontal">
-                            <!--Send/receive data area-->
+                            <!--Send/receive data area + manual laser control-->
                             <StackPanel>
                                 <local:SendDataView Margin="1" Width="Auto" Height="Auto"/>
+                                <local:LaserView Margin="1" Width="Auto" Height="Auto"/>
                             </StackPanel>
                             <local:JoggingView Margin="1" VerticalAlignment="Top"/>
                         </StackPanel>
@@ -51,7 +51,10 @@
                     <Grid Background="#FFE5E5E5" Height="300" Margin="0">
                         <!-- Grbl settings and commands-->
                         <StackPanel Orientation="Horizontal">
-                            <local:GrblCommandView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
+                            <StackPanel>
+                                <local:GrblCommandView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
+                                <local:GrblInfoView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
+                            </StackPanel>
                             <local:GrblSettingView Margin="1" Height="Auto" Width="Auto"/>
                         </StackPanel>
                     </Grid>

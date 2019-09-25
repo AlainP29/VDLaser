@@ -10,7 +10,7 @@ namespace VDGrbl.Model
         void GetSerialPortSetting(Action<SerialPortSettingModel, Exception> callback);
         void GetGrbl(Action<GrblModel, Exception> callback);
         void GetGCode(Action<GCodeModel, Exception> callback);
-        void GetCoordinate(Action<CoordinateModel, Exception> callback);
+        void GetMachineState(Action<MachineStateModel, Exception> callback);
         void GetImage(Action<ImageModel, Exception> callback);
     }
 }
