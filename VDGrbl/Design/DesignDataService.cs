@@ -15,7 +15,7 @@ namespace VDGrbl.Design
 
         public void GetGrbl(Action<GrblModel, Exception> callback)
         {
-            var item = new GrblModel(" Grbl [design]");
+            var item = new GrblModel("[design]");
             callback(item, null);
         }
 
@@ -27,19 +27,19 @@ namespace VDGrbl.Design
 
         public void GetGCode(Action<GCodeModel, Exception> callback)
         {
-            var item = new GCodeModel("G-Code File [design]");
+            var item = new GCodeModel("G-Code file [design]");
             callback(item, null);
         }
 
-        public void GetMachineState(Action<MachineStateModel, Exception> callback)
+        public void GetMachineState(Action<DataFieldModel, Exception> callback)
         {
-            var item = new MachineStateModel("Machine state [design]");
+            var item = new DataFieldModel("Machine state [design]");
             callback(item, null);
         }
 
-        public void GetImage(Action<ImageModel, Exception> callback)
+        public void GetLaserImage(Action<LaserImageModel, Exception> callback)
         {
-            var item = new ImageModel("Image [design]");
+            var item = new LaserImageModel("Laser image [design]");
             callback(item, null);
         }
     }

@@ -20,6 +20,7 @@
             GrblConsoleHeader += grblHeader;
             GrblSettingHeader += grblHeader;
             GrblCommandHeader += grblHeader;
+            GrblControlHeader += grblHeader;
         }
 
         public GrblModel(string txData, string rxData)

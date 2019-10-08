@@ -13,9 +13,12 @@ namespace VDGrbl.Tools
     {
         #region Fields
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        #endregion
+
+        #region Enum
         public enum GcodeMMode : short { R, L, CW, CCW };
         public enum GcodeDMode : short { A, R };
-        public enum MCodeState : short { End, Stop };
+        public enum MCodeState : short { End, Constant, Dynamic, Stop };
         #endregion
 
         #region public property
@@ -298,6 +301,12 @@ namespace VDGrbl.Tools
             {
                 case "2":
                     MCode = MCodeState.End;
+                    break;
+                case "3":
+                    MCode = MCodeState.Constant;
+                    break;
+                case "4":
+                    MCode = MCodeState.Dynamic;
                     break;
                 case "5":
                     MCode = MCodeState.Stop;

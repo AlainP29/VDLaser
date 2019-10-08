@@ -7,27 +7,36 @@
              mc:Ignorable="d" 
              d:DesignHeight="110" d:DesignWidth="300">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <!--Report current machine state: status and coordinates-->
+        <!--Show main control-->
         <GroupBox Header="{Binding Main.GroupBoxGrblControlTitle}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0">
             <Grid Margin="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <!--Homing button and pre-defined position 1 & 2-->
+                <!--Homing button and pre-defined position 1 & 2 and sart/pause-->
                 <StackPanel>
-                    <Button Content="Homing" Width="75" HorizontalAlignment="Center"
-                            Command="{Binding Main.GrblHomingCommand, Mode=OneWay}" Margin="0,10,0,0"/>
-                <StackPanel Orientation="Horizontal" >
-                    <Button Content="H1" Width="35" Height="22.4" ToolTip="Pre-defined position 1 set by G28.1 in Grbl settings"
-                            Command="{Binding Main.GrblHome1Command, Mode=OneWay}" Margin="20,20,0,0"/>
-                    <Button Content="H2" Width="35"  Height="22.4" ToolTip="Pre-defined position 2 set by G30.1 in Grbl settings"
-                            Command="{Binding Main.GrblHome2Command, Mode=OneWay}" Margin="25,20,0,0"/>
+                    <StackPanel Orientation="Horizontal">
+                    <Button Width="60" Height="22" HorizontalAlignment="Center" Style="{DynamicResource ControlStyleVD}"
+                            Command="{Binding Main.GrblHomingCommand, Mode=OneWay}" Margin="5,10,0,0" Content="Home">
+                    </Button>
+                    <Button Content="H1" Width="27" Height="22.4" ToolTip="Pre-defined position 1 set by G28.1 in Grbl settings"
+                            Command="{Binding Main.GrblHome1Command, Mode=OneWay}" Margin="5,10,0,0"
+                            Style="{DynamicResource ControlStyleVD}"/>
+                    <Button Content="H2" Width="27"  Height="22.4" ToolTip="Pre-defined position 2 set by G30.1 in Grbl settings"
+                            Command="{Binding Main.GrblHome2Command, Mode=OneWay}" Margin="5,10,0,0"
+                            Style="{DynamicResource ControlStyleVD}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" >
+                        <Button Width="60" Height="22.4" Margin="5 10 0 0" Content="Resume" Command="{Binding Main.GrblStartCommand}"
+                                Style="{DynamicResource ControlStyleVD}"/>
+                        <Button Width="60" Height="22.4" Margin="5 10 0 0" Content="Pause" Command="{Binding Main.GrblPauseCommand}"
+                                Style="{DynamicResource ControlStyleVD}"/>
+                    </StackPanel>
                 </StackPanel>
-                </StackPanel>
-                <!--Emergency stop and unlock-->
+                <!--Emergency stop (reset) and unlock ($X)-->
                 <StackPanel Grid.Column="1">
-                    <Button Height="40" Width="40" HorizontalAlignment="Center" Margin="0 0 0 10"
+                    <Button Height="45" Width="45" HorizontalAlignment="Center" Margin="0 0 0 5"
                             Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblResetCommand, Mode=OneWay}">
                         <StackPanel>
                             <Image Source="/VDGrbl;component/Skins/Images/iconStop40.png" RenderTransformOrigin="0.5,0.5"/>
@@ -37,7 +46,6 @@
                             Command="{Binding Main.GrblKillAlarmCommand, Mode=OneWay}" 
                         Style="{DynamicResource ControlStyleVD}"/>
                 </StackPanel>
-                
             </Grid>
         </GroupBox>
     </Grid>

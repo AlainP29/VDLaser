@@ -99,10 +99,10 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
-    <Compile Include="Model\MachineStateModel.cs" />
+    <Compile Include="Model\DataFieldModel.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
-    <Compile Include="Model\ImageModel.cs" />
+    <Compile Include="Model\LaserImageModel.cs" />
     <Compile Include="Model\SerialPortSettingModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
@@ -134,8 +134,8 @@
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
-    <Compile Include="View\MachineStateView.xaml.cs">
-      <DependentUpon>MachineStateView.xaml</DependentUpon>
+    <Compile Include="View\DataFieldView.xaml.cs">
+      <DependentUpon>DataFieldView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ImageView.xaml.cs">
       <DependentUpon>ImageView.xaml</DependentUpon>
@@ -174,7 +174,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\MachineStateView.xaml">
+    <Page Include="View\DataFieldView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -300,6 +300,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Skins\Images\VDGrbl_V03.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Skins\Images\iconHomeAutomation40.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

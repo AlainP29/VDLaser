@@ -14,25 +14,25 @@ namespace VDGrbl.Model
 
         public void GetGrbl(Action<GrblModel, Exception> callback)
         {
-            var item = new GrblModel(" Grbl");
+            var item = new GrblModel("");
             callback(item, null);
         }
 
         public void GetGCode(Action<GCodeModel, Exception> callback)
         {
-            var item = new GCodeModel("G-Code File");
+            var item = new GCodeModel("G-Code file");
             callback(item, null);
         }
 
-        public void GetMachineState(Action<MachineStateModel, Exception> callback)
+        public void GetMachineState(Action<DataFieldModel, Exception> callback)
         {
-            var item = new MachineStateModel("Machine state");
+            var item = new DataFieldModel("Machine state");
             callback(item, null);
         }
 
-        public void GetImage(Action<ImageModel, Exception> callback)
+        public void GetLaserImage(Action<LaserImageModel, Exception> callback)
         {
-            var item = new ImageModel("Image");
+            var item = new LaserImageModel("Laser image");
             callback(item, null);
         }
     }

@@ -32,19 +32,21 @@ namespace VDGrbl.ViewModel
 
         private int _selectedBaudRate;
         private int transferDelay;
+        private int _selectedLaser;
+        private int _converterParameterLaser;
 
         private string _selectedPortName = string.Empty;
         private string _versionGrbl = "-", _buildInfoGrbl = "-";
         private string _mposX = "0.000", _mposY = "0.000";
         private string _wposX = "0.000", _wposY = "0.000";
-        private string _feed = "0", _speed="0";
+        private string _feed = "0", _speed = "0";
         private string _step = "1";
         private string _buf = "0", _rx = "0";
         private string _errorMessage = string.Empty;
         private string _alarmMessage = string.Empty;
         private string _infoMessage = string.Empty;
         private string _fileName = string.Empty;
-        private string _imagePath = string.Empty;
+        private string _imageName = string.Empty;
         private string _estimateJobTime = "00:00:00";
         private string _groupBoxPortSettingTitle = string.Empty;
         private string _groupBoxGrblSettingTitle = string.Empty;
@@ -59,14 +61,18 @@ namespace VDGrbl.ViewModel
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
         private string _gcodeLine = string.Empty;
-        private string _macro1 = "G90 G0 X0", _macro2 = "G91 G1 X10 Y-20 F1000", _macro3 = "G90 G1 Y50 F5000", _macro4 = "G91 G1 X-20 Y10 F1000";
+        private string _macro1 = "G90 G0 X0", _macro2 = "G91 G1 X-100 Y-100 F1000", _macro3 = "G90 G1 X50 Y50 F5000", _macro4 = "G91 G1 X-50 Y50 F1000";
 
-        private double _feedRate = 300;
+        private double _manualfeedRate = 300;
         private double _nLine = 0;
         private double _rLine = 0;
         private double _percentLine = 0;
         private double _laserPower = 0;
-        private double _maxLaserPower = 500;
+        private double _maxLaserPower = 2500;
+        private double _imageHeight;
+        private double _imageWidht;
+        private double _imageDpiX;
+        private double _imageDpiY;
 
         private bool _isSelectedKeyboard = false;
         private bool _isSelectedMetric = true;
@@ -76,19 +82,14 @@ namespace VDGrbl.ViewModel
         private bool _isSending = false;
         private bool _isPortEnabled = true;
         private bool _isBaudEnabled = true;
-        private bool _isSelectedLaser500 = true;
+        private bool _isLaserEnabled = false;
 
         private BitmapSource _imageTransform = null;
         private Image _imageLaser = new Image();
-        private double _imageHeight;
-        private double _imageWidht;
-        private double _imageDpiX;
-        private double _imageDpiY;
         private PixelFormat _imageFormat;
-
         private SerialPort _serialPort;
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-        DispatcherTimer currentStatusTimer = new DispatcherTimer(DispatcherPriority.Normal);
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        private readonly DispatcherTimer currentStatusTimer = new DispatcherTimer(DispatcherPriority.Normal);
         private CancellationTokenSource cts;
         private RespStatus _responseStatus = RespStatus.Ok;
         private MachStatus _machineStatus = MachStatus.Idle;
@@ -101,8 +102,9 @@ namespace VDGrbl.ViewModel
         private ObservableCollection<GrblModel> _consoleData;
         private List<GrblModel> _listConsoleData = new List<GrblModel>();
         private GrblModel _grblModel = new GrblModel("TX", "RX");
-        private GrblTool grbltool = new GrblTool();
-        private Tools.GCodeTool gcodeToolBasic = new Tools.GCodeTool();
+        private readonly GrblTool grbltool = new GrblTool();
+        private readonly Tools.GCodeTool gcodeToolBasic = new Tools.GCodeTool();
+
         #region subregion enum
         /// <summary>
         /// Enumeration of the response states. Ok: All is good, NOk: Alarm state Q: Queued [DR: Data received] 
@@ -110,14 +112,11 @@ namespace VDGrbl.ViewModel
         public enum RespStatus { Ok, NOk, Q };
 
         /// <summary>
-        /// Enumeration of the machine states.
+        /// Enumeration of the machine states:
+        /// (V0.9) Idle, Run, Hold, Door, Home, Alarm, Check
+        /// (V1.1) Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep
         /// </summary>
         public enum MachStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
-
-        /// <summary>
-        /// Enumeration of the speed state : delay between two G-code lines.
-        /// </summary>
-        public enum SendSpeedStatus { Slow, Normal, Fast };
         #endregion
         #endregion
 
@@ -137,6 +136,7 @@ namespace VDGrbl.ViewModel
         public RelayCommand GrblCurrentStatusCommand { get; private set; }
         public RelayCommand GrblStartCommand { get; private set; }
         public RelayCommand GrblSettingsCommand { get; private set; }
+        public RelayCommand GrblRefreshSettingsCommand { get; private set; }
         public RelayCommand GrblParametersCommand { get; private set; }
         public RelayCommand GrblParserStateCommand { get; private set; }
         public RelayCommand GrblBuildInfoCommand { get; private set; }
@@ -181,8 +181,8 @@ namespace VDGrbl.ViewModel
 
         #region subregion setting
         /// <summary>
-        /// Get the GroupBoxGrblSettingTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
+        /// Get the GroupBoxGrblSettingTitle property. In design mode it adds [design]
+        /// Changes to that property's value raise the PropertyChanged event.
         /// </summary>
         public string GroupBoxGrblSettingTitle
         {
@@ -197,7 +197,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Gets the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
+        /// Get the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public List<GrblModel> ListGrblSetting
@@ -501,18 +501,18 @@ namespace VDGrbl.ViewModel
         {
             get
             {
-                return _feedRate;
+                return _manualfeedRate;
             }
             set
             {
-                Set(ref _feedRate, value);
-                if (_feedRate < 0)
+                Set(ref _manualfeedRate, value);
+                if (_manualfeedRate < 0)
                 {
-                    _feedRate = 0;
+                    _manualfeedRate = 0;
                 }
-                if (_feedRate > MaxFeedRate)
+                if (_manualfeedRate > MaxFeedRate)
                 {
-                    _feedRate = MaxFeedRate;
+                    _manualfeedRate = MaxFeedRate;
                 }
                 logger.Info("MainViewModel|Manual speed rate value : {0}", value);
             }
@@ -608,8 +608,15 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public RespStatus ResponseStatus
         {
-            get { return _responseStatus; }
-            set { Set(ref _responseStatus, value); }
+            get
+            {
+                return _responseStatus;
+            }
+            set
+            {
+                Set(ref _responseStatus, value);
+                logger.Info("MainViewModel| Response State {}", value);
+            }
         }
         #endregion
 
@@ -652,24 +659,58 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _maxLaserPower, value);
-            } }
+            }
+        }
 
         /// <summary>
         /// Select the type of laser used.
         /// </summary>
-        public bool IsSelectedLaser500
+        public int SelectedLaser
         {
             get
-              {
-                return _isSelectedLaser500;
+            {
+                return _selectedLaser;
             }
             set
             {
-                Set(ref _isSelectedLaser500, value);
-                MaxLaserPower = 500;
-                WriteString("$30=500");
+                Set(ref _selectedLaser, value);
+                //MaxLaserPower = 500;
+                //WriteString("$30=500");
             }
         }
+
+        public int ConverterParameterLaser
+        {
+            get
+            {
+                return _converterParameterLaser;
+            }
+            set
+            {
+                Set(ref _converterParameterLaser, value);
+            }
+        }
+
+        /// <summary>
+    /// Enable/disable laser.
+    /// </summary>
+        public bool IsLaserEnabled
+        {
+            get
+            {
+                return _isLaserEnabled;
+            }
+            set
+            {
+                Set(ref _isLaserEnabled, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the ListLaser property. 
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int[] ListLaser { get; private set; } = { 500, 1600, 2500, 5500 };
 
         /// <summary>
         /// Check laser status.
@@ -711,7 +752,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Get the FileName property. FileName is the G-code file name.
+        /// Get the FileName property. FileName is the G-code complete path w/ file name.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string FileName
@@ -895,6 +936,7 @@ namespace VDGrbl.ViewModel
 
         /// <summary>
         /// Get the ListTransferDelay property. 
+        /// Bind to combobox.
         /// </summary>
         public string[] ListTransferDelay { get; private set; } = { "Slow", "Normal", "Fast" };
 
@@ -969,7 +1011,6 @@ namespace VDGrbl.ViewModel
             {
                 Set(ref _selectedBaudRate, value);
                 logger.Info("MainViewModel|Selected Baudrate : {0}", value);
-
             }
         }
 
@@ -1224,18 +1265,18 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Get the ImagePath property.
+        /// Get the ImagePath property. ImageName is the complete path w/name of the image file.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string ImagePath
+        public string ImageName
         {
             get
             {
-                return _imagePath;
+                return _imageName;
             }
             set
             {
-                Set(ref _imagePath, value);
+                Set(ref _imageName, value);
                 logger.Info("MainViewModel|Image path : {0}", value);
             }
         }
@@ -1273,6 +1314,7 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Image laser");
             }
         }
+
         /// <summary>
         /// Get the ImageHeight property.
         /// </summary>
@@ -1416,10 +1458,10 @@ namespace VDGrbl.ViewModel
                             return;
                         }
                         logger.Info("MainViewModel|Load Coordinate window");
-                        GroupBoxMachineStateTitle = item.MachineStateHeader;
+                        GroupBoxMachineStateTitle = item.DataFieldHeader;
                     });
 
-                _dataService.GetImage(
+                _dataService.GetLaserImage(
                    (item, error) =>
                    {
                        if (error != null)
@@ -1428,9 +1470,9 @@ namespace VDGrbl.ViewModel
                            return;
                        }
                        logger.Info("MainViewModel|Load Image window");
-                       GroupBoxImageTitle = item.ImageHeader;
+                       GroupBoxImageTitle = item.LaserImageHeader;
                    });
-                DefaultPortSettings();
+                DefaultSettings();
                 MyRelayCommands();
                 logger.Info("MainViewModel|MainWindow initialization finished");
             }
@@ -1443,7 +1485,7 @@ namespace VDGrbl.ViewModel
 
         #region Methods
         /// <summary>
-        /// List of RelayCommands bind to button in ViewModels
+        /// List of RelayCommands (MVVM) bind to button in ViewModels
         /// </summary>
         private void MyRelayCommands()
         {
@@ -1461,12 +1503,13 @@ namespace VDGrbl.ViewModel
             GrblCurrentStatusCommand = new RelayCommand(GrblCurrentStatus, CanExecuteRealTimeCommand);
             GrblStartCommand = new RelayCommand(GrblStartCycle, CanExecuteRealTimeCommand);
             GrblSettingsCommand = new RelayCommand(GrblSettings, CanExecuteOtherCommand);
+            GrblRefreshSettingsCommand = new RelayCommand(RefreshSettings, CanExecuteOtherCommand);
             GrblParametersCommand = new RelayCommand(GrblParameters, CanExecuteOtherCommand);
             GrblParserStateCommand = new RelayCommand(GrblParserState, CanExecuteOtherCommand);
             GrblBuildInfoCommand = new RelayCommand(GrblBuildInfo, CanExecuteOtherCommand);
             GrblStartupBlocksCommand = new RelayCommand(GrblStartupBlocks, CanExecuteOtherCommand);
             GrblCheckCommand = new RelayCommand(GrblCheck, CanExecuteOtherCommand);
-            GrblKillAlarmCommand = new RelayCommand(GrblKillAlarm, CanExecuteOtherCommand);
+            GrblKillAlarmCommand = new RelayCommand(GrblKillAlarm, CanExecuteRealTimeCommand);
             GrblHomingCommand = new RelayCommand(GrblHoming, CanExecuteHomingCommand);
             GrblHome1Command = new RelayCommand(GrblHome1, CanExecuteHomingCommand);
             GrblSetHome1Command = new RelayCommand(GrblSetHome1, CanExecuteHomingCommand);
@@ -1499,8 +1542,7 @@ namespace VDGrbl.ViewModel
             LoadImageCommand = new RelayCommand(OpenImage, CanExecuteOpenImage);
             //StopFileCommand = new RelayCommand(StopFile, CanExecuteStopFile);
             SendFileCommand = new RelayCommand(StartSendingFileAsync, CanExecuteAsyncTask);
-            StopFileCommand = new RelayCommand(StopSendingFileA, CanExecuteAsyncTask);
-
+            StopFileCommand = new RelayCommand(StopSendingFileAsync, CanExecuteAsyncTask);
             IncreaseLaserPowerCommand = new RelayCommand<bool>(IncreaseLaserPower, CanExecuteLaserPower);
             DecreaseLaserPowerCommand = new RelayCommand<bool>(DecreaseLaserPower, CanExecuteLaserPower);
             logger.Info("MainViewModel|All RelayCommands loaded");
@@ -1585,7 +1627,7 @@ namespace VDGrbl.ViewModel
                 _serialPort.WriteBufferSize = 100;
                 _serialPort.ReceivedBytesThreshold = 10;
                 _serialPort.DiscardNull = false;
-                _serialPort.DataReceived += _serialPort_DataReceived;
+                _serialPort.DataReceived += SerialPort_DataReceived;
                 _serialPort.Open();
                 logger.Info("MainViewModel|Port COM open");
                 IsBaudEnabled = false;
@@ -1624,6 +1666,7 @@ namespace VDGrbl.ViewModel
                 {
                     InitializeDispatcherTimer();
                 }
+
             }
             else
             {
@@ -1640,7 +1683,7 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                _serialPort.DataReceived -= _serialPort_DataReceived;
+                _serialPort.DataReceived -= SerialPort_DataReceived;
                 _serialPort.Dispose();
                 _serialPort.Close();
                 IsBaudEnabled = true;//In cleanup?
@@ -1941,15 +1984,21 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Sends the Grbl '$$' command to get all particular $x=var settings of the machine
+        /// Load settings of the machine
         /// </summary>
         public void GrblSettings()
         {
+            logger.Info("MainViewModel|Load Grbl settings");
+            SettingCollection = new ObservableCollection<GrblModel>(ListGrblSetting);
+        }
+
+        /// <summary>
+        /// Sends the Grbl '$$' command to get all particular $x=var settings of the machine
+        /// </summary>
+        public void RefreshSettings()
+        {
             ListGrblSetting.Clear();
             WriteString("$$");
-            logger.Info("MainViewModel|Grbl settings");
-            Thread.Sleep(100);//Waits for ListSettingModel to populate all setting values
-            SettingCollection = new ObservableCollection<GrblModel>(ListGrblSetting);
         }
 
         /// <summary>
@@ -2277,7 +2326,7 @@ namespace VDGrbl.ViewModel
         private void IncreaseFeedRate(bool parameter)
         {
             FeedRate += 10;
-            logger.Info("MainViewModel|F{0}", _feedRate);
+            logger.Info("MainViewModel|F{0}", _manualfeedRate);
         }
 
         /// <summary>
@@ -2287,7 +2336,7 @@ namespace VDGrbl.ViewModel
         private void DecreaseFeedRate(bool parameter)
         {
             FeedRate -= 10;
-            logger.Info("MainViewModel|F{0}", _feedRate);
+            logger.Info("MainViewModel|F{0}", _manualfeedRate);
         }
 
         /// <summary>
@@ -2452,6 +2501,25 @@ namespace VDGrbl.ViewModel
 
         #region subregion other methods
         /// <summary>
+        /// Set default settings
+        /// </summary>
+        public void DefaultSettings()
+        {
+            DefaultPortSettings();
+            DefaultLaserSettings();
+        }
+
+        /// <summary>
+        /// Set default laser settings
+        /// </summary>
+        public void DefaultLaserSettings()
+        {
+            SelectedLaser=2500;
+            MaxLaserPower = SelectedLaser;
+            ConverterParameterLaser = 25;
+        }
+
+        /// <summary>
         /// Does nothing yet...
         /// </summary>
         public override void Cleanup()
@@ -2559,8 +2627,9 @@ namespace VDGrbl.ViewModel
             CancellationToken token = cts.Token;
             var progressHandler = new Progress<double>(value => PercentLine = value);
             var progress = progressHandler as IProgress<double>;
-            var t = Task.Run(() =>
-                {
+            //var task = Task.Run(() =>
+            Task task = Task.Run(() =>
+            {
                     for (int i = 0; i <= NLine; ++i)
                     {
                         SendFile();
@@ -2581,6 +2650,7 @@ namespace VDGrbl.ViewModel
                         if (token.IsCancellationRequested)
                         {
                             logger.Info("MainViewModel|Sending file canceled at line {0}", i.ToString());
+                            //throw new TaskCanceledException(t);
                             break;
                         }
                     }
@@ -2600,7 +2670,7 @@ namespace VDGrbl.ViewModel
             logger.Info("MainViewModel|Transfer speed:", SelectedTransferDelay);
             try
             {
-                await t;
+                await task;
                 logger.Info("MainViewModel|Task sending file completed");
             }
 
@@ -2612,20 +2682,22 @@ namespace VDGrbl.ViewModel
             finally
             {
                 cts.Dispose();
+                logger.Info("MainViewModel|Task sending file cleared");
             }
         }
 
         /// <summary>
         /// Cancel the task to send G-code file in async. Used with stop button.
         /// </summary>
-        private void StopSendingFileA()
+        private void StopSendingFileAsync()
         {
             if(cts!=null)
             {
-                logger.Info("MainViewModel|Task sending file cancelled");
+                logger.Info("MainViewModel|Stop sending file");
                 cts.Cancel();
                 GrblFeedHold();
                 FileQueue.Clear();
+                cts.Dispose();
             }
         }
 
@@ -2713,16 +2785,18 @@ namespace VDGrbl.ViewModel
         #region subregion Image
         private void OpenImage()
         {
-            OpenFileDialog openImage = new OpenFileDialog();
-            openImage.DefaultExt = ".jpg";
-            openImage.Filter = "Images |*.jpg;*.jpeg;*.jpeg;*.png;*.bmp";
+            OpenFileDialog openImage = new OpenFileDialog
+            {
+                DefaultExt = ".jpg",
+                Filter = "Images |*.jpg;*.jpeg;*.jpeg;*.png;*.bmp"
+            };
             try
             {
                 if(openImage.ShowDialog().Value && openImage.FileName.Length>0)
                 {
-                    ImagePath = openImage.FileName;
-                    logger.Info("MainViewModel|Load image, filename: {0}", FileName);
-                    LoadRasterImage(ImagePath);
+                    ImageName = openImage.FileName;
+                    logger.Info("MainViewModel|Load image, filename: {0}", ImageName);
+                    LoadRasterImage(ImageName);
                 }
             }
             catch(Exception ex)
@@ -2761,7 +2835,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void GrblTest()
         {
-            //TODO Test
+            
         }
         public bool CanExecuteGrblTest()
         {
@@ -2775,7 +2849,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void _serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
@@ -2873,6 +2947,7 @@ namespace VDGrbl.ViewModel
         {
             // Ne modifiez pas ce code. Placez le code de nettoyage dans Dispose(bool disposing) ci-dessus.
             Dispose(true);
+            cts.Dispose();
             // TODO: supprimer les marques de commentaire pour la ligne suivante si le finaliseur est remplacé ci-dessus.
             GC.SuppressFinalize(this);
         }

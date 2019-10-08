@@ -11,15 +11,24 @@
         <GroupBox Header="{Binding Main.GroupBoxGrblSettingTitle}" Margin="5" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
             <Grid Margin="0,10,-0.4,-0.6">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="25"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="200"/>
                 </Grid.RowDefinitions>
                 <!--Load the settings collection-->
-                <Button Grid.Row="0" Width="90" Content="Load settings" HorizontalAlignment="Center" 
-                        VerticalAlignment="Center" Command="{Binding Main.GrblSettingsCommand, Mode=OneWay}" Margin="0"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button Grid.Row="0" Width="90" Content="Load settings" HorizontalAlignment="Center" Style="{DynamicResource ControlStyleVD}" 
+                        VerticalAlignment="Center" Command="{Binding Main.GrblSettingsCommand, Mode=OneWay}" Margin="100 0 10 0"/>
+                <Button Grid.Column="1" Command="{Binding Main.GrblRefreshSettingsCommand, FallbackValue=true, Mode=OneWay}" HorizontalAlignment="Center" 
+                        VerticalAlignment="Center" Margin="40 0 0 0"
+                        Style="{DynamicResource ControlStyleVD}" ToolTip="Refresh Grbl settings">
+                    <StackPanel Height="20" Width="20">
+                        <Image Source="/VDGrbl;component/Skins/Images/iconrefresh40.png"/>
+                    </StackPanel>
+                </Button>
+                </StackPanel>
                 <DataGrid Grid.Row="1" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
                           IsReadOnly="True" Width="280"
-                          ItemsSource="{Binding Main.SettingCollection}" Margin="0,0,0,0" Grid.RowSpan="2">
+                          ItemsSource="{Binding Main.SettingCollection}" Margin="0,0.2,-2,0" Height="170" VerticalAlignment="Top">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Code" Binding="{Binding GrblSettingCode}"/>
                         <DataGridTextColumn Header="Value" Binding="{Binding GrblSettingValue}"/>

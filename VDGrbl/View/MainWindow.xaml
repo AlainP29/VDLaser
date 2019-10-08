@@ -19,7 +19,7 @@
         <!--Connection and display area-->
         <StackPanel>
             <local:SerialPortSettingView Margin="1,1,1.4,1" Width="Auto" Height="149"/>
-            <local:MachineStateView Margin="1" Width="Auto" Height="Auto"/>
+            <local:DataFieldView Margin="1" Width="Auto" Height="Auto"/>
             <local:ControlView Margin="1" Width="Auto" Height="Auto"/>
         </StackPanel>
         <!--Jogging area + settings informations-->

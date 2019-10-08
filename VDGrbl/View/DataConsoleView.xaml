@@ -8,9 +8,10 @@
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
     </UserControl.Resources>
-    <!--Show data sent + response from the Arduino-->
+    <!--Show data sent + response-->
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="{Binding Main.GroupBoxGrblConsoleTitle}" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" Margin="0,0,0,10">
+        <GroupBox Header="{Binding Main.GroupBoxGrblConsoleTitle}" Style="{DynamicResource GroupBoxStyleVD}"
+                  IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" Margin="0,0,0,10">
             <Grid Margin="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -22,7 +23,9 @@
                 </Grid.ColumnDefinitions>
                 <DataGrid Grid.Row="0" Grid.Column="0" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
                           IsReadOnly="True" Width="Auto" Height="120" SelectedIndex="1"
-                          ItemsSource="{Binding Main.ConsoleData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Hidden">
+                          ItemsSource="{Binding Main.ConsoleData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" ScrollViewer.CanContentScroll="True"
+                          HorizontalScrollBarVisibility="Hidden">
                     <DataGrid.VerticalGridLinesBrush>
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>
                     </DataGrid.VerticalGridLinesBrush>
@@ -30,11 +33,13 @@
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}"/>
                     </DataGrid.HorizontalGridLinesBrush>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Line sent" Binding="{Binding GrblTXData, Mode=OneWay}" Width="300" MinWidth="70" MaxWidth="380"/>
-                        <DataGridTextColumn Header="Response" Binding="{Binding GrblRXData, Mode=OneWay}" Width="300" MinWidth="60" MaxWidth="380" CanUserResize="True" CanUserSort="True"/>
+                        <DataGridTextColumn Header="Line sent" Binding="{Binding GrblTXData, Mode=OneWay}"
+                                            Width="300" MinWidth="70" MaxWidth="380"/>
+                        <DataGridTextColumn Header="Response" Binding="{Binding GrblRXData, Mode=OneWay}"
+                                            Width="300" MinWidth="60" MaxWidth="380" CanUserResize="True" CanUserSort="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
-                <!--Clear datagrid + verbose (all data received, machine position...)-->
+                <!--Clear (datagrid, textbox) + verbose (machine state)-->
                 <StackPanel Grid.Row="0" Grid.Column="1">
                     <Button Content="Clear" Margin="0 25 0 5" Width="50" 
                             Command="{Binding Main.ClearCommand, Mode=OneWay}" 

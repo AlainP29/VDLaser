@@ -4,10 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.View"
-             xmlns:ViewModel="clr-namespace:VDGrbl.ViewModel" x:Class="VDGrbl.View.MachineStateView"
+             xmlns:ViewModel="clr-namespace:VDGrbl.ViewModel" x:Class="VDGrbl.View.DataFieldView"
              mc:Ignorable="d" Height="200" Width="300">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <!--Report current machine state: status and coordinates-->
+        <!--Report current machine state: status, coordinates feed and laser power-->
         <GroupBox Header="{Binding Main.GroupBoxMachineStateTitle}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0,0,0,0">
                 <Grid Margin="5">
                 <Grid.ColumnDefinitions>
@@ -19,11 +19,15 @@
                     <RowDefinition Height="2.3*"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <!--Display the report state: current machine status-->
-                <TextBox Name="TextBoxMachineStatus" Grid.ColumnSpan="2" Margin="5" VerticalContentAlignment="Center" 
-                         HorizontalContentAlignment="Center" Background="{Binding Main.MachineStatusColor}" 
+                <!--Display the report state: current machine status and laser led-->
+                <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" >
+                <TextBox Name="TextBoxMachineStatus" Margin="110 0 0 0" VerticalContentAlignment="Center" 
+                         HorizontalContentAlignment="Center" Background="{Binding Main.MachineStatusColor}"
                          Text="{Binding Main.MachineStatus, StringFormat={}{0}}" Height="24" Width="60" IsEnabled="False"/>
-                <!--Display the machine X-Y coordinates: real time machine position-->
+                <Ellipse Height="20" Margin="75,8,0,7.2" Stroke="#FFABADB3" VerticalAlignment="Center" Width="20" 
+                             Fill="{Binding Main.LaserColor}" />
+                </StackPanel>
+                <!--Display the machine X-Y coordinates: real time machine and work position-->
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Row="1" Margin="1">
                         <Grid >
                             <Grid.ColumnDefinitions>
@@ -42,7 +46,6 @@
                             <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.MPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                         </Grid>
                 </Border>
-                <!--Display the work coordinates: real time work position-->
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="1">
                         <Grid >
                         <Grid.ColumnDefinitions>
@@ -61,7 +64,7 @@
                         <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.WPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                     </Grid>
                 </Border>
-                <!--Display feed and speed (laser power)-->
+                <!--Display feed (X, Y axes speed) and laser power (<=>spindle speed)-->
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="0" Grid.Row="2" Margin="1">
                     <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="2">
                     <Label Content="Feed: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10 0 0 0"/>
@@ -72,8 +75,6 @@
                     <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="2">
                     <Label Content="Power: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10 0 0 0"/>
                     <Label Content="{Binding Main.Speed, Mode=OneWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
-                        <Ellipse Height="20" Margin="15,0,0,0" Stroke="#FFABADB3" VerticalAlignment="Center" Width="20" 
-                             Fill="{Binding Main.LaserColor}" />
                     </StackPanel>
                 </Border>
             </Grid>

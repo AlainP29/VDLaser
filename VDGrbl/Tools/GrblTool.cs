@@ -18,6 +18,7 @@ namespace VDGrbl.Tools
         #region Fields
         GCodeTool gcodeTool = new GCodeTool();
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        SettingCodes sc = new SettingCodes();
         #region subregion enum
         /// <summary>
         /// Enumeration of the response states. Ok: All is good, NOk: Alarm state Q: Queued [DR: Data received] 
@@ -287,19 +288,19 @@ namespace VDGrbl.Tools
                     }
                     else
                     {
-                        if (arr.Length > 2)//Grbl version 0.9 (w/ setting description)
+                        if (arr.Length > 3)//Grbl version 0.9 (w/ setting description)
                         {
                             GrblM = new GrblModel(arr[0], arr[1], arr[2]);
                             ListGrblSettingModel.Add(GrblM);
-                            logger.Info(ListGrblSettingModel.Count);
+                            logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl0.9 settings: {0}|{1}|{2}", arr[0], arr[1], arr[2]);
                         }
                         else//Grbl version 1.1 (w/o setting description)
                         {
-                            GrblM = new GrblModel(arr[0], arr[1], "v1.1");
+                            GrblM = new GrblModel(arr[0], arr[1], sc.SettingDict[arr[0]]);
                             ListGrblSettingModel.Add(GrblM);
+                            logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl1.1 settings: {0}|{1}|{2}", arr[0], arr[1], arr[2]);
                         }
                     }
-                    logger.Info("GrblTool|ProcessGrblSettingResponse|GrblSetting Value:{0}|RespStatus:{1}|MachStatus{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
                 }
                 else
                 {
