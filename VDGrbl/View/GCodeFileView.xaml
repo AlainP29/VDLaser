@@ -75,7 +75,7 @@
                 </StackPanel>
                 <!--Total job time (estimation)-->
                 <StackPanel Grid.Row="4" Orientation="Horizontal">
-                    <Label Content="Estimated time:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                    <Label Content="Time:" VerticalContentAlignment="Center" Margin="38,0,0,0"/>
                     <TextBox Text="{Binding Main.EstimateJobTime}" Margin="5" IsReadOnly="True" VerticalContentAlignment="Center" Width="70" 
                              HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
                 </StackPanel>

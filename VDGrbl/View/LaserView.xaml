@@ -38,7 +38,7 @@
                 </StackPanel>
                 <!--laser power-->
                 <StackPanel Grid.Row="2" Orientation="Horizontal" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" >
-                    <Label Content="Puissance:" VerticalContentAlignment="Center"/>
+                    <Label Content="Power:" VerticalContentAlignment="Center"/>
                     <Slider x:Name="SliderPLaser" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center" 
                             Width="150" TickPlacement="TopLeft" Maximum="{Binding Main.MaxLaserPower, Mode=OneWay}" 
                             IsSnapToTickEnabled="True" 

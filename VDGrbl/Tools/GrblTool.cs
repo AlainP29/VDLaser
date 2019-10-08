@@ -41,6 +41,8 @@ namespace VDGrbl.Tools
         public string OffsetPositionX { get; private set; } = "0";
         public string MachineFeed { get; private set; } = "0";
         public string MachineSpeed { get; private set; } = "0";
+        public string OverrideMachineFeed { get; private set; } = "0";
+        public string OverrideMachineSpeed { get; private set; } = "0";
         public string RxBuffer { get; private set; } = "0";
         public string PlannerBuffer { get; private set; } = "0";
         public string VersionGrbl { get; set; } = "0.0";
@@ -354,6 +356,12 @@ namespace VDGrbl.Tools
                             OffsetPositionY = arr[11];
                             //Normaly WorkPositionX = MachinePositionX - OffsetPositionX; use a converter string to int first and then calculate...
                         }
+                        if (data.Contains("Ov"))
+                        {
+                            //Override value for feed, rapids and spindle speed
+                            OverrideMachineFeed = arr[10];
+                            OverrideMachineSpeed = arr[12];
+                        }
                     }
                     else
                     {
@@ -366,6 +374,12 @@ namespace VDGrbl.Tools
                             OffsetPositionX = arr[13];
                             OffsetPositionY = arr[14];
                             //Normaly WorkPositionX = MachinePositionX - OffsetPositionX; use a converter string to int first and then calculate...
+                        }
+                        if (data.Contains("Ov"))
+                        {
+                            //Override value for feed, rapids and spindle speed
+                            OverrideMachineFeed = arr[13];
+                            OverrideMachineSpeed = arr[15];
                         }
                     }
                     
