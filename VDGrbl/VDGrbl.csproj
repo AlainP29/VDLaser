@@ -101,6 +101,7 @@
     <Compile Include="Codes\ErrorCodes.cs" />
     <Compile Include="Model\DataFieldModel.cs" />
     <Compile Include="Model\GCodeModel.cs" />
+    <Compile Include="Model\GraphicModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\LaserImageModel.cs" />
     <Compile Include="Model\SerialPortSettingModel.cs" />
@@ -108,11 +109,13 @@
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Tools\BrushColorConverter.cs" />
+    <Compile Include="Tools\GraphicTool.cs" />
     <Compile Include="Tools\PercentageConverter.cs" />
     <Compile Include="Tools\DoubleConverter.cs" />
     <Compile Include="Tools\GCodeTool.cs" />
     <Compile Include="Tools\GrayImageConverter.cs" />
     <Compile Include="Tools\GrblTool.cs" />
+    <Compile Include="Tools\PointsToPathConverter.cs" />
     <Compile Include="Tools\RasterImageTool.cs" />
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\MathTool.cs" />
@@ -122,6 +125,9 @@
     <Compile Include="Tools\StringConverter.cs" />
     <Compile Include="View\ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\GraphicView.xaml.cs">
+      <DependentUpon>GraphicView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\GrblCommandView.xaml.cs">
       <DependentUpon>GrblCommandView.xaml</DependentUpon>
@@ -159,6 +165,10 @@
       <DependentUpon>SerialPortSettingView.xaml</DependentUpon>
     </Compile>
     <Page Include="View\ControlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\GraphicView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

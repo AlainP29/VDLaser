@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media;
 using Microsoft.Win32;
 using NLog;
 
@@ -12,7 +13,7 @@ namespace VDGrbl.Tools
     public class GCodeTool
     {
         #region Fields
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         #endregion
 
         #region Enum
@@ -83,13 +84,13 @@ namespace VDGrbl.Tools
         public string M { get; private set; }
 
         /// <summary>
-        /// Get the MMode property. This is the current movement mode (absolute or relative).
+        /// Get the MMode property. This is the current movement mode (rapid G0, Low G1, CW G2, CCW G3).
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public GcodeMMode MMode { get; private set; }
 
         /// <summary>
-        /// Get the DMode property. This is the current deplacement mode (absolute or relative).
+        /// Get the DMode property. This is the current deplacement mode (absolute G90 or relative G91).
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public GcodeDMode DMode { get; private set; }
@@ -235,7 +236,7 @@ namespace VDGrbl.Tools
         }
 
         /// <summary>
-        /// Parse Gcode line. Get values of G-Code commands
+        /// Parse GCodeline property. Get values of G-Code commands
         /// </summary>
         public void ParseGCode()
         {
@@ -244,6 +245,8 @@ namespace VDGrbl.Tools
             {
                 for (int i = 0; i < arr.Length; i++)
                 {
+                    //logger.Info("GCodeTool1" + arr[i].ToString());
+
                     if (arr[i].Contains("X"))
                     {
                         X = arr[i].Remove(0, 1);
@@ -282,10 +285,65 @@ namespace VDGrbl.Tools
                     {
                         arr[i] = string.Empty;
                     }
-                    logger.Info("GCodeTool"+arr[i].ToString());
                 }
             }
             catch(Exception ex)
+            {
+                logger.Error("Method ParseGCode raised: {0}", ex.ToString());
+            }
+        }
+        /// <summary>
+        /// Parse line. Get values of G-Code commands
+        /// </summary>
+        public void ParseGCode(string line)
+        {
+            var arr = line.ToUpper().Split(' ');
+            try
+            {
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    //logger.Info("GCodeTool|ParseGCode2" + arr[i].ToString());
+                    if (arr[i].Contains("X"))
+                    {
+                        X = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("Y"))
+                    {
+                        Y = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("I"))
+                    {
+                        I = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("J"))
+                    {
+                        J = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("F"))
+                    {
+                        F = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("S"))
+                    {
+                        S = arr[i].Remove(0, 1);
+                    }
+                    else if (arr[i].Contains("G"))
+                    {
+                        G = arr[i].Remove(0, 1);
+                        ProcessGCode(G);
+                    }
+                    else if (arr[i].Contains("M"))
+                    {
+                        M = arr[i].Remove(0, 1);
+                        ProcessMCode(M);
+                    }
+                    else
+                    {
+                        arr[i] = string.Empty;
+                    }
+                }
+            }
+            catch (Exception ex)
             {
                 logger.Error("Method ParseGCode raised: {0}", ex.ToString());
             }
@@ -476,6 +534,81 @@ namespace VDGrbl.Tools
                 logger.Error("GCodeTool|Exception CalculateJobTime raised:" + ex);
             }
             return Math.Round(time * 60);
+        }
+
+        /// <summary>
+        /// Point collection
+        /// </summary>
+        /// <returns></returns>
+        public PointCollection GetGCodePointCollection()
+        {
+            PointCollection points = new PointCollection();
+            if (FileList.Count > 0)
+            {
+                double xs = 0, xe;
+                double ys = 0, ye;
+                foreach (string line in FileList)
+                {
+                    ParseGCode(line);
+                    if (line.Contains("X") || line.Contains("Y"))
+                    {
+                        if (DMode == GcodeDMode.R)//Relatif mode
+                        {
+                            xe = Convert.ToDouble(X) + xs;
+                            ye = Convert.ToDouble(Y) + ys;
+                            points.Add(new System.Windows.Point(xe, ye));
+                            xs = xe;
+                            ys = ye;
+                        }
+                        else//Absolute mode
+                        {
+                            xe = Convert.ToDouble(X);
+                            ye = Convert.ToDouble(Y);
+                            points.Add(new System.Windows.Point(xe, ye));
+                        }
+                    }
+                }
+            }
+            return points;
+        }
+
+        /// <summary>
+        /// Add an offset to the point collection: for instance the origin of coordinate plane.
+        /// </summary>
+        /// <param name="offsetAxisX"></param>
+        /// <param name="offsetAxisY"></param>
+        /// <returns></returns>
+        public PointCollection GetGCodePointCollection(double offsetAxisX,double offsetAxisY)
+        {
+            PointCollection points = new PointCollection();
+            if (FileList.Count > 0)
+            {
+                double xs = 0, xe;
+                double ys = 0, ye;
+                points.Add(new System.Windows.Point(offsetAxisX, offsetAxisY));
+                foreach (string line in FileList)
+                {
+                    ParseGCode(line);
+                    if (line.Contains("X") || line.Contains("Y"))
+                    {
+                        if (DMode == GcodeDMode.R)//Relatif mode
+                        {
+                            xe = Convert.ToDouble(X) + xs;
+                            ye = Convert.ToDouble(Y) + ys;
+                            points.Add(new System.Windows.Point(xe, ye));
+                            xs = xe;
+                            ys = ye;
+                        }
+                        else//Absolute mode
+                        {
+                            xe = Convert.ToDouble(X);
+                            ye = Convert.ToDouble(Y);
+                            points.Add(new System.Windows.Point(xe + offsetAxisX, ye + offsetAxisX));
+                        }
+                    }
+                }
+            }
+            return points;
         }
         #endregion
     }

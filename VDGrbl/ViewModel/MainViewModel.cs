@@ -15,7 +15,7 @@ using System.Windows.Threading;
 using VDGrbl.Model;
 using VDGrbl.Tools;
 using System.Windows.Controls;
-
+using System.Windows;
 
 namespace VDGrbl.ViewModel
 {
@@ -56,8 +56,8 @@ namespace VDGrbl.ViewModel
         private string _groupBoxGCodeFileTitle = string.Empty;
         private string _groupBoxMachineStateTitle = string.Empty;
         private string _groupBoxImageTitle = string.Empty;
+        private string _groupBoxGraphicTitle = string.Empty;
         private string _selectedTransferDelay = string.Empty;
-
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
         private string _gcodeLine = string.Empty;
@@ -73,6 +73,7 @@ namespace VDGrbl.ViewModel
         private double _imageWidht;
         private double _imageDpiX;
         private double _imageDpiY;
+        private double _strokeThickness = 2;
 
         private bool _isSelectedKeyboard = false;
         private bool _isSelectedMetric = true;
@@ -84,6 +85,10 @@ namespace VDGrbl.ViewModel
         private bool _isBaudEnabled = true;
         private bool _isLaserEnabled = false;
 
+        private PointCollection _gcodePoints= new PointCollection();
+        private PathGeometry _pathGeometry;
+        private Brush _fill=Brushes.AliceBlue;
+        private Brush _stroke=Brushes.White;
         private BitmapSource _imageTransform = null;
         private Image _imageLaser = new Image();
         private PixelFormat _imageFormat;
@@ -100,10 +105,12 @@ namespace VDGrbl.ViewModel
         private Queue<string> _fileQueue = new Queue<string>();
         private List<string> _fileList = new List<string>();
         private ObservableCollection<GrblModel> _consoleData;
+        private ObservableCollection<GraphicModel> _paths=new ObservableCollection<GraphicModel>();
         private List<GrblModel> _listConsoleData = new List<GrblModel>();
         private GrblModel _grblModel = new GrblModel("TX", "RX");
         private readonly GrblTool grbltool = new GrblTool();
         private readonly Tools.GCodeTool gcodeToolBasic = new Tools.GCodeTool();
+        private GCodeTool gcodeTool;
 
         #region subregion enum
         /// <summary>
@@ -615,7 +622,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _responseStatus, value);
-                logger.Info("MainViewModel| Response State {}", value);
+                //logger.Info("MainViewModel| Response State {}", value);
             }
         }
         #endregion
@@ -1395,6 +1402,115 @@ namespace VDGrbl.ViewModel
             }
         }
         #endregion
+
+        #region Graphics
+        /// <summary>
+        /// Get the GroupBoxGraphicTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxGraphicTitle
+        {
+            get
+            {
+                return _groupBoxGraphicTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxGraphicTitle, value);
+            }
+        }
+        /// <summary>
+        /// Get the GCodePoints property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public PointCollection GCodePoints
+        {
+            get
+            {
+                return _gcodePoints;
+            }
+            set
+            {
+                Set(ref _gcodePoints, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the Geometry property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public PathGeometry PathGeometry
+        {
+            get
+            {
+                return _pathGeometry;
+            }
+            set
+            {
+                Set(ref _pathGeometry, value);
+            }
+        }
+        /// <summary>
+        /// Get the Fill property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Brush Fill
+        {
+            get
+            {
+                return _fill;
+            }
+            set
+            {
+                Set(ref _fill, value);
+            }
+        }
+        /// <summary>
+        /// Get the Stroke property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Brush Stroke
+        {
+            get
+            {
+                return _stroke;
+            }
+            set
+            {
+                Set(ref _stroke, value);
+            }
+        }
+        /// <summary>
+        /// Get the StrokeThickness property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double StrokeThickness
+        {
+            get
+            {
+                return _strokeThickness;
+            }
+            set
+            {
+                Set(ref _strokeThickness, value);
+            }
+        }
+        /// <summary>
+        /// Get the Paths property. 
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ObservableCollection<GraphicModel> GcodePaths
+        {
+            get
+            {
+                return _paths;
+            }
+            set
+            {
+                Set(ref _paths, value);
+            }
+        }
+        #endregion
         #endregion
 
         #region Constructor
@@ -1471,6 +1587,17 @@ namespace VDGrbl.ViewModel
                        }
                        logger.Info("MainViewModel|Load Image window");
                        GroupBoxImageTitle = item.LaserImageHeader;
+                   });
+                _dataService.GetGraphic(
+                   (item, error) =>
+                   {
+                       if (error != null)
+                       {
+                           logger.Error("MainViewModel|Exception GCodeFile raised: " + error);
+                           return;
+                       }
+                       logger.Info("MainViewModel|Load Image window");
+                       GroupBoxGraphicTitle = item.GraphicHeader;
                    });
                 DefaultSettings();
                 MyRelayCommands();
@@ -1903,6 +2030,7 @@ namespace VDGrbl.ViewModel
                 FileQueue.Clear();
                 ListGrblSetting.Clear();
                 ListConsoleData.Clear();
+                GcodePaths.Clear();
                 NLine = 0;
                 PercentLine = 0;
                 RLine = 0;
@@ -2507,6 +2635,7 @@ namespace VDGrbl.ViewModel
         {
             DefaultPortSettings();
             DefaultLaserSettings();
+            DefaultGraphicSettings();
         }
 
         /// <summary>
@@ -2517,6 +2646,26 @@ namespace VDGrbl.ViewModel
             SelectedLaser=2500;
             MaxLaserPower = SelectedLaser;
             ConverterParameterLaser = 25;
+            logger.Info("MainWindows|Default laser settings");
+
+        }
+
+        /// <summary>
+        /// Set default graphic settings
+        /// </summary>
+        public void DefaultGraphicSettings()
+        {
+            GraphicTool gt = new GraphicTool();
+
+            GcodePaths.Add(new GraphicModel
+            {
+                GraphicPathGeometry = gt.Axis(160, 160, 0),
+                GraphicFill = Fill,
+                GraphicStroke = Stroke,
+                GraphicStrokeThickness = StrokeThickness,
+            });
+            logger.Info("MainWindows|Default Coordinate Plane");
+
         }
 
         /// <summary>
@@ -2605,17 +2754,21 @@ namespace VDGrbl.ViewModel
             {
                 while((line=sr.ReadLine())!=null)
                 {
-                    FileQueue.Enqueue(gcodeToolBasic.TrimGcode(line));
-                    FileList.Add(line);
-                    GCodeLine += line + Environment.NewLine;
+                    FileQueue.Enqueue(gcodeToolBasic.TrimGcode(line).Replace(',', '.'));
+                    FileList.Add(line.Replace('.', ','));
+                    GCodeLine += line + Environment.NewLine;//Too heavy
                 }
             }
             logger.Info(GCodeLine);
             NLine = FileQueue.Count;
             RLine = NLine;
-            Tools.GCodeTool gcodeTool = new Tools.GCodeTool(FileList);
+            logger.Info("MainWindow| Get GCode FileList");
+            gcodeTool = new GCodeTool(FileList);
+            logger.Info("MainWindow| Get GCode PointCollection");
+            GCodePoints = gcodeTool.GetGCodePointCollection(50,50);
             TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
             EstimateJobTime = time.ToString(@"hh\:mm\:ss");
+            GCodeDrawing(GCodePoints);
         }
 
         /// <summary>
@@ -2828,7 +2981,27 @@ namespace VDGrbl.ViewModel
             ImageDpiY = ImageTransform.DpiY;
             ImageFormat = ImageTransform.Format;
         }
-        #endregion  
+        #endregion
+
+        #region subregion graphic
+        /// <summary>
+        /// Draw G-code file with a path.
+        /// </summary>
+        public void GCodeDrawing(PointCollection pc)
+        {
+            GraphicTool graphicTool = new GraphicTool(pc);
+
+            logger.Info("MainWindows|GrblTest Geometry");
+
+            GcodePaths.Add(new GraphicModel
+            {
+                GraphicPathGeometry = graphicTool.Plotter(),
+                GraphicFill = Fill,
+                GraphicStroke = Brushes.Red,
+                GraphicStrokeThickness = StrokeThickness,
+            });
+        }
+        #endregion
 
         /// <summary>
         /// This is a test command bind to TEST button for development purpose only.
@@ -2837,6 +3010,7 @@ namespace VDGrbl.ViewModel
         {
             
         }
+        
         public bool CanExecuteGrblTest()
         {
             return true;

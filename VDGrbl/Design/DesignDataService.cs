@@ -42,5 +42,10 @@ namespace VDGrbl.Design
             var item = new LaserImageModel("Laser image [design]");
             callback(item, null);
         }
+        public void GetGraphic(Action<GraphicModel, Exception> callback)
+        {
+            var item = new GraphicModel("Graphic [design]");
+            callback(item, null);
+        }
     }
 }
