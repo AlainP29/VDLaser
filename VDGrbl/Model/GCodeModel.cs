@@ -8,6 +8,7 @@ namespace VDGrbl.Model
     public class GCodeModel
     {
         public string GCodeHeader { get; private set; }
+        public string GCodeLine { get; set; }
 
         public string X { get; private set; }
 
@@ -24,10 +25,17 @@ namespace VDGrbl.Model
         public string G { get; private set; }
 
         public string M { get; private set; }
+        public int N { get; private set; }
 
         public GCodeModel(string gcodeFileHeader)
         {
             GCodeHeader = gcodeFileHeader;
+        }
+
+        public GCodeModel(int numero,string line)
+        {
+            GCodeLine = line;
+            N = numero;
         }
     }
 }

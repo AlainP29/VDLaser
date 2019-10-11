@@ -60,7 +60,7 @@
                         </StackPanel>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Laser image" Style="{DynamicResource ControlStyleVD}">
+                <TabItem Header="Laser image" Style="{DynamicResource ControlStyleVD}" IsEnabled="False">
                     <Grid Background="#FFE5E5E5" Height="300" Margin="0">
                         <!-- Grbl laser image-->
                         <StackPanel Orientation="Horizontal">

@@ -84,6 +84,7 @@ namespace VDGrbl.ViewModel
         private bool _isPortEnabled = true;
         private bool _isBaudEnabled = true;
         private bool _isLaserEnabled = false;
+        private bool _isRefresh = false;
 
         private PointCollection _gcodePoints= new PointCollection();
         private PathGeometry _pathGeometry;
@@ -105,9 +106,11 @@ namespace VDGrbl.ViewModel
         private Queue<string> _fileQueue = new Queue<string>();
         private List<string> _fileList = new List<string>();
         private ObservableCollection<GrblModel> _consoleData;
+        private ObservableCollection<GCodeModel> _gcodeData;
         private ObservableCollection<GraphicModel> _paths=new ObservableCollection<GraphicModel>();
         private List<GrblModel> _listConsoleData = new List<GrblModel>();
         private GrblModel _grblModel = new GrblModel("TX", "RX");
+        private GCodeModel _gcodeModel;
         private readonly GrblTool grbltool = new GrblTool();
         private readonly Tools.GCodeTool gcodeToolBasic = new Tools.GCodeTool();
         private GCodeTool gcodeTool;
@@ -348,6 +351,22 @@ namespace VDGrbl.ViewModel
                 Set(ref _isVerbose, value);
             }
         }
+        /// <summary>
+        /// Gets the IsRefresh property. if IsRefresh is true load settings is ok.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsRefresh
+        {
+            get
+            {
+                return _isRefresh;
+            }
+            set
+            {
+
+                Set(ref _isRefresh, value);
+            }
+        }
         #endregion
 
         #region subregion send
@@ -380,6 +399,22 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _grblModel, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the GCodeModel property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public GCodeModel GCodeModel
+        {
+            get
+            {
+                return _gcodeModel;
+            }
+            set
+            {
+                Set(ref _gcodeModel, value);
             }
         }
 
@@ -960,6 +995,17 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _gcodeLine, value);
+            }
+        }
+        public ObservableCollection<GCodeModel> GCodeData
+        {
+            get
+            { 
+                return _gcodeData;
+            }
+            set
+            { 
+                Set(ref _gcodeData, value);
             }
         }
         #endregion
@@ -1629,7 +1675,7 @@ namespace VDGrbl.ViewModel
             GrblPauseCommand = new RelayCommand(GrblFeedHold, CanExecuteRealTimeCommand);
             GrblCurrentStatusCommand = new RelayCommand(GrblCurrentStatus, CanExecuteRealTimeCommand);
             GrblStartCommand = new RelayCommand(GrblStartCycle, CanExecuteRealTimeCommand);
-            GrblSettingsCommand = new RelayCommand(GrblSettings, CanExecuteOtherCommand);
+            GrblSettingsCommand = new RelayCommand(GrblSettings, CanExecuteLoadSettingCommand);
             GrblRefreshSettingsCommand = new RelayCommand(RefreshSettings, CanExecuteOtherCommand);
             GrblParametersCommand = new RelayCommand(GrblParameters, CanExecuteOtherCommand);
             GrblParserStateCommand = new RelayCommand(GrblParserState, CanExecuteOtherCommand);
@@ -2030,6 +2076,7 @@ namespace VDGrbl.ViewModel
                 FileQueue.Clear();
                 ListGrblSetting.Clear();
                 ListConsoleData.Clear();
+                GCodeData.Clear();
                 GcodePaths.Clear();
                 NLine = 0;
                 PercentLine = 0;
@@ -2118,6 +2165,7 @@ namespace VDGrbl.ViewModel
         {
             logger.Info("MainViewModel|Load Grbl settings");
             SettingCollection = new ObservableCollection<GrblModel>(ListGrblSetting);
+            IsRefresh = false;
         }
 
         /// <summary>
@@ -2127,6 +2175,19 @@ namespace VDGrbl.ViewModel
         {
             ListGrblSetting.Clear();
             WriteString("$$");
+            IsRefresh = true;
+        }
+        /// <summary>
+        /// Allows/disallows Load setting button.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteLoadSettingCommand()
+        {
+            if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm && IsRefresh)
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -2209,7 +2270,9 @@ namespace VDGrbl.ViewModel
             return false;
             //return true;
         }
-        
+
+      
+
         /// <summary>
         /// Write Grbl '$H' command to run homing cycle.
         /// </summary>
@@ -2220,13 +2283,13 @@ namespace VDGrbl.ViewModel
                 GrblReset();
                 GrblKillAlarm();
             }
-            WriteString("$H");
-            MachineStatus = MachStatus.Home;
-            MachineStatusColor = Brushes.LightPink;
             if (IsLaserPower)//By default during homing or G0 mode the laser is deactivated but still SXXX value. For safety I put it off.
             {
                 StopLaser();
             }
+            WriteString("$H");
+            MachineStatus = MachStatus.Home;
+            MachineStatusColor = Brushes.LightPink;
             logger.Info("MainViewModel|Grbl homing");
         }
 
@@ -2748,15 +2811,21 @@ namespace VDGrbl.ViewModel
         private void LoadFile(string fileName)
         {
             string line;
+            int i = 0;
             FileQueue.Clear();
             FileList.Clear();
+            GCodeData = new ObservableCollection<GCodeModel>();
             using (StreamReader sr = new StreamReader(fileName))
             {
                 while((line=sr.ReadLine())!=null)
                 {
                     FileQueue.Enqueue(gcodeToolBasic.TrimGcode(line).Replace(',', '.'));
                     FileList.Add(line.Replace('.', ','));
-                    GCodeLine += line + Environment.NewLine;//Too heavy
+                    //GCodeLine += line + Environment.NewLine;//Too heavy
+                    GCodeModel = new GCodeModel(i,line);
+                    GCodeData.Add(GCodeModel);
+                    i++;
+                    logger.Info("N{0} GM", i, GCodeData);
                 }
             }
             logger.Info(GCodeLine);
