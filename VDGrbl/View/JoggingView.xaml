@@ -23,10 +23,12 @@
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Use to move the machine with buttons or keyboard-->
-        <GroupBox Header="Jog control" HorizontalAlignment="Left" Margin="5" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
+        <GroupBox Header="Jog control" HorizontalAlignment="Left" Margin="5" Style="{DynamicResource GroupBoxStyleVD}" 
+                  IsEnabled="{Binding Main.IsManualSending}">
             <StackPanel>
                 <!--Buttons move all directions X, Y, Z-->
-                <Grid Margin="0" Width="250" Height="150" IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
+                <Grid Margin="0" Width="250" Height="150" 
+                      IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
@@ -151,27 +153,47 @@
                     </Button>
                 </Grid>
                 <!--Slider adjust Feed rate-->
-                <StackPanel Orientation="Horizontal" IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" >
-                    <Label Content="Feed:" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5"/>
+                <StackPanel Orientation="Horizontal" 
+                            IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" >
+                    <Label Content="Feed:" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
+                           Margin="5"/>
                     <Slider Name="FeedSlider" Maximum="{Binding Main.MaxFeedRate, Mode=OneWay}" Width="145" 
                             HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0" Margin="5,0,5,0" 
                             Value="{Binding Main.FeedRate, Mode=TwoWay}" LargeChange="10" SmallChange="1" BorderThickness="1" 
                             Cursor="Hand" TickPlacement="TopLeft" />
-                    <TextBox Text="{Binding Value, ElementName=FeedSlider, Mode=TwoWay, StringFormat=\{0:F0\}, UpdateSourceTrigger=PropertyChanged}" Width="30" Height="30" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                    <TextBox Text="{Binding Value, ElementName=FeedSlider, Mode=TwoWay, StringFormat=\{0:F0\}, UpdateSourceTrigger=PropertyChanged}" 
+                             Width="30" Height="30" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                 </StackPanel>
                 <!--Toggle buttons select Step for X, Y and Z-->
                 <StackPanel Orientation="Horizontal" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
                     <Label Content="Step:" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                    <RadioButton x:Name="radioButton" Content="0.1" Margin="5" Width="30" Style="{StaticResource {x:Type ToggleButton}}" Command="{Binding Main.StepCommand, Mode=OneWay}" CommandParameter="{Binding Content, ElementName=radioButton}"/>
-                    <RadioButton x:Name="radioButton1" Content="0.5" Margin="5" Width="30" Style="{StaticResource {x:Type ToggleButton}}" Command="{Binding Main.StepCommand, Mode=OneWay}" CommandParameter="{Binding Content, ElementName=radioButton1}"/>
-                    <RadioButton x:Name="radioButton2" Content="1" Margin="5" Width="30" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" Command="{Binding Main.StepCommand, Mode=OneWay}" CommandParameter="{Binding Content, ElementName=radioButton2}"/>
-                    <RadioButton x:Name="radioButton3" Content="5" Margin="5" Width="30" Style="{StaticResource {x:Type ToggleButton}}" Command="{Binding Main.StepCommand, Mode=OneWay}" CommandParameter="{Binding Content, ElementName=radioButton3}"/>
-                    <RadioButton x:Name="radioButton4" Content="10" Margin="5" Width="30" Style="{StaticResource {x:Type ToggleButton}}" Command="{Binding Main.StepCommand, Mode=OneWay}" CommandParameter="{Binding Content, ElementName=radioButton4}"/>
+                    <RadioButton x:Name="radioButton" Content="0.1" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 Command="{Binding Main.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton}"/>
+                    <RadioButton x:Name="radioButton1" Content="0.5" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 Command="{Binding Main.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton1}"/>
+                    <RadioButton x:Name="radioButton2" Content="1" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" 
+                                 Command="{Binding Main.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton2}"/>
+                    <RadioButton x:Name="radioButton3" Content="5" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 Command="{Binding Main.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton3}"/>
+                    <RadioButton x:Name="radioButton4" Content="10" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 Command="{Binding Main.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton4}"/>
                 </StackPanel>
                 <!--Keyboard is enabled / mouth disable + metric/imperial-->
                 <StackPanel Orientation="Horizontal">
-                    <CheckBox Margin="5" VerticalContentAlignment="Center" Content="Keyboard" IsChecked="{Binding Main.IsSelectedKeyboard}"/>
-                    <CheckBox Margin="5" VerticalContentAlignment="Center" Content="Metric" IsChecked="{Binding Main.IsSelectedMetric}"/>
+                    <CheckBox Margin="5" VerticalContentAlignment="Center" Content="Keyboard" 
+                              IsChecked="{Binding Main.IsSelectedKeyboard}"/>
+                    <CheckBox Margin="5" VerticalContentAlignment="Center" Content="Metric" 
+                              IsChecked="{Binding Main.IsSelectedMetric}"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>

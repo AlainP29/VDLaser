@@ -24,7 +24,8 @@
                 <DataGrid Grid.Row="0" Grid.Column="0" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
                           IsReadOnly="True" Width="Auto" Height="120" SelectedIndex="1"
                           ItemsSource="{Binding Main.ConsoleData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          Margin="0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" ScrollViewer.CanContentScroll="True"
+                          Margin="0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" 
+                          ScrollViewer.CanContentScroll="True"
                           HorizontalScrollBarVisibility="Hidden">
                     <DataGrid.VerticalGridLinesBrush>
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>

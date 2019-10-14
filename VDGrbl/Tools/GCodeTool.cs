@@ -129,46 +129,24 @@ namespace VDGrbl.Tools
 
         /// <summary>
         /// Initialize a new instance of GCodeTool with a G-Code line as parameter which is parsed.
-        /// Parameter number (the numero of line) is not used yet.
         /// </summary>
-        /// <param name="number"></param>
         /// <param name="line"></param>
         public GCodeTool(string line)
         {
-            if (line.Contains('.'))
+            if (line != null)
             {
-                GCodeLine = line.Replace('.', ',');
-            }
-            else
-            {
-                GCodeLine = line;
-            }
-            if (!line.StartsWith("$") || !line.StartsWith("%") || !line.StartsWith("(") || !line.StartsWith(";") || !line.StartsWith(";"))
-            {
-                IsGCode = true; //TODO
-            }
-            ParseGCode();//TODO In or out of constructor?
-        }
-
-        /// <summary>
-        /// Initialize a new instance of GCodeTool with a G-Code line as parameter which is parsed.
-        /// Parameter number (the numero of line) is not used yet.
-        /// </summary>
-        /// <param name="number"></param>
-        /// <param name="line"></param>
-        public GCodeTool(int number, string line)
-        {
-            if (line.Contains('.'))
-            {
-                GCodeLine = line.Replace('.', ',');
-            }
-            else
-            {
-                GCodeLine = line;
-            }
-            if (!line.StartsWith("$") || !line.StartsWith("%") || !line.StartsWith("(") || !line.StartsWith(";") || !line.StartsWith(";"))
-            {
-                IsGCode = true; //TODO
+                if (line.Contains('.'))
+                {
+                    GCodeLine = line.Replace('.', ',');
+                }
+                else
+                {
+                    GCodeLine = line;
+                }
+                if (!line.StartsWith("$") || !line.StartsWith("%") || !line.StartsWith("(") || !line.StartsWith(";") || !line.StartsWith(";"))
+                {
+                    IsGCode = true; //TODO
+                }
             }
             ParseGCode();//TODO In or out of constructor?
         }

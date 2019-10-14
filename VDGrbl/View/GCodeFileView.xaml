@@ -55,14 +55,16 @@
                         </StackPanel>
                     </Button>
                     <Button VerticalAlignment="Center"
-                            Margin="5" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.SendFileCommand, Mode=OneWay}"
+                            Margin="5" Style="{DynamicResource ControlStyleVD}" 
+                            Command="{Binding Main.SendFileCommand, Mode=OneWay}"
                             Height="30" Width="30">
                         <StackPanel Height="20" Width="20">
                             <Image Source="/VDGrbl;component/Skins/Images/iconPlay40.png"/>
                         </StackPanel>
                     </Button>
                     <Button VerticalAlignment="Center"
-                            Margin="5" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.StopFileCommand, Mode=OneWay}"
+                            Margin="5" Style="{DynamicResource ControlStyleVD}" 
+                            Command="{Binding Main.StopFileCommand, Mode=OneWay}"
                             Height="30" Width="30">
                         <StackPanel Height="20" Width="20">
                             <Image Source="/VDGrbl;component/Skins/Images/iconStopFile40.png"/>
@@ -100,7 +102,8 @@
                 <!--Total job time (estimation)-->
                 <StackPanel Grid.Row="4" Orientation="Horizontal">
                     <Label Content="Time:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
-                    <TextBox Text="{Binding Main.EstimateJobTime}" Margin="5" IsReadOnly="True" VerticalContentAlignment="Center" Width="70" 
+                    <TextBox Text="{Binding Main.EstimateJobTime}" Margin="5" IsReadOnly="True" 
+                             VerticalContentAlignment="Center" Width="70" 
                              HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
                 </StackPanel>
                 <!--Percentage of lines sent (not total job time)-->
@@ -109,7 +112,8 @@
                         <ProgressBar Maximum="1" Value="{Binding Main.PercentLine}" Height="20" 
                                  HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" 
                                  HorizontalContentAlignment="Center" Width="150" Foreground="#FF78DD8A"/>
-                        <TextBlock Text="{Binding Main.PercentLine, Converter={StaticResource ConvertDouble}, StringFormat=\{0:P0\}}"
+                        <TextBlock Text="{Binding Main.PercentLine, Converter={StaticResource ConvertDouble}, 
+                            StringFormat=\{0:P0\}}"
                                Width="150" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
                     </Grid>
                 </StackPanel>

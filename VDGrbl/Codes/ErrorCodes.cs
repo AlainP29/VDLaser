@@ -87,11 +87,11 @@ namespace VDGrbl.Codes
         /// <summary>
         /// Get the dictionnary of error message: Key - Value: Error code description
         /// </summary>
-        public Dictionary<string, string> ErrorDict09 { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> ErrorDict09 { get; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Get the dictionnary of error message: Key: IDXX - Value: Error code description
         /// </summary>
-        public Dictionary<string, string> ErrorDict11 { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> ErrorDict11 { get; } = new Dictionary<string, string>();
     }
 }

@@ -5,14 +5,14 @@ using System.Windows.Data;
 namespace VDGrbl.Tools
 {
     /// <summary>
-    /// Convert an object to double. Use in Xaml.
+    /// Convert an object to double. Use in Xaml GCodeFileView.
     /// </summary>
     [ValueConversion(typeof(object), typeof(double))]
     public class DoubleConverter:IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (targetType != typeof(double))
+            if (targetType != typeof(object))
             {
                 //throw new InvalidOperationException("The target must be a double");
             }

@@ -10,7 +10,8 @@
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Grbl commands: some are disabled for safety and test button is for development purpose only-->
-        <GroupBox Header="{Binding Main.GroupBoxGrblCommandTitle}" Margin="0" Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
+        <GroupBox Header="{Binding Main.GroupBoxGrblCommandTitle}" Margin="0" 
+                  Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
             <Grid Margin="5" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -20,36 +21,79 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
             <StackPanel Orientation="Horizontal" Grid.Row="0">
-                <Button Content="Ctrl-X" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblResetCommand, Mode=OneWay}" ToolTip="Soft-Reset"/>
-                <Button Content="~" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblStartCommand, Mode=OneWay}" ToolTip="Cycle Start / Resume"/>
-                <Button Content="!" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblPauseCommand, Mode=OneWay}" ToolTip="Feed Hold"/>
-                <Button Content="?" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblCurrentStatusCommand, Mode=OneWay}" ToolTip="Status Report Query"/>
-                <Button Content="$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblHelpCommand, Mode=OneWay}" ToolTip="Grbl print a help message"/>
+                <Button Content="Ctrl-X" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                        Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblResetCommand, Mode=OneWay}" 
+                        ToolTip="Soft-Reset"/>
+                <Button Content="~" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                        Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblStartCommand, Mode=OneWay}" 
+                        ToolTip="Cycle Start / Resume"/>
+                <Button Content="!" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                        Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblPauseCommand, Mode=OneWay}" 
+                        ToolTip="Feed Hold"/>
+                <Button Content="?" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                        Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblCurrentStatusCommand, Mode=OneWay}" 
+                        ToolTip="Status Report Query"/>
+                <Button Content="$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                        Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblHelpCommand, Mode=OneWay}" 
+                        ToolTip="Grbl print a help message"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="1">
-                    <Button Content="$#" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblParametersCommand, Mode=OneWay}" ToolTip="View gcode parameters"/>
-                    <Button Content="$G" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblParserStateCommand, Mode=OneWay}" ToolTip="View gcode parser state"/>
-                    <Button Content="$N" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblStartupBlocksCommand, Mode=OneWay}" ToolTip="View startup blocks"/>
-                    <Button Content="$I" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblBuildInfoCommand, Mode=OneWay}" ToolTip="View build info"/>
-                    <Button Content="$$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblSettingsCommand, Mode=OneWay}" ToolTip="View and write Grbl settings"/>
+                    <Button Content="$#" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblParametersCommand, Mode=OneWay}" 
+                            ToolTip="View gcode parameters"/>
+                    <Button Content="$G" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblParserStateCommand, Mode=OneWay}" 
+                            ToolTip="View gcode parser state"/>
+                    <Button Content="$N" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblStartupBlocksCommand, Mode=OneWay}" 
+                            ToolTip="View startup blocks"/>
+                    <Button Content="$I" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblBuildInfoCommand, Mode=OneWay}" 
+                            ToolTip="View build info"/>
+                    <Button Content="$$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblSettingsCommand, Mode=OneWay}" 
+                            ToolTip="View and write Grbl settings"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="2">
-                    <Button Content="$C" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblCheckCommand, Mode=OneWay}" ToolTip="Check gcode mode"/>
-                    <Button Content="$X" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblKillAlarmCommand, Mode=OneWay}" ToolTip="Kill alarm lock"/>
-                    <Button Content="$H" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblHomingCommand, Mode=OneWay}" ToolTip="Run homing cycle"/>
-                    <Button Content="$SLP" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblSleepCommand, Mode=OneWay}" ToolTip="Enable Sleep Mode" IsEnabled="False"/>
-                    <Button Content="$RST=$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" Style="{DynamicResource ControlStyleVD}" ToolTip="Restore Grbl settings and data to defaults" IsEnabled="False"/>
+                    <Button Content="$C" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblCheckCommand, Mode=OneWay}" 
+                            ToolTip="Check gcode mode"/>
+                    <Button Content="$X" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblKillAlarmCommand, Mode=OneWay}" ToolTip="Kill alarm lock"/>
+                    <Button Content="$H" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblHomingCommand, Mode=OneWay}" 
+                            ToolTip="Run homing cycle"/>
+                    <Button Content="$SLP" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblSleepCommand, Mode=OneWay}" 
+                            ToolTip="Enable Sleep Mode" IsEnabled="False"/>
+                    <Button Content="$RST=$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControlStyleVD}" ToolTip="Restore Grbl settings and data to defaults" 
+                            IsEnabled="False"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="3">
-                    <Button Content="ResetX" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAxisXCommand, Mode=OneWay}"/>
-                    <Button Content="ResetY" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAxisYCommand, Mode=OneWay}"/>
-                    <Button Content="ResetZ" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAxisZCommand, Mode=OneWay}" IsEnabled="False"/>
-                    <Button Content="ResetAll" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.ResetAllAxisCommand, Mode=OneWay}" IsEnabled="False"/>
+                    <Button Content="ResetX" Margin="5" VerticalAlignment="Center" Width="50" 
+                            Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding Main.ResetAxisXCommand, Mode=OneWay}"/>
+                    <Button Content="ResetY" Margin="5" VerticalAlignment="Center" Width="50" 
+                            Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding Main.ResetAxisYCommand, Mode=OneWay}"/>
+                    <Button Content="ResetZ" Margin="5" VerticalAlignment="Center" Width="50" 
+                            Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding Main.ResetAxisZCommand, Mode=OneWay}" IsEnabled="False"/>
+                    <Button Content="ResetAll" Margin="5" VerticalAlignment="Center" Width="50" 
+                            Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding Main.ResetAllAxisCommand, Mode=OneWay}" IsEnabled="False"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="4">
-                    <Button Content="G28.1" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.GrblSetHome1Command, Mode=OneWay}"/>
-                    <Button Content="G30.1" Margin="5" VerticalAlignment="Center" Width="50" Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" Command="{Binding Main.GrblSetHome2Command, Mode=OneWay}"/>
-                    <Button Content="TEST" HorizontalAlignment="Center" Margin="45, 0, 0, 0" VerticalAlignment="Center" Width="60" Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblTestCommand, Mode=OneWay}" IsEnabled="True"/>
+                    <Button Content="G28.1" Margin="5" VerticalAlignment="Center" Width="50" 
+                            Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding Main.GrblSetHome1Command, Mode=OneWay}"/>
+                    <Button Content="G30.1" Margin="5" VerticalAlignment="Center" Width="50" 
+                            Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding Main.GrblSetHome2Command, Mode=OneWay}"/>
+                    <Button Content="TEST" HorizontalAlignment="Center" Margin="45, 0, 0, 0" 
+                            VerticalAlignment="Center" Width="60" Style="{DynamicResource ControlStyleVD}" 
+                            Command="{Binding Main.GrblTestCommand, Mode=OneWay}" IsEnabled="True"/>
                 </StackPanel>
             </Grid>
         </GroupBox>

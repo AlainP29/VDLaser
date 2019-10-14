@@ -49,12 +49,12 @@ namespace VDGrbl.ViewModel
         private string _imageName = string.Empty;
         private string _estimateJobTime = "00:00:00";
         private string _groupBoxPortSettingTitle = string.Empty;
-        private string _groupBoxGrblSettingTitle = string.Empty;
+        private string _groupBoxGrblSettingsTitle = string.Empty;
         private string _groupBoxGrblConsoleTitle = string.Empty;
         private string _groupBoxGrblControlTitle = string.Empty;
         private string _groupBoxGrblCommandTitle = string.Empty;
         private string _groupBoxGCodeFileTitle = string.Empty;
-        private string _groupBoxMachineStateTitle = string.Empty;
+        private string _groupBoxDataFieldTitle = string.Empty;
         private string _groupBoxImageTitle = string.Empty;
         private string _groupBoxGraphicTitle = string.Empty;
         private string _selectedTransferDelay = string.Empty;
@@ -194,15 +194,15 @@ namespace VDGrbl.ViewModel
         /// Get the GroupBoxGrblSettingTitle property. In design mode it adds [design]
         /// Changes to that property's value raise the PropertyChanged event.
         /// </summary>
-        public string GroupBoxGrblSettingTitle
+        public string GroupBoxGrblSettingsTitle
         {
             get
             {
-                return _groupBoxGrblSettingTitle;
+                return _groupBoxGrblSettingsTitle;
             }
             set
             {
-                Set(ref _groupBoxGrblSettingTitle, value);
+                Set(ref _groupBoxGrblSettingsTitle, value);
             }
         }
 
@@ -1158,15 +1158,15 @@ namespace VDGrbl.ViewModel
         /// Get the GroupBoxCoordinateTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string GroupBoxMachineStateTitle
+        public string GroupBoxDataFieldTitle
         {
             get
             {
-                return _groupBoxMachineStateTitle;
+                return _groupBoxDataFieldTitle;
             }
             set
             {
-                Set(ref _groupBoxMachineStateTitle, value);
+                Set(ref _groupBoxDataFieldTitle, value);
             }
         }
 
@@ -1592,7 +1592,6 @@ namespace VDGrbl.ViewModel
                             return;
                         }
                         logger.Info("MainViewModel|Load Grbl windows");
-                        GroupBoxGrblSettingTitle = item.GrblSettingHeader;
                         GroupBoxGrblConsoleTitle = item.GrblConsoleHeader;
                         GroupBoxGrblCommandTitle = item.GrblCommandHeader;
                         GroupBoxGrblControlTitle = item.GrblControlHeader;
@@ -1611,7 +1610,7 @@ namespace VDGrbl.ViewModel
                         SelectedTransferDelay = ListTransferDelay[1];
                     });
 
-                _dataService.GetMachineState(
+                _dataService.GetDataField(
                     (item, error) =>
                     {
                         if (error != null)
@@ -1620,7 +1619,18 @@ namespace VDGrbl.ViewModel
                             return;
                         }
                         logger.Info("MainViewModel|Load Coordinate window");
-                        GroupBoxMachineStateTitle = item.DataFieldHeader;
+                        GroupBoxDataFieldTitle = item.DataFieldHeader;
+                    });
+                _dataService.GetGrblSettings(
+                    (item, error) =>
+                    {
+                        if (error != null)
+                        {
+                            logger.Error("MainViewModel|Exception Coordinate raised: " + error);
+                            return;
+                        }
+                        logger.Info("MainViewModel|Load Coordinate window");
+                        GroupBoxGrblSettingsTitle = item.GrblSettingsHeader;
                     });
 
                 _dataService.GetLaserImage(

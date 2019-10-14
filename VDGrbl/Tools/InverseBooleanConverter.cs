@@ -5,10 +5,10 @@ using System.Windows.Data;
 namespace VDGrbl.Tools
 {
     /// <summary>
-    /// Invert a boolean. Use in Xaml.
+    /// Invert a boolean. Use in Xaml DataConsoleView, GrblCommandViewer, JoggingView, sendDataView and laserView.
     /// </summary>
     [ValueConversion(typeof(bool), typeof(bool))]
-    public class InverseBooleanConverter:IValueConverter
+    public class InverseBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -25,8 +25,7 @@ namespace VDGrbl.Tools
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-                throw new InvalidOperationException();
+            throw new NotImplementedException();
         }
-
     }
 }

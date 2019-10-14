@@ -10,7 +10,7 @@ namespace VDGrbl.Tools
     /// Convert a second to time.
     /// </summary>
     [ValueConversion(typeof(int), typeof(TimeSpan))]
-    class IntToTimeConverter : IValueConverter
+    public class IntToTimeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

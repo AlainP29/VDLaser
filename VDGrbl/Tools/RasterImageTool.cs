@@ -6,7 +6,7 @@ namespace VDGrbl.Tools
     class RasterImageTool
     {
         #region Properties
-        public BitmapSource ImgSource { get; set; }
+        public BitmapSource ImgSource { get; set; }//remove the properties (move to LaserImageModel?) and keep only methods
         public BitmapSource ImgTransform { get; set; }
         public PixelFormat ImgFormat { get; set; }
         public double ImgDpiX { get; }

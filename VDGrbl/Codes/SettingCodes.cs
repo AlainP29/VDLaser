@@ -51,53 +51,8 @@ namespace VDGrbl.Codes
         }
 
         /// <summary>
-        /// Get the dictionnary of setting message: Key: IDXX - Value: Setting code description
+        /// Get the dictionnary of setting messages v1.1: Key: IDXX - Value: Setting code description
         /// </summary>
-        public Dictionary<string, string> SettingDict { get; set; } = new Dictionary<string, string>();
-
-        /// <summary>
-        /// List of $XX settings value
-        /// </summary>
-        private readonly List<string> _settingCode = new List<string> { "$0", "$1", "$2", "$3", "$4", "$5", "$6", "$10", "$11", "$12", "$13", "$20", "$21", "$22", "$23", "$24", "$25", "$26", "$27","$30","$31","$32","$100","$101","$102","$110","$111","$112","$120","$121","$122","$130","$131","$132" };
-
-        /// <summary>
-        /// List of settings description
-        /// </summary>
-        private readonly List<string> _settingDescription = new List<string> {
-            "Step pulse, microseconds.",
-            "Step idle delay, milliseconds.",
-            "Step port invert, mask.",
-            "Direction port invert, mask.",
-            "Step enable invert, boolean.",
-            "Limit pins invert, boolean.",
-            "Probe pin invert, boolean.",
-            "Status report, mask.",
-            "Junction deviation, mm.",
-            "Arc tolerance, mm.",
-            "Report inches, boolean.",
-            "Soft limits, boolean.",
-            "Hard limits, boolean.",
-            "Homing cycle, boolean.",
-            "Homing dir invert, mask.",
-            "Homing feed, mm/min.",
-            "Homing seek, mm/min.",
-            "Homing debounce, milliseconds.",
-            "Homing pull-off, mm.",
-            "Max spindle speed, RPM.",
-            "Min spindle speed, RPM.",
-            "Laser mode, boolean.",
-            "X steps/mm.",
-            "Y steps/mm.",
-            "Z steps/mm.",
-            "X Max rate, mm/min.",
-            "Y Max rate, mm/min.",
-            "Z Max rate, mm/min.",
-            "X Acceleration, mm/sec^2.",
-            "Y Acceleration, mm/sec^2.",
-            "Z Acceleration, mm/sec^2.",
-            "X Max travel, mm.",
-            "Y Max travel, mm.",
-            "Z Max travel, mm.",
-        };
+        public Dictionary<string, string> SettingDict { get; } = new Dictionary<string, string>();
     }
 }

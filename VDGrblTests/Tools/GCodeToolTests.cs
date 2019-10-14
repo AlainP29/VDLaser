@@ -73,7 +73,7 @@ namespace VDGrbl.Tools.Tests
         public void ProcessMCodeTest()
         {
             gt = new GCodeTool(line);
-            Assert.AreEqual(1, (int)gt.MCode);
+            Assert.AreEqual(3, (int)gt.MCode);
         }
 
         [TestMethod()]

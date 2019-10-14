@@ -17,7 +17,8 @@
                     <RowDefinition Height="4*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal">
-                    <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                    <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                             VerticalContentAlignment="Center" 
                              Text="{Binding Main.TXLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120">
                         <TextBox.InputBindings>
                             <KeyBinding Command="{Binding Main.SendCommand}" Key="Return"/>
@@ -26,7 +27,8 @@
                     <Button  Content="Send" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="75" 
                              Command="{Binding Main.SendCommand, Mode=OneWay}"/>
                     <TextBox  Text="{Binding Main.ResponseStatus, Mode=OneWay}" Margin="5" VerticalContentAlignment="Center" 
-                              HorizontalContentAlignment="Center" Width="30" VerticalAlignment="Center" IsReadOnly="True" IsEnabled="False"/>
+                              HorizontalContentAlignment="Center" Width="30" VerticalAlignment="Center" IsReadOnly="True" 
+                              IsEnabled="False"/>
                 </StackPanel>
                 <!--Macro area: lines of G-code-->
                 <StackPanel Grid.Row="1" >
@@ -34,33 +36,36 @@
                     <StackPanel Orientation="Horizontal">
                     <Button  Content="M1" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
                              Command="{Binding Main.SendM1Command, Mode=OneWay}"/>
-                    <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                    <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                             VerticalContentAlignment="Center" 
                              Text="{Binding Main.Macro1}" Width="200">
                     </TextBox>
                 </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button  Content="M2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
                              Command="{Binding Main.SendM2Command, Mode=OneWay}"/>
-                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
                              Text="{Binding Main.Macro2}" Width="200">
                         </TextBox>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button  Content="M3" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
                              Command="{Binding Main.SendM3Command, Mode=OneTime}"/>
-                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
                              Text="{Binding Main.Macro3}" Width="200">
                         </TextBox>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button  Content="M4" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
                              Command="{Binding Main.SendM4Command, Mode=OneWay}"/>
-                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
                              Text="{Binding Main.Macro4}" Width="200">
                         </TextBox>
                     </StackPanel>
                 </StackPanel>
-                
             </Grid>
         </GroupBox>
     </Grid>

@@ -5,10 +5,10 @@ using System.Windows.Data;
 namespace VDGrbl.Tools
 {
     /// <summary>
-    /// Convert an object (double) to percentage used in StringFormat=\{0:P\}. Use in Xaml.
+    /// Convert an object (double) to percentage used in StringFormat=\{0:P\}. Use in Xaml laserView.
     /// </summary>
     [ValueConversion(typeof(object), typeof(double))]
-    public class PercentageConverter:IValueConverter
+    public class PercentageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

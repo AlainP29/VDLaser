@@ -9,36 +9,37 @@ namespace VDGrbl.Model
             // Use this to connect to the actual data service
 
             var item = new SerialPortSettingModel("Port Settings");
-            callback(item, null);
+            callback?.Invoke(item, null);
         }
-
         public void GetGrbl(Action<GrblModel, Exception> callback)
         {
             var item = new GrblModel("");
-            callback(item, null);
+            callback?.Invoke(item, null);
         }
-
         public void GetGCode(Action<GCodeModel, Exception> callback)
         {
             var item = new GCodeModel("G-Code file");
-            callback(item, null);
+            callback?.Invoke(item, null);
         }
-
-        public void GetMachineState(Action<DataFieldModel, Exception> callback)
+        public void GetDataField(Action<DataFieldModel, Exception> callback)
         {
             var item = new DataFieldModel("Machine state");
-            callback(item, null);
+            callback?.Invoke(item, null);
         }
-
+        public void GetGrblSettings(Action<GrblSettingsModel, Exception> callback)
+        {
+            var item = new GrblSettingsModel("Settings");
+            callback?.Invoke(item, null);
+        }
         public void GetLaserImage(Action<LaserImageModel, Exception> callback)
         {
             var item = new LaserImageModel("Laser image");
-            callback(item, null);
+            callback?.Invoke(item, null);
         }
         public void GetGraphic(Action<GraphicModel, Exception> callback)
         {
             var item = new GraphicModel("Graphic");
-            callback(item, null);
+            callback?.Invoke(item, null);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace VDGrbl.Tools
 {
     class GraphicTool
     {
-        private readonly PointCollection points=new PointCollection();
+        private readonly PointCollection points = new PointCollection();
 
         public GraphicTool()
         {
@@ -39,32 +39,48 @@ namespace VDGrbl.Tools
                     points.Add(new Point(0, heightPlane));
                     break;
             }
-            PathFigure axisX = new PathFigure();
-            axisX.StartPoint = points[0];
+            PathFigure axisX = new PathFigure
+            {
+                StartPoint = points[0]
+            };
 
-            LineSegment myLineSegment1 = new LineSegment();
-            myLineSegment1.Point = points[1];
+            LineSegment myLineSegment1 = new LineSegment
+            {
+                Point = points[1]
+            };
 
-            PathFigure axisY = new PathFigure();
-            axisY.StartPoint = points[2];
+            PathFigure axisY = new PathFigure
+            {
+                StartPoint = points[2]
+            };
 
-            LineSegment myLineSegment2 = new LineSegment();
-            myLineSegment2.Point = points[3];
+            LineSegment myLineSegment2 = new LineSegment
+            {
+                Point = points[3]
+            };
 
-            PathSegmentCollection myPathSegmentCollection1 = new PathSegmentCollection();
-            myPathSegmentCollection1.Add(myLineSegment1);
-            PathSegmentCollection myPathSegmentCollection2 = new PathSegmentCollection();
-            myPathSegmentCollection2.Add(myLineSegment2);
+            PathSegmentCollection myPathSegmentCollection1 = new PathSegmentCollection
+            {
+                myLineSegment1
+            };
+            PathSegmentCollection myPathSegmentCollection2 = new PathSegmentCollection
+            {
+                myLineSegment2
+            };
 
             axisX.Segments = myPathSegmentCollection1;
             axisY.Segments = myPathSegmentCollection2;
 
-            PathFigureCollection myPathFigureCollection = new PathFigureCollection();
-            myPathFigureCollection.Add(axisX);
-            myPathFigureCollection.Add(axisY);
+            PathFigureCollection myPathFigureCollection = new PathFigureCollection
+            {
+                axisX,
+                axisY
+            };
 
-            PathGeometry myPathGeometry = new PathGeometry();
-            myPathGeometry.Figures = myPathFigureCollection;
+            PathGeometry myPathGeometry = new PathGeometry
+            {
+                Figures = myPathFigureCollection
+            };
 
             return myPathGeometry;
         }
@@ -78,19 +94,24 @@ namespace VDGrbl.Tools
                 pathFigure.StartPoint = points[0];
                 for (int i = 0; i < points.Count; i++)
                 {
-                    LineSegment lineSegment = new LineSegment();
-                    lineSegment.Point = points[i];
+                    LineSegment lineSegment = new LineSegment
+                    {
+                        Point = points[i]
+                    };
                     pathSegmentCollection.Add(lineSegment);
                 }
             }
                 pathFigure.Segments = pathSegmentCollection;
 
-                PathFigureCollection myPathFigureCollection = new PathFigureCollection();
-                myPathFigureCollection.Add(pathFigure);
+            PathFigureCollection myPathFigureCollection = new PathFigureCollection
+            { pathFigure
+            };
 
-                PathGeometry myPathGeometry = new PathGeometry();
-                myPathGeometry.Figures = myPathFigureCollection;
-            
+            PathGeometry myPathGeometry = new PathGeometry
+            {
+                Figures = myPathFigureCollection
+            };
+
             return myPathGeometry;
         }
     }

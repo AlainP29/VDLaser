@@ -1,8 +1,5 @@
 ﻿namespace VDGrbl.Model
 {
-    /// <summary>
-    /// Machine state model
-    /// </summary>
     public class DataFieldModel
     {
         public string DataFieldHeader { get; private set; }
@@ -19,6 +16,8 @@
 
         public enum MachineStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
 
+        public DataFieldModel()
+        { }
         public DataFieldModel(string dataFieldHeader)
         {
             DataFieldHeader = dataFieldHeader;
