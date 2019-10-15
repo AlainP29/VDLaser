@@ -203,7 +203,7 @@ namespace VDGrbl.Tools
         }
 
         /// <summary>
-        /// Convert second in time. Use converter
+        /// Convert second in time. Use converter instead! TODO
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>

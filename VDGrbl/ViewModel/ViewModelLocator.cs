@@ -42,6 +42,7 @@ namespace VDGrbl.ViewModel
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<DataFieldViewModel>();//1model 1view 1viewmodel...
         }
 
         /// <summary>
@@ -57,6 +58,14 @@ namespace VDGrbl.ViewModel
                 return ServiceLocator.Current.GetInstance<MainViewModel>();
             }
         }
+
+        public DataFieldViewModel DataField
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<DataFieldViewModel>();
+            }
+        }//1model 1view 1viewmodel...
 
         /// <summary>
         /// Cleans up all the resources.

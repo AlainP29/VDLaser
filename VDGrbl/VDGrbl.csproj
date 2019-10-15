@@ -128,6 +128,7 @@
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\MathTool.cs" />
     <Compile Include="Tools\DotToCommaConverter.cs" />
+    <Compile Include="ViewModel\DataFieldViewModel.cs" />
     <Compile Include="View\ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>
     </Compile>

@@ -24,16 +24,16 @@ namespace VDGrbl.Tools.Tests
         [TestMethod()]
         public void TrimGcodeTest()
         {
-
+            Assert.AreEqual("g91x10y15f200s30m5", gt.TrimGcode(line));
         }
 
         [TestMethod()]
         public void SecondToTimeTest()
         {
-
+            Assert.AreEqual("01:27:56:000", gt.SecondToTime(5276));
         }
 
-        
+
         [TestMethod()]
         public void ParseGcodeTestG()
         {
@@ -104,6 +104,5 @@ namespace VDGrbl.Tools.Tests
             gt = new GCodeTool(list);
             Assert.AreEqual(3, gt.CalculateJobTime(100));
         }
-
     }
 }

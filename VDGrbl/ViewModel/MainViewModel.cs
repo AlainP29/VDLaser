@@ -9,13 +9,12 @@ using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using VDGrbl.Model;
 using VDGrbl.Tools;
-using System.Windows.Controls;
-using System.Windows;
 
 namespace VDGrbl.ViewModel
 {
