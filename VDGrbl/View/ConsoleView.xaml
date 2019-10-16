@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="VDGrbl.View.DataConsoleView"
+﻿<UserControl x:Class="VDGrbl.View.ConsoleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -10,7 +10,7 @@
     </UserControl.Resources>
     <!--Show data sent + response-->
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="{Binding Main.GroupBoxGrblConsoleTitle}" Style="{DynamicResource GroupBoxStyleVD}"
+        <GroupBox Header="{Binding Main.GroupBoxConsoleTitle}" Style="{DynamicResource GroupBoxStyleVD}"
                   IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" Margin="0,0,0,10">
             <Grid Margin="5">
                 <Grid.RowDefinitions>
@@ -34,9 +34,9 @@
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}"/>
                     </DataGrid.HorizontalGridLinesBrush>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Line sent" Binding="{Binding GrblTXData, Mode=OneWay}"
+                        <DataGridTextColumn Header="Line sent" Binding="{Binding TXData, Mode=OneWay}"
                                             Width="300" MinWidth="70" MaxWidth="380"/>
-                        <DataGridTextColumn Header="Response" Binding="{Binding GrblRXData, Mode=OneWay}"
+                        <DataGridTextColumn Header="Response" Binding="{Binding RXData, Mode=OneWay}"
                                             Width="300" MinWidth="60" MaxWidth="380" CanUserResize="True" CanUserSort="True"/>
                     </DataGrid.Columns>
                 </DataGrid>

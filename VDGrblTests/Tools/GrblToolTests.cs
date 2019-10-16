@@ -25,6 +25,14 @@ namespace VDGrbl.Tools.Tests
         GrblTool mvm;
 
         [TestMethod()]
+        public void DataGrblSorterTest()
+        {
+            mvm = new GrblTool();
+            mvm.DataGrblSorter(currentStatus);
+            Assert.AreEqual("Run", mvm.MachineStatus.ToString());
+        }
+
+        [TestMethod()]
         public void ProcessInfoResponseVersionTest()
         {
             mvm = new GrblTool();
@@ -46,14 +54,6 @@ namespace VDGrbl.Tools.Tests
             mvm = new GrblTool();
             mvm.ProcessInfoResponse(infoGrbl);
             Assert.AreEqual("View startup blocks", mvm.InfoMessage);
-        }
-
-        [TestMethod()]
-        public void DataGrblSorterMachineStatusTest()
-        {
-            mvm = new GrblTool();
-            mvm.DataGrblSorter(currentStatus);
-            Assert.AreEqual("Run", mvm.MachineStatus.ToString());
         }
 
         [TestMethod()]
@@ -123,7 +123,7 @@ namespace VDGrbl.Tools.Tests
             Assert.AreEqual("30.860", mvm.MachinePositionY);
         }
 
-        
+
         [TestMethod()]
         public void ProcessCurrentStatusResponseBuf()
         {
@@ -139,6 +139,5 @@ namespace VDGrbl.Tools.Tests
             mvm.ProcessCurrentStatusResponse(currentStatus);
             Assert.AreEqual("2", mvm.RxBuffer);
         }
-
     }
 }

@@ -11,13 +11,9 @@
         public double Feed { get; private set; }
         public double SpindleSpeed { get; private set; }
         public int BufferState { get; private set; }
-
         public MachineStatus MachineState { get; private set; }
-
         public enum MachineStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
 
-        public DataFieldModel()
-        { }
         public DataFieldModel(string dataFieldHeader)
         {
             DataFieldHeader = dataFieldHeader;

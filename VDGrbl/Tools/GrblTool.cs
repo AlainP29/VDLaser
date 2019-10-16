@@ -7,18 +7,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace VDGrbl.Tools
 {
     /// <summary>
-    /// usefull tools to parse grbl data send or received
+    /// Tools to parse grbl data send or received
     /// </summary>
     public class GrblTool
     {
         #region Fields
-        GCodeTool gcodeTool = new GCodeTool();
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-        SettingCodes sc = new SettingCodes();
+        private readonly GCodeTool gcodeTool = new GCodeTool();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        private readonly SettingCodes GrblSettingCode = new SettingCodes();
+        private readonly ErrorCodes GrblErrorCode = new ErrorCodes();
+        private readonly AlarmCodes GrblAlarmCodec = new AlarmCodes();
+
         #region subregion enum
         /// <summary>
         /// Enumeration of the response states. Ok: All is good, NOk: Alarm state Q: Queued [DR: Data received] 
@@ -28,7 +33,7 @@ namespace VDGrbl.Tools
         /// <summary>
         /// Enumeration of the machine states.
         /// </summary>
-        public enum MachStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
+        public enum MachStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep, Undefined };
         #endregion
         #endregion
 
@@ -50,25 +55,17 @@ namespace VDGrbl.Tools
         public string AlarmMessage { get; private set; } = string.Empty;
         public string ErrorMessage { get; private set; } = string.Empty;
         public string InfoMessage { get; private set; } = string.Empty;
-        public bool CanSend { get; set; } = false;//replace sendFile =<need to be implemented in MainViewModel!!
         public MachStatus MachineStatus { get; private set; }
         public RespStatus ResponseStatus { get; private set; }
         public SolidColorBrush MachineStatusColor { get; private set; }
-        public GrblModel GrblM { get; private set; }
-        public GrblSettingsModel Gsm {get; private set; }
-        public List<GrblModel> ListGrblSettingModel { get; private set; } = new List<GrblModel>();
-        public string GrblData { get; private set; } = string.Empty;
+        public SettingsModel GrblSettings {get; private set; }
+        public List<SettingsModel> ListGrblSettings { get; private set; } = new List<SettingsModel>();
         #endregion
 
         #region Constructor
         public GrblTool()
         {
 
-        }
-
-        public GrblTool(string grblData)
-        {
-            GrblData = grblData;
         }
         #endregion
 
@@ -77,65 +74,55 @@ namespace VDGrbl.Tools
         /// Sorts Grbl data received like Grbl informations, response, coordinates, settings...
         /// </summary>
         /// <param name="line"></param>
-        public void DataGrblSorter(string _line)
+        public void DataGrblSorter(string line)
         {
-            try
-            {
-                string line = gcodeTool.TrimGcode(_line);
                 if (!string.IsNullOrEmpty(line))
                 {
-                    if (line.StartsWith("ok"))
+                    string lineTrim = gcodeTool.TrimGcode(line);
+                    if (lineTrim.StartsWith("ok", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        ProcessResponse(line);
+                        ProcessResponse(lineTrim);
                     }
-                    else if (line.StartsWith("error"))
+                    else if (lineTrim.StartsWith("error", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        ProcessErrorResponse(line);
+                        ProcessErrorResponse(lineTrim);
                     }
-                    else if (line.StartsWith("alarm"))
+                    else if (lineTrim.StartsWith("alarm", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        ProcessAlarmResponse(line);
+                        ProcessAlarmResponse(lineTrim);
                     }
-                    else if (line.StartsWith("<") && line.EndsWith(">"))
+                    else if (lineTrim.StartsWith("<", StringComparison.CurrentCulture) && lineTrim.EndsWith(">", StringComparison.CurrentCulture))
                     {
-                        ProcessCurrentStatusResponse(line);
+                        ProcessCurrentStatusResponse(lineTrim);
                     }
-                    else if (line.StartsWith("$") && line.Contains("="))
+                    else if (lineTrim.StartsWith("$", StringComparison.CurrentCulture) && lineTrim.Contains("="))
                     {
-                        ProcessGrblSettingResponse(_line);
+                        ProcessGrblSettingResponse(lineTrim);
                     }
-                    //else if (line.StartsWith("[") || line.EndsWith("]"))
-                    else if (line.StartsWith("[") && line.EndsWith("]"))
+                    else if (lineTrim.StartsWith("[", StringComparison.CurrentCulture) && lineTrim.EndsWith("]", StringComparison.CurrentCulture))
                     {
-                        ProcessInfoResponse(line);
+                        ProcessInfoResponse(lineTrim);
                     }
-                    else if (line.Contains("rbl"))
+                    else if (lineTrim.Contains("rbl"))
                     {
                         InfoMessage = "View startup blocks"; //Grbl 0.9i ['$' for help] put something like $N0=G20 G54 G17 to get it
                     }
                     else
                     {
-                        InfoMessage = "Unknown";//TODO
+                        InfoMessage = "Unknown message";//TODO
                     }
                 }
-                //logger.Info("GrblTool|DataGrblSorter|Data:{0}|RespStatus:{1}|MachStatus:{2}", line, ResponseStatus.ToString(), MachineStatus.ToString());
-            }
-            catch (Exception ex)
-            {
-                logger.Error("GrblTool|Exception DataGrblSorter raised: " + ex.ToString());
-            }
         }
 
         /// <summary>
-        /// Processes Grbl build informations.
+        /// Process Grbl build informations.
         /// </summary>
         /// <param name="data"></param>
         public void ProcessInfoResponse(string data)
         {
-            try
+            if (!string.IsNullOrEmpty(data))
             {
                 ResponseStatus = RespStatus.Ok;
-                logger.Info("GrblTool|ProcessInfoResponse|Data:{0}", data);
                 switch (data.Length)
                 {
                     case 9:
@@ -181,66 +168,53 @@ namespace VDGrbl.Tools
                         break;
                 }
             }
-
-            catch (Exception ex)
-            {
-                logger.Error("GrblTool|Exception ProcessInfoResponse raised: " + ex.ToString());
+            logger.Info("GrblTool|ProcessInfoResponse|Data:{0}", data);
             }
-        }
 
         /// <summary>
-        /// Processes the serial port ok message reply.
+        /// Process the serial port ok message reply.
         /// </summary>
-        /// <param name="_data"></param>
-        /// <param name="_isError"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
         public void ProcessResponse(string data)
         {
             ResponseStatus = RespStatus.Ok;
-            CanSend=true;
             logger.Info("GrblTool|ProcessResponse|Data:{0}", data);
         }
 
         /// <summary>
-        /// Processes the serial port error message reply.
+        /// Process the serial port error message reply.
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
         public void ProcessErrorResponse(string data)
         {
-            try
+            ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command
+            if (!string.IsNullOrEmpty(data))
             {
-                ErrorCodes ec = new ErrorCodes();
-                if (VersionGrbl.StartsWith("1"))//In version 1.1 all error codes have ID
+                if (VersionGrbl.StartsWith("1", StringComparison.InvariantCulture))//In version 1.1 all error codes have ID
                 {
-                    ErrorMessage = ec.ErrorDict11[data.Split(':')[1]];
+                    ErrorMessage = GrblErrorCode.ErrorDict11[data.Split(':')[1]];
                     logger.Info("GrblTool|ProcessErrorResponse|Error key:{0} | description:{1}", data.Split(':')[1], ErrorMessage);
                 }
                 else
                 {
                     if (data.Contains("ID"))//In version 0.9 only error code from 23 to 37 have ID
                     {
-                        ErrorMessage = ec.ErrorDict09[data.Split(':')[2]];
+                        ErrorMessage = GrblErrorCode.ErrorDict09[data.Split(':')[2]];
                         logger.Info("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[2], ErrorMessage);
                     }
                     else//Error codes w/o ID
                     {
-                        ErrorMessage = ec.ErrorDict09[data.Split(':')[1]];
+                        ErrorMessage = GrblErrorCode.ErrorDict09[data.Split(':')[1]];
                         logger.Info("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[1], ErrorMessage);
                     }
                 }
-                ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command + try/catch
-                CanSend = true;
-            }
-            catch (Exception ex)
-            {
-                logger.Error("GrblTool|Exception ProcessErrorResponse raised: ", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
             }
         }
 
         /// <summary>
-        /// Processes the serial port alarm message reply.
+        /// Process the serial port alarm message reply.
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
@@ -249,37 +223,30 @@ namespace VDGrbl.Tools
             ResponseStatus = RespStatus.NOk;
             MachineStatusColor = Brushes.Red;
             MachineStatus = MachStatus.Alarm;
-            CanSend = false;
             logger.Info("GrblTool|ProcessResponse|Data:{0}|RespStatus:{1}|MachStatus:{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
-            AlarmCodes ac = new AlarmCodes();
-            try
+            if(!string.IsNullOrEmpty(data))
             {
-                if (VersionGrbl.StartsWith("1"))
+                if (VersionGrbl.StartsWith("1",StringComparison.InvariantCulture))
                 {
-                    AlarmMessage = ac.AlarmDict11[data.Split(':')[1]];
+                    AlarmMessage = GrblAlarmCodec.AlarmDict11[data.Split(':')[1]];
                     logger.Info("GrblTool|ProcessAlarmResponse11|Alarm key {0} | description:{1}", data.Split(':')[1], AlarmMessage);
                 }
                 else
                 {
-                    AlarmMessage = ac.AlarmDict09[data.Split(':')[1]];
+                    AlarmMessage = GrblAlarmCodec.AlarmDict09[data.Split(':')[1]];
                     logger.Info("GrblTool|ProcessAlarmResponse09|Alarm key {0} | description:{1}", data.Split(':')[1], AlarmMessage);
 
                 }
             }
-            catch (Exception ex)
-            {
-                logger.Error("GrblTool|Exception ProcessAlarmResponse raised: ", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
-            }
         }
 
         /// <summary>
-        /// Populates the settingsCollection w/ data received w/ Grbl '$$' command.
+        /// Populate the settingsCollection w/ data received w/ Grbl '$$' command.
         /// </summary>
         /// <param name="data"></param>
         public void ProcessGrblSettingResponse(string data)
         {
-            try
+            if(!string.IsNullOrEmpty(data))
             {
                 ResponseStatus = RespStatus.Q;//Wait until we get all settings before sending new line of code
                 string[] arr = data.Split(new Char[] { '=', '(', ')', '\r', '\n' });
@@ -293,28 +260,23 @@ namespace VDGrbl.Tools
                     {
                         if (arr.Length > 3)//Grbl version 0.9 (w/ setting description)
                         {
-                            Gsm = new GrblSettingsModel(arr[0], arr[1], arr[2]);
-                            ListGrblSettingModel.Add(GrblM);
-                            logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl0.9 settings: {0}|{1}|{2}", arr[0], arr[1], arr[2]);
+                            GrblSettings = new SettingsModel(arr[0], arr[1], arr[2]);
+                            ListGrblSettings.Add(GrblSettings);
+                            logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl0.9 settings list: {0}|{1}|{2}", arr[0], arr[1], arr[2]);
                         }
-                        else//Grbl version 1.1 (w/o setting description)
+                        else if(arr.Length==2)//Grbl version 1.1 (w/o setting description)
                         {
-                            Gsm = new GrblSettingsModel(arr[0], arr[1], sc.SettingDict[arr[0]]);
-                            ListGrblSettingModel.Add(GrblM);
-                            logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl1.1 settings: {0}|{1}|{2}", arr[0], arr[1], arr[2]);
+                            GrblSettings = new SettingsModel(arr[0], arr[1], GrblSettingCode.SettingDict[arr[0]]);
+                            ListGrblSettings.Add(GrblSettings);
+                            logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl1.1 settings list: {0}|{1}|{2}", arr[0], arr[1], arr[2]);
+                        }
+                        else
+                        {
+                            InfoMessage = "Unknown settings";
+                            logger.Info("GrblTool|ProcessGrblSettingResponse|Unknown settings");
                         }
                     }
                 }
-                else
-                {
-                    logger.Info("GrblTool|ProcessGrblSettingResponse|Unknown");
-                    ResponseStatus = RespStatus.NOk;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error("GrblTool|Exception ProcessGrblSettingResponse raised: ", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
             }
         }
 
@@ -324,10 +286,10 @@ namespace VDGrbl.Tools
         /// <param name="data"></param>
         public void ProcessCurrentStatusResponse(string data)
         {
-            try
+            if (!string.IsNullOrEmpty(data))
             {
                 ResponseStatus = RespStatus.Ok;
-                if (data.Contains("|") || VersionGrbl.StartsWith("1"))//Report state Grbl v1.1 < Idle|MPos:0.000,0.000,0.000>
+                if (data.Contains("|") || VersionGrbl.StartsWith("1", StringComparison.InvariantCulture))//Report state Grbl v1.1 < Idle|MPos:0.000,0.000,0.000>
                 {
                     string[] arr = data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n', '|' });
                     if (data.Contains("mpos"))
@@ -345,7 +307,7 @@ namespace VDGrbl.Tools
                         MachinePositionY = "0";
                     }
 
-                    if(!data.Contains("bf"))
+                    if (!data.Contains("bf"))
                     {
                         MachineFeed = arr[7];
                         MachineSpeed = arr[8];
@@ -383,7 +345,7 @@ namespace VDGrbl.Tools
                             OverrideMachineSpeed = arr[15];
                         }
                     }
-                    
+
                     switch (arr[1])
                     {
                         case "idle":
@@ -422,75 +384,72 @@ namespace VDGrbl.Tools
                             MachineStatus = MachStatus.Sleep;
                             MachineStatusColor = Brushes.LightGray;
                             break;
+                        default:
+                            MachineStatus = MachStatus.Undefined;
+                            MachineStatusColor = Brushes.DarkGray;
+                            break;
                     }
                 }
                 else//Report state Grbl v0.9 <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000,Buf:0,RX:0>
                 {
                     string[] arr = data.Split(new Char[] { '<', '>', ',', ':', '\r', '\n' });
-                    if (arr.Length>0)
+
+                    if (arr.Length > 13)
                     {
-                        if (arr.Length > 3)
-                        {
-                            MachinePositionX = arr[3];
-                            MachinePositionY = arr[4];
-                        }
-                        if (arr.Length > 7)
-                        {
-                            WorkPositionX = arr[7];
-                            WorkPositionY = arr[8];
-                        }
-                        if (arr.Length > 11)
-                        {
-                            PlannerBuffer = arr[11];
-                        }
-                        if (arr.Length > 13)
-                        {
-                            RxBuffer = arr[13];
-                        }
-                        switch (arr[1])
-                        {
-                            case "idle":
-                                MachineStatus = MachStatus.Idle;
-                                MachineStatusColor = Brushes.Beige;
-                                break;
-                            case "run":
-                                MachineStatus = MachStatus.Run;
-                                MachineStatusColor = Brushes.LightGreen;
-                                break;
-                            case "hold":
-                                MachineStatus = MachStatus.Hold;
-                                MachineStatusColor = Brushes.LightBlue;
-                                break;
-                            case "alarm":
-                                MachineStatus = MachStatus.Alarm;
-                                MachineStatusColor = Brushes.Red;
-                                break;
-                            case "door":
-                                MachineStatus = MachStatus.Door;
-                                MachineStatusColor = Brushes.LightYellow;
-                                break;
-                            case "check":
-                                MachineStatus = MachStatus.Check;
-                                MachineStatusColor = Brushes.LightCyan;
-                                break;
-                            case "home":
-                                MachineStatus = MachStatus.Home;
-                                MachineStatusColor = Brushes.LightPink;
-                                break;
-                        }
+                        RxBuffer = arr[13];
                     }
-                    else
+                    if (arr.Length > 11)
                     {
-                        logger.Info("GrblTool|ProcessCurrentStatusResponse|Unknown");
-                        ResponseStatus = RespStatus.NOk;
+                        PlannerBuffer = arr[11];
+                    }
+                    
+                    if (arr.Length > 7)
+                    {
+                        WorkPositionX = arr[7];
+                        WorkPositionY = arr[8];
+                    }
+                    if (arr.Length > 3)
+                    {
+                        MachinePositionX = arr[3];
+                        MachinePositionY = arr[4];
+                    }
+
+                    switch (arr[1])
+                    {
+                        case "idle":
+                            MachineStatus = MachStatus.Idle;
+                            MachineStatusColor = Brushes.Beige;
+                            break;
+                        case "run":
+                            MachineStatus = MachStatus.Run;
+                            MachineStatusColor = Brushes.LightGreen;
+                            break;
+                        case "hold":
+                            MachineStatus = MachStatus.Hold;
+                            MachineStatusColor = Brushes.LightBlue;
+                            break;
+                        case "alarm":
+                            MachineStatus = MachStatus.Alarm;
+                            MachineStatusColor = Brushes.Red;
+                            break;
+                        case "door":
+                            MachineStatus = MachStatus.Door;
+                            MachineStatusColor = Brushes.LightYellow;
+                            break;
+                        case "check":
+                            MachineStatus = MachStatus.Check;
+                            MachineStatusColor = Brushes.LightCyan;
+                            break;
+                        case "home":
+                            MachineStatus = MachStatus.Home;
+                            MachineStatusColor = Brushes.LightPink;
+                            break;
+                        default:
+                            MachineStatus = MachStatus.Undefined;
+                            MachineStatusColor = Brushes.DarkGray;
+                            break;
                     }
                 }
-                //logger.Info("GrblTool|ProcessCurrentStatusResponse|Current state:{0}|RespStatus:{1}|MachStatus:{2}|Color:{3}", _data, ResponseStatus.ToString(), MachineStatus.ToString(), MachineStatusColor.ToString());
-            }
-            catch (Exception ex)
-            {
-                logger.Error("GrblTool|Exception ProcessCurrentStatusResponse raised: ", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
             }
         }
         #endregion

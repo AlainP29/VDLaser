@@ -108,11 +108,14 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
+    <Compile Include="Model\ConsoleModel.cs" />
+    <Compile Include="Model\ControlModel.cs" />
     <Compile Include="Model\DataFieldModel.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GraphicModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
-    <Compile Include="Model\GrblSettingsModel.cs" />
+    <Compile Include="Model\InformationModel.cs" />
+    <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\LaserImageModel.cs" />
     <Compile Include="Model\SerialPortSettingModel.cs" />
     <Compile Include="Model\DataService.cs" />
@@ -141,8 +144,8 @@
     <Compile Include="View\GCodeFileView.xaml.cs">
       <DependentUpon>GCodeFileView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\GrblInfoView.xaml.cs">
-      <DependentUpon>GrblInfoView.xaml</DependentUpon>
+    <Compile Include="View\InformationView.xaml.cs">
+      <DependentUpon>InformationView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
@@ -158,11 +161,11 @@
     <Compile Include="View\LaserView.xaml.cs">
       <DependentUpon>LaserView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\GrblSettingView.xaml.cs">
-      <DependentUpon>GrblSettingView.xaml</DependentUpon>
+    <Compile Include="View\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\DataConsoleView.xaml.cs">
-      <DependentUpon>DataConsoleView.xaml</DependentUpon>
+    <Compile Include="View\ConsoleView.xaml.cs">
+      <DependentUpon>ConsoleView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SendDataView.xaml.cs">
       <DependentUpon>SendDataView.xaml</DependentUpon>
@@ -186,7 +189,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\GrblInfoView.xaml">
+    <Page Include="View\InformationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -206,7 +209,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\GrblSettingView.xaml">
+    <Page Include="View\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -226,7 +229,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="View\DataConsoleView.xaml">
+    <Page Include="View\ConsoleView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

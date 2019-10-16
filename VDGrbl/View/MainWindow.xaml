@@ -54,9 +54,9 @@
                         <StackPanel Orientation="Horizontal">
                             <StackPanel>
                                 <local:GrblCommandView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
-                                <local:GrblInfoView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
+                                <local:InformationView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
                             </StackPanel>
-                            <local:GrblSettingView Margin="1" Height="Auto" Width="Auto"/>
+                            <local:SettingsView Margin="1" Height="Auto" Width="Auto"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
@@ -70,7 +70,7 @@
                 </TabItem>
             </TabControl>
             <DockPanel>
-                <local:DataConsoleView Margin="1" Height="Auto" Width="Auto"/>
+                <local:ConsoleView Margin="1" Height="Auto" Width="Auto"/>
             </DockPanel>
         </StackPanel>
     </Grid>

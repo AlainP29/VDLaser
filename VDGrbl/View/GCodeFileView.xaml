@@ -34,10 +34,10 @@
                           ItemsSource="{Binding Main.GCodeData}" Margin="0,0,0,0" Height="200" 
                               VerticalAlignment="Top">
                         <DataGrid.HorizontalGridLinesBrush>
-                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ScrollBarColorKey}}"/>
+                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>
                         </DataGrid.HorizontalGridLinesBrush>
                         <DataGrid.VerticalGridLinesBrush>
-                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ScrollBarColorKey}}"/>
+                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}"/>
                         </DataGrid.VerticalGridLinesBrush>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="N" Binding="{Binding N}" MaxWidth="30" Foreground="Gray" />

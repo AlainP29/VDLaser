@@ -20,6 +20,7 @@ namespace VDGrbl.ViewModel
 {
     /// <summary>
     /// This class contains properties that the main View can data bind to.
+    /// Currently it is the common ViewModel for all views.
     /// <para>
     /// See http://www.mvvmlight.net
     /// </para>
@@ -27,7 +28,6 @@ namespace VDGrbl.ViewModel
     public class MainViewModel : ViewModelBase, IDisposable
     {
         #region private Fields
-        private readonly IDataService _dataService;
 
         private int _selectedBaudRate;
         private int transferDelay;
@@ -54,6 +54,9 @@ namespace VDGrbl.ViewModel
         private string _groupBoxGrblCommandTitle = string.Empty;
         private string _groupBoxGCodeFileTitle = string.Empty;
         private string _groupBoxDataFieldTitle = string.Empty;
+        private string _groupBoxInformationTitle = string.Empty;
+        private string _groupBoxControlTitle = string.Empty;
+        private string _groupBoxConsoleTitle = string.Empty;
         private string _groupBoxImageTitle = string.Empty;
         private string _groupBoxGraphicTitle = string.Empty;
         private string _selectedTransferDelay = string.Empty;
@@ -85,6 +88,7 @@ namespace VDGrbl.ViewModel
         private bool _isLaserEnabled = false;
         private bool _isRefresh = false;
 
+        private readonly IDataService _dataService;
         private PointCollection _gcodePoints= new PointCollection();
         private PathGeometry _pathGeometry;
         private Brush _fill=Brushes.AliceBlue;
@@ -100,15 +104,14 @@ namespace VDGrbl.ViewModel
         private MachStatus _machineStatus = MachStatus.Idle;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
-        private ObservableCollection<GrblModel> _settingCollection;
-        private List<GrblModel> _listGrblSettingModel = new List<GrblModel>();
+        private ObservableCollection<SettingsModel> _settingCollection=new ObservableCollection<SettingsModel>();
         private Queue<string> _fileQueue = new Queue<string>();
         private List<string> _fileList = new List<string>();
-        private ObservableCollection<GrblModel> _consoleData;
+        private ObservableCollection<ConsoleModel> _consoleData;
         private ObservableCollection<GCodeModel> _gcodeData;
         private ObservableCollection<GraphicModel> _paths=new ObservableCollection<GraphicModel>();
-        private List<GrblModel> _listConsoleData = new List<GrblModel>();
-        private GrblModel _grblModel = new GrblModel("TX", "RX");
+        private List<ConsoleModel> _listConsoleData = new List<ConsoleModel>();
+        private ConsoleModel _console = new ConsoleModel("TX", "RX");
         private GCodeModel _gcodeModel;
         private readonly GrblTool grbltool = new GrblTool();
         private readonly Tools.GCodeTool gcodeToolBasic = new Tools.GCodeTool();
@@ -193,7 +196,7 @@ namespace VDGrbl.ViewModel
         /// Get the GroupBoxGrblSettingTitle property. In design mode it adds [design]
         /// Changes to that property's value raise the PropertyChanged event.
         /// </summary>
-        public string GroupBoxGrblSettingsTitle
+        public string GroupBoxSettingsTitle
         {
             get
             {
@@ -208,24 +211,15 @@ namespace VDGrbl.ViewModel
         /// <summary>
         /// Get the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
         /// Changes to that property's value raise the PropertyChanged event. 
+        /// First get ListSettingModel then populate the observableCollection settingCollection for binding.
         /// </summary>
-        public List<GrblModel> ListGrblSetting
-        {
-            get
-            {
-                return _listGrblSettingModel;
-            }
-            set
-            {
-                Set(ref _listGrblSettingModel, value);
-            }
-        }
+        public List<SettingsModel> ListGrblSettings { get; set; }
 
         /// <summary>
         /// Gets the SettingCollection property. SettingCollection is populated w/ data from ListSettingModel
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<GrblModel> SettingCollection
+        public ObservableCollection<SettingsModel> SettingCollection
         {
             get
             {
@@ -259,7 +253,7 @@ namespace VDGrbl.ViewModel
         /// Gets the ListConsoleData property. ListConsoleData is populated w/ TXLine/RXLine
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public List<GrblModel> ListConsoleData
+        public List<ConsoleModel> ListConsoleData
         {
             get
             {
@@ -275,7 +269,7 @@ namespace VDGrbl.ViewModel
         /// Gets the ConsoleData property. ConsoleData is populated w/ data from ListConsoleData
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<GrblModel> ConsoleData
+        public ObservableCollection<ConsoleModel> ConsoleData
         {
             get
             {
@@ -389,15 +383,15 @@ namespace VDGrbl.ViewModel
         /// Get the GrblModel property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public GrblModel GrblModel
+        public ConsoleModel Console
         {
             get
             {
-                return _grblModel;
+                return _console;
             }
             set
             {
-                Set(ref _grblModel, value);
+                Set(ref _console, value);
             }
         }
 
@@ -748,8 +742,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Get the ListLaser property. 
-        /// Changes to that property's value raise the PropertyChanged event. 
+        /// Get the ListLaser property.
         /// </summary>
         public int[] ListLaser { get; private set; } = { 500, 1600, 2500, 5500 };
 
@@ -1166,6 +1159,54 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _groupBoxDataFieldTitle, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the GroupBoxInformationTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxInformationTitle
+        {
+            get
+            {
+                return _groupBoxInformationTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxInformationTitle, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the GroupBoxControlTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxControlTitle
+        {
+            get
+            {
+                return _groupBoxControlTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxControlTitle, value);
+            }
+        }
+
+        /// <summary>
+        /// Get the GroupBoxConsoleTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxConsoleTitle
+        {
+            get
+            {
+                return _groupBoxConsoleTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxConsoleTitle, value);
             }
         }
 
@@ -1587,13 +1628,11 @@ namespace VDGrbl.ViewModel
                     {
                         if (error != null)
                         {
-                            logger.Error("MainViewModel|Exception GrblSetting raised: " + error);
+                            logger.Error("MainViewModel|Exception Grbl raised: " + error);
                             return;
                         }
                         logger.Info("MainViewModel|Load Grbl windows");
-                        GroupBoxGrblConsoleTitle = item.GrblConsoleHeader;
                         GroupBoxGrblCommandTitle = item.GrblCommandHeader;
-                        GroupBoxGrblControlTitle = item.GrblControlHeader;
                     });
 
                 _dataService.GetGCode(
@@ -1614,22 +1653,59 @@ namespace VDGrbl.ViewModel
                     {
                         if (error != null)
                         {
-                            logger.Error("MainViewModel|Exception Coordinate raised: " + error);
+                            logger.Error("MainViewModel|Exception Machine state raised: " + error);
                             return;
                         }
-                        logger.Info("MainViewModel|Load Coordinate window");
+                        logger.Info("MainViewModel|Load Machine state window");
                         GroupBoxDataFieldTitle = item.DataFieldHeader;
                     });
-                _dataService.GetGrblSettings(
+
+                _dataService.GetInformation(
                     (item, error) =>
                     {
                         if (error != null)
                         {
-                            logger.Error("MainViewModel|Exception Coordinate raised: " + error);
+                            logger.Error("MainViewModel|Exception Information raised: " + error);
                             return;
                         }
-                        logger.Info("MainViewModel|Load Coordinate window");
-                        GroupBoxGrblSettingsTitle = item.GrblSettingsHeader;
+                        logger.Info("MainViewModel|Load Information window");
+                        GroupBoxInformationTitle = item.InformationHeader;
+                    });
+
+                _dataService.GetControl(
+                    (item, error) =>
+                    {
+                        if (error != null)
+                        {
+                            logger.Error("MainViewModel|Exception Control raised: " + error);
+                            return;
+                        }
+                        logger.Info("MainViewModel|Load Control window");
+                        GroupBoxControlTitle = item.ControlHeader;
+                    });
+
+                _dataService.GetConsole(
+                   (item, error) =>
+                   {
+                       if (error != null)
+                       {
+                           logger.Error("MainViewModel|Exception Console raised: " + error);
+                           return;
+                       }
+                       logger.Info("MainViewModel|Load Console window");
+                       GroupBoxConsoleTitle = item.ConsoleHeader;
+                   });
+
+                _dataService.GetSettings(
+                    (item, error) =>
+                    {
+                        if (error != null)
+                        {
+                            logger.Error("MainViewModel|Exception settings raised: " + error);
+                            return;
+                        }
+                        logger.Info("MainViewModel|Load settings window");
+                        GroupBoxSettingsTitle = item.SettingsHeader;
                     });
 
                 _dataService.GetLaserImage(
@@ -1870,13 +1946,20 @@ namespace VDGrbl.ViewModel
                 _serialPort.Close();
                 IsBaudEnabled = true;//In cleanup?
                 IsPortEnabled = true;
+            }
+            //catch (Exception ex)
+            catch(InvalidOperationException ex)
+            {
+                logger.Error(ex.GetType().FullName);
+                logger.Error(ex.Message);
+                logger.Error("MainViewModel|Exception CloseSerialPort raised: " + ex.ToString());
+            }
+            finally
+                {
                 Cleanup();
                 logger.Info("MainViewModel|Port COM closed");
             }
-            catch (Exception ex)
-            {
-                logger.Error("MainViewModel|Exception CloseSerialPort raised: " + ex.ToString());
-            }
+            
         }
 
         /// <summary>
@@ -1895,7 +1978,7 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                _serialPort.WriteLine(TXLine);
+                WriteString(TXLine);
                 logger.Info("MainViewModel|Data TX: {0}", TXLine);
                 TXLine = string.Empty;
             }
@@ -1904,6 +1987,7 @@ namespace VDGrbl.ViewModel
                 logger.Error("MainViewModel|Exception SendData raised: " + ex.ToString());
             }
         }
+
         /// <summary>
         /// Allow/Disallow the Senddata method to be executed
         /// </summary>
@@ -1925,7 +2009,8 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void SendM1Data()
         {
-                _serialPort.WriteLine(Macro1);
+                //_serialPort.WriteLine(Macro1);
+            WriteString(Macro1);
                 logger.Info("MainViewModel|Data TX: {0}", Macro1);
         }
         public bool CanExecuteSendM1Data()
@@ -1946,7 +2031,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void SendM2Data()
         {
-            _serialPort.WriteLine(Macro2);
+            //_serialPort.WriteLine(Macro2);
+            WriteString(Macro2);
+
             logger.Info("MainViewModel|Data TX: {0}", Macro2);
         }
         public bool CanExecuteSendM2Data()
@@ -1966,7 +2053,8 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void SendM3Data()
         {
-            _serialPort.WriteLine(Macro3);
+            //_serialPort.WriteLine(Macro3);
+            WriteString(Macro3);
             logger.Info("MainViewModel|Data TX: {0}", Macro3);
         }
         public bool CanExecuteSendM3Data()
@@ -1986,7 +2074,8 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void SendM4Data()
         {
-            _serialPort.WriteLine(Macro4);
+            //_serialPort.WriteLine(Macro4);
+            WriteString(Macro4);
             logger.Info("MainViewModel|Data TX: {0}", Macro4);
         }
         public bool CanExecuteSendM4Data()
@@ -2056,8 +2145,9 @@ namespace VDGrbl.ViewModel
                 if (_serialPort.IsOpen)
                 {
                     _serialPort.WriteLine(data);
-                    logger.Info("MainViewModel|Method WriteString: {0}", data);
+                    TXLine = data;
                 }
+                logger.Info("MainViewModel|Method WriteString: {0}", data);
             }
             catch (Exception ex)
             {
@@ -2083,7 +2173,8 @@ namespace VDGrbl.ViewModel
                 TXLine = string.Empty;
                 GCodeLine = string.Empty;
                 FileQueue.Clear();
-                ListGrblSetting.Clear();
+                ListGrblSettings.Clear();
+                SettingCollection.Clear();
                 ListConsoleData.Clear();
                 GCodeData.Clear();
                 GcodePaths.Clear();
@@ -2173,7 +2264,7 @@ namespace VDGrbl.ViewModel
         public void GrblSettings()
         {
             logger.Info("MainViewModel|Load Grbl settings");
-            SettingCollection = new ObservableCollection<GrblModel>(ListGrblSetting);
+            SettingCollection = new ObservableCollection<SettingsModel>(ListGrblSettings);
             IsRefresh = false;
         }
 
@@ -2182,7 +2273,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void RefreshSettings()
         {
-            ListGrblSetting.Clear();
+            ListGrblSettings.Clear();
             WriteString("$$");
             IsRefresh = true;
         }
@@ -2366,7 +2457,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(0,0, 0, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogH: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2377,7 +2467,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,1, 0, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogN: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2388,7 +2477,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,1, 0, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogS: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2399,7 +2487,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,1, 1, 0, 0, FeedRate, Double.Parse(Step.Replace('.',',')));
             WriteString(line);
             logger.Info("MainViewModel|JogE: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2410,7 +2497,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,1, -1, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogW: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2421,7 +2507,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,1, -1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogNW: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2432,7 +2517,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,1, 1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogNE: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2443,7 +2527,6 @@ namespace VDGrbl.ViewModel
             string line =gcodeToolBasic.FormatGcode(1,1, -1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogSW: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2454,7 +2537,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,1, 1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogSE: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2465,7 +2547,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,0, 0, 0, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogUp: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2476,7 +2557,6 @@ namespace VDGrbl.ViewModel
             string line = gcodeToolBasic.FormatGcode(1,0, 0, 0, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogDown: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2642,7 +2722,6 @@ namespace VDGrbl.ViewModel
             string line = "G92 X0";
             WriteString(line);
             logger.Info("MainViewModel|Reset X: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2664,7 +2743,6 @@ namespace VDGrbl.ViewModel
             string line = "G10 P0 L20 Z0";
             WriteString(line);
             logger.Info("MainViewModel|Reset Z: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2675,7 +2753,6 @@ namespace VDGrbl.ViewModel
             string line = "G10 P0 L20 X0 Y0 Z0";
             WriteString(line);
             logger.Info("MainViewModel|Reset All axis: {0}", line);
-            TXLine = line;
         }
 
         /// <summary>
@@ -2728,7 +2805,6 @@ namespace VDGrbl.ViewModel
         public void DefaultGraphicSettings()
         {
             GraphicTool gt = new GraphicTool();
-
             GcodePaths.Add(new GraphicModel
             {
                 GraphicPathGeometry = gt.Axis(160, 160, 0),
@@ -2737,7 +2813,6 @@ namespace VDGrbl.ViewModel
                 GraphicStrokeThickness = StrokeThickness,
             });
             logger.Info("MainWindows|Default Coordinate Plane");
-
         }
 
         /// <summary>
@@ -2828,9 +2903,9 @@ namespace VDGrbl.ViewModel
             {
                 while((line=sr.ReadLine())!=null)
                 {
-                    FileQueue.Enqueue(gcodeToolBasic.TrimGcode(line).Replace(',', '.'));
+                    //FileQueue.Enqueue(gcodeToolBasic.TrimGcode(line).Replace(',', '.'));
+                    FileQueue.Enqueue(line.Replace(',', '.'));
                     FileList.Add(line.Replace('.', ','));
-                    //GCodeLine += line + Environment.NewLine;//Too heavy
                     GCodeModel = new GCodeModel(i,line);
                     GCodeData.Add(GCodeModel);
                     i++;
@@ -3086,7 +3161,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void GrblTest()
         {
-            
+
         }
         
         public bool CanExecuteGrblTest()
@@ -3106,16 +3181,15 @@ namespace VDGrbl.ViewModel
             try
             {
                 string line = _serialPort.ReadLine();
-                RXLine = gcodeToolBasic.TrimGcode(line);
-                GrblModel = new GrblModel(TXLine, RXLine);
-                ConsoleData = new ObservableCollection<GrblModel>(ListConsoleData);
+                RXLine = gcodeToolBasic.TrimEndGcode(line);
+                Console = new ConsoleModel(TXLine, RXLine);
                 if (IsVerbose)
                 {
-                    ListConsoleData.Add(GrblModel);
+                    ListConsoleData.Add(Console);
                 }
-                else if (!line.StartsWith("<"))
+                else if (!line.StartsWith("<",StringComparison.OrdinalIgnoreCase))
                 {
-                    ListConsoleData.Add(GrblModel);
+                    ListConsoleData.Add(Console);
                 }
                 grbltool.DataGrblSorter(line);
                 ResponseStatus = (RespStatus)grbltool.ResponseStatus;
@@ -3140,13 +3214,14 @@ namespace VDGrbl.ViewModel
                 VersionGrbl = grbltool.VersionGrbl;
                 BuildInfoGrbl = grbltool.BuildInfo;
                 InfoMessage = grbltool.InfoMessage;
-                if(ListConsoleData.Count>4)//Number of lines showed in data console
+                ConsoleData = new ObservableCollection<ConsoleModel>(ListConsoleData);
+                if (ListConsoleData.Count>4)//Number of lines showed in data console
                 {
                     ListConsoleData.RemoveAt(0);
                 }
-                ListGrblSetting = grbltool.ListGrblSettingModel;
+                ListGrblSettings = grbltool.ListGrblSettings;
             }
-            catch (Exception ex)
+            catch (Exception ex )
                 {
                 logger.Error("MainViewModel|Exception data received raised: " + ex.ToString());
                 ResponseStatus = RespStatus.NOk;

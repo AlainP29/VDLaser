@@ -3,11 +3,11 @@
 namespace VDGrbl.View
 {
     /// <summary>
-    /// Logique d'interaction pour GrblInfoView.xaml
+    /// Logique d'interaction pour InformationView.xaml
     /// </summary>
-    public partial class GrblInfoView : UserControl
+    public partial class InformationView : UserControl
     {
-        public GrblInfoView()
+        public InformationView()
         {
             InitializeComponent();
         }

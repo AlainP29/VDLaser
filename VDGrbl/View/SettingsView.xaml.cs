@@ -3,11 +3,11 @@
 namespace VDGrbl.View
 {
     /// <summary>
-    /// Logique d'interaction pour LoadSettingsView.xaml
+    /// Logique d'interaction pour SettingsView.xaml
     /// </summary>
-    public partial class GrblSettingView : UserControl
+    public partial class SettingsView : UserControl
     {
-        public GrblSettingView()
+        public SettingsView()
         {
             InitializeComponent();
         }

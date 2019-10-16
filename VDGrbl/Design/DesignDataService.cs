@@ -25,9 +25,14 @@ namespace VDGrbl.Design
             var item = new DataFieldModel("Machine state [design]");
             callback?.Invoke(item, null);
         }
-        public void GetGrblSettings(Action<GrblSettingsModel, Exception> callback)
+        public void GetInformation(Action<InformationModel, Exception> callback)
         {
-            var item = new GrblSettingsModel("Settings [design]");
+            var item = new InformationModel("Infos [design]");
+            callback?.Invoke(item, null);
+        }
+        public void GetSettings(Action<SettingsModel, Exception> callback)
+        {
+            var item = new SettingsModel("Settings [design]");
             callback?.Invoke(item, null);
         }
         public void GetLaserImage(Action<LaserImageModel, Exception> callback)
@@ -38,6 +43,16 @@ namespace VDGrbl.Design
         public void GetGraphic(Action<GraphicModel, Exception> callback)
         {
             var item = new GraphicModel("Graphic [design]");
+            callback?.Invoke(item, null);
+        }
+        public void GetControl(Action<ControlModel, Exception> callback)
+        {
+            var item = new ControlModel("Control [design]");
+            callback?.Invoke(item, null);
+        }
+        public void GetConsole(Action<ConsoleModel, Exception> callback)
+        {
+            var item = new ConsoleModel("Console [design]");
             callback?.Invoke(item, null);
         }
     }

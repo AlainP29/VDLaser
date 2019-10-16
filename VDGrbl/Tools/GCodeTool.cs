@@ -203,6 +203,21 @@ namespace VDGrbl.Tools
         }
 
         /// <summary>
+        /// Remove \n at the end of a G-code line.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        public string TrimEndGcode(string line)
+        {
+            if (!string.IsNullOrEmpty(line))
+            {
+                char[] trimArray = new char[] { '\r', '\n' };
+                return line.TrimEnd(trimArray);
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Convert second in time. Use converter instead! TODO
         /// </summary>
         /// <param name="s"></param>
