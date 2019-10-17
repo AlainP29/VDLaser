@@ -59,6 +59,7 @@ namespace VDGrbl.ViewModel
         private string _groupBoxConsoleTitle = string.Empty;
         private string _groupBoxImageTitle = string.Empty;
         private string _groupBoxGraphicTitle = string.Empty;
+        private string _groupBoxJoggingTitle = string.Empty;
         private string _selectedTransferDelay = string.Empty;
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
@@ -1505,6 +1506,23 @@ namespace VDGrbl.ViewModel
                 Set(ref _groupBoxGraphicTitle, value);
             }
         }
+
+        /// <summary>
+        /// Get the GroupBoxJoggingTitle property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GroupBoxJoggingTitle
+        {
+            get
+            {
+                return _groupBoxJoggingTitle;
+            }
+            set
+            {
+                Set(ref _groupBoxJoggingTitle, value);
+            }
+        }
+
         /// <summary>
         /// Get the GCodePoints property.
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -1719,6 +1737,7 @@ namespace VDGrbl.ViewModel
                        logger.Info("MainViewModel|Load Image window");
                        GroupBoxImageTitle = item.LaserImageHeader;
                    });
+
                 _dataService.GetGraphic(
                    (item, error) =>
                    {
@@ -1729,6 +1748,18 @@ namespace VDGrbl.ViewModel
                        }
                        logger.Info("MainViewModel|Load Image window");
                        GroupBoxGraphicTitle = item.GraphicHeader;
+                   });
+
+                _dataService.GetJogging(
+                   (item, error) =>
+                   {
+                       if (error != null)
+                       {
+                           logger.Error("MainViewModel|Exception Jogging raised: " + error);
+                           return;
+                       }
+                       logger.Info("MainViewModel|Load Image window");
+                       GroupBoxJoggingTitle = item.JoggingHeader;
                    });
                 DefaultSettings();
                 MyRelayCommands();
@@ -1785,8 +1816,6 @@ namespace VDGrbl.ViewModel
             JogNECommand = new RelayCommand<bool>(JogNE, CanExecuteJog);
             JogSWCommand = new RelayCommand<bool>(JogSW, CanExecuteJog);
             JogSECommand = new RelayCommand<bool>(JogSE, CanExecuteJog);
-            JogUpCommand = new RelayCommand<bool>(JogUp, CanExecuteJog);
-            JogDownCommand = new RelayCommand<bool>(JogDown, CanExecuteJog);
             StepCommand = new RelayCommand<string>(GetStep,CanExecuteGetStep);
             IncreaseFeedRateCommand = new RelayCommand<bool>(IncreaseFeedRate, CanExecuteFeedRate);
             DecreaseFeedRateCommand = new RelayCommand<bool>(DecreaseFeedRate, CanExecuteFeedRate);
@@ -2454,7 +2483,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogH(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(0,0, 0, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(0,0, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogH: {0}", line);
         }
@@ -2464,7 +2493,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogN(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 0, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 0, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogN: {0}", line);
         }
@@ -2474,7 +2503,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogS(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 0, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 0, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogS: {0}", line);
         }
@@ -2484,7 +2513,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogE(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 1, 0, 0, FeedRate, Double.Parse(Step.Replace('.',',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 1, 0, FeedRate, Double.Parse(Step.Replace('.',',')));
             WriteString(line);
             logger.Info("MainViewModel|JogE: {0}", line);
         }
@@ -2494,7 +2523,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogW(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, -1, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogW: {0}", line);
         }
@@ -2504,7 +2533,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogNW(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, -1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, -1, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogNW: {0}", line);
         }
@@ -2514,7 +2543,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogNE(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 1, 1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 1, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogNE: {0}", line);
         }
@@ -2524,7 +2553,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogSW(bool parameter)
         {
-            string line =gcodeToolBasic.FormatGcode(1,1, -1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line =gcodeToolBasic.FormatGcode(1,1, -1, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogSW: {0}", line);
         }
@@ -2534,29 +2563,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogSE(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = gcodeToolBasic.FormatGcode(1,1, 1, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogSE: {0}", line);
-        }
-
-        /// <summary>
-        /// Move one step Z+
-        /// </summary>
-        public void JogUp(bool parameter)
-        {
-            string line = gcodeToolBasic.FormatGcode(1,0, 0, 0, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
-            WriteString(line);
-            logger.Info("MainViewModel|JogUp: {0}", line);
-        }
-
-        /// <summary>
-        /// Move one step Z-
-        /// </summary>
-        public void JogDown(bool parameter)
-        {
-            string line = gcodeToolBasic.FormatGcode(1,0, 0, 0, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
-            WriteString(line);
-            logger.Info("MainViewModel|JogDown: {0}", line);
         }
 
         /// <summary>

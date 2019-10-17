@@ -115,6 +115,7 @@
     <Compile Include="Model\GraphicModel.cs" />
     <Compile Include="Model\GrblModel.cs" />
     <Compile Include="Model\InformationModel.cs" />
+    <Compile Include="Model\JoggingModel.cs" />
     <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\LaserImageModel.cs" />
     <Compile Include="Model\SerialPortSettingModel.cs" />

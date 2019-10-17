@@ -268,7 +268,7 @@ namespace VDGrbl.Tools
                         {
                             GrblSettings = new SettingsModel(arr[0], arr[1], GrblSettingCode.SettingDict[arr[0]]);
                             ListGrblSettings.Add(GrblSettings);
-                            logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl1.1 settings list: {0}|{1}|{2}", arr[0], arr[1], arr[2]);
+                            logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl1.1 settings list: {0}|{1}|{2}", arr[0], arr[1], GrblSettingCode.SettingDict[arr[0]]);
                         }
                         else
                         {

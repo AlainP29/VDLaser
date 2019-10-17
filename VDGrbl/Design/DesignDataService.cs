@@ -55,5 +55,10 @@ namespace VDGrbl.Design
             var item = new ConsoleModel("Console [design]");
             callback?.Invoke(item, null);
         }
+        public void GetJogging(Action<JoggingModel, Exception> callback)
+        {
+            var item = new JoggingModel("Jog [design]");
+            callback?.Invoke(item, null);
+        }
     }
 }

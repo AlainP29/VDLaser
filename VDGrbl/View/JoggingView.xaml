@@ -6,24 +6,35 @@
              xmlns:local="clr-namespace:VDGrbl.Tools"
              mc:Ignorable="d" Height="300" Width="280" DataContext="{Binding Source={StaticResource Locator}}">
     <UserControl.InputBindings>
-        <KeyBinding Key="NumPad1" Command="{Binding Main.JogSWCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="NumPad2" Command="{Binding Main.JogSCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="NumPad3" Command="{Binding Main.JogSECommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="NumPad4" Command="{Binding Main.JogWCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="NumPad5" Command="{Binding Main.JogHCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="NumPad6" Command="{Binding Main.JogECommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="NumPad7" Command="{Binding Main.JogNWCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="NumPad8" Command="{Binding Main.JogNCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="NumPad9" Command="{Binding Main.JogNECommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
-        <KeyBinding Key="Down" Command="{Binding Main.DecreaseFeedRateCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}" Modifiers="Ctrl"/>
-        <KeyBinding Key="Up" Command="{Binding Main.IncreaseFeedRateCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}" Modifiers="Ctrl"/>
+        <KeyBinding Key="NumPad1" Command="{Binding Main.JogSWCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad2" Command="{Binding Main.JogSCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad3" Command="{Binding Main.JogSECommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad4" Command="{Binding Main.JogWCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad5" Command="{Binding Main.JogHCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad6" Command="{Binding Main.JogECommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad7" Command="{Binding Main.JogNWCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad8" Command="{Binding Main.JogNCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad9" Command="{Binding Main.JogNECommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
+        <KeyBinding Key="Down" Command="{Binding Main.DecreaseFeedRateCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}" Modifiers="Ctrl"/>
+        <KeyBinding Key="Up" Command="{Binding Main.IncreaseFeedRateCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding Main.IsSelectedKeyboard}" Modifiers="Ctrl"/>
     </UserControl.InputBindings>
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Use to move the machine with buttons or keyboard-->
-        <GroupBox Header="Jog control" HorizontalAlignment="Left" Margin="5" Style="{DynamicResource GroupBoxStyleVD}" 
+        <GroupBox Header="{Binding Main.GroupBoxJoggingTitle}" HorizontalAlignment="Left" Margin="5" Style="{DynamicResource GroupBoxStyleVD}" 
                   IsEnabled="{Binding Main.IsManualSending}">
             <StackPanel>
                 <!--Buttons move all directions X, Y, Z-->
@@ -33,7 +44,6 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="1.75*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -139,18 +149,7 @@
                         </Path>
                     </Button>
                     <!--Button ZUp-->
-                    <Button Grid.Row="0" Grid.Column="3" Style="{DynamicResource ControlStyleVDTrigger}"
-                            HorizontalAlignment="Center" Background="LightGray" 
-                            VerticalAlignment="Center" Width="30" Height="30" IsEnabled="False">
-                        <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 0 5 L 5 0 L 10 5 L 5 5 L 10 10 Z"/>
-                    </Button>
                     <!--Button ZDown-->
-                    <Button Grid.Row="2" Grid.Column="3" 
-                            Style="{DynamicResource ControlStyleVDTrigger}" 
-                            HorizontalAlignment="Center" Background="LightGray" 
-                            VerticalAlignment="Center" Width="30" Height="30" IsEnabled="False">
-                        <Path Stroke="Black" Fill="Black" Data="M 0 0 L 5 5 L 0 5 L 5 10 L 10 5 L 5 5 L 10 0 Z"/>
-                    </Button>
                 </Grid>
                 <!--Slider adjust Feed rate-->
                 <StackPanel Orientation="Horizontal" 
@@ -162,11 +161,13 @@
                             Value="{Binding Main.FeedRate, Mode=TwoWay}" LargeChange="10" SmallChange="1" BorderThickness="1" 
                             Cursor="Hand" TickPlacement="TopLeft" />
                     <TextBox Text="{Binding Value, ElementName=FeedSlider, Mode=TwoWay, StringFormat=\{0:F0\}, UpdateSourceTrigger=PropertyChanged}" 
-                             Width="30" Height="30" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                             Width="30" Height="30" Margin="5" VerticalContentAlignment="Center" 
+                             HorizontalContentAlignment="Center"/>
                 </StackPanel>
                 <!--Toggle buttons select Step for X, Y and Z-->
-                <StackPanel Orientation="Horizontal" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
-                    <Label Content="Step:" Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Step:" Margin="5" VerticalContentAlignment="Center" 
+                           HorizontalContentAlignment="Center"/>
                     <RadioButton x:Name="radioButton" Content="0.1" Margin="5" Width="30" 
                                  Style="{StaticResource {x:Type ToggleButton}}" 
                                  Command="{Binding Main.StepCommand, Mode=OneWay}" 

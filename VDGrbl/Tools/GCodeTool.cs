@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Media;
 using Microsoft.Win32;
 using NLog;
+using System.Globalization;
 
 namespace VDGrbl.Tools
 {
@@ -172,22 +173,29 @@ namespace VDGrbl.Tools
         /// <param name="fl"></param>
         /// <param name="s"></param>
         /// <returns></returns>
-        public string FormatGcode(int d, int g, double x, double y, double z, double f, double s)
+        public string FormatGcode(int d, int g, double x, double y, double f, double s)
         {
-            int D = d;
-            int G = g;
-            double X = x * s;
-            double Y = y * s;
-            double Z = z * s;
-            double F = f;
-            string fLine = string.Format("g9{0}g{1}x{2}y{3}z{4}f{5}", D, G, X, Y, Z, F);
-            if (fLine.Contains(","))
+            try
             {
-                return fLine.Replace(',', '.');
+                int D = d;
+                int G = g;
+                double X = x * s;
+                double Y = y * s;
+                double F = f;
+                string fLine = string.Format("G9{0} G{1} X{2} Y{3} F{4}", D, G, X, Y, F);
+                if (fLine.Contains(","))
+                {
+                    return fLine.Replace(',', '.');
+                }
+                else
+                {
+                    return fLine;
+                }
             }
-            else
+            catch(Exception ex)
             {
-                return fLine;
+                logger.Error(ex.ToString());
+                return null;
             }
         }
 
@@ -203,7 +211,7 @@ namespace VDGrbl.Tools
         }
 
         /// <summary>
-        /// Remove \n at the end of a G-code line.
+        /// Remove carriage return at the end of a G-code line.
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>

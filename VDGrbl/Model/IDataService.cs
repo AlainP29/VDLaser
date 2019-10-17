@@ -14,6 +14,7 @@ namespace VDGrbl.Model
         void GetGraphic(Action<GraphicModel, Exception> callback);
         void GetControl(Action<ControlModel, Exception> callback);
         void GetConsole(Action<ConsoleModel, Exception> callback);
+        void GetJogging(Action<JoggingModel, Exception> callback);
 
     }
 }
