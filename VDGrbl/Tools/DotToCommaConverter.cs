@@ -9,29 +9,26 @@ namespace VDGrbl.Tools
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
-            string v = (string)value;
-            v.Replace('.', ',');
-
             if (targetType != typeof(string))
             {
                 //throw new InvalidOperationException("The target must be a boolean");
             }
-            if (parameter != null)
+            string valueDot = (string)value;
+            if (valueDot != null && valueDot.Contains("."))
             {
-                return v;
+                string valueComma = valueDot.Replace('.', ',');
+                if (parameter != null)
+                {
+                    return valueComma;
+                }
+                return valueComma;
             }
-            return v;
-            }
-
-            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            {
-            if (targetType != typeof(string))
-            {
-                //throw new InvalidOperationException("The target must be a boolean");
-            }
-            string v = (string)value;
-            v.Replace(',','.');
-            return v;
-            }
+            return valueDot;
         }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
 }

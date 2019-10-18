@@ -18,9 +18,9 @@ namespace VDGrbl.Tools
             }
             if(parameter!=null)
             {
-                return System.Convert.ToDouble(value);
+                return System.Convert.ToDouble(value,CultureInfo.CurrentCulture);
             }
-            return System.Convert.ToDouble(value);
+            return System.Convert.ToDouble(value, CultureInfo.CurrentCulture);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

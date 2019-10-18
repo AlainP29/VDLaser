@@ -20,7 +20,7 @@ namespace VDGrbl.Tools
             }
             if(parameter!=null)//Parameter is a factor: max value/parameter=100
             {
-                int p = System.Convert.ToInt32(parameter);
+                int p = System.Convert.ToInt32(parameter,CultureInfo.CurrentCulture);
                 return b/(100*p);
             }
             return b / 100;

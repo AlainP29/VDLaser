@@ -20,5 +20,14 @@ namespace VDGrbl.Tools.Tests
             var value = (bool)converter.Convert(b, typeof(bool), null, CultureInfo.CurrentCulture);
             Assert.IsTrue(value);
         }
+
+        [TestMethod()]
+        public void ConvertTest1()
+        {
+            InverseBooleanConverter converter = new InverseBooleanConverter();
+            bool b = false;
+            var value = (bool)converter.Convert(b, typeof(bool), "parameter", CultureInfo.CurrentCulture);
+            Assert.IsTrue(value);
+        }
     }
 }

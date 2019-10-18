@@ -17,7 +17,16 @@ namespace VDGrbl.Tools.Tests
         {
             DoubleConverter converter = new DoubleConverter();
             var value = converter.Convert(10.25, typeof(object), null, CultureInfo.CurrentCulture);
-            double d=10.25;
+            double d = 10.25;
+            Assert.AreEqual(d, value);
+        }
+
+        [TestMethod()]
+        public void ConvertTest1()
+        {
+            DoubleConverter converter = new DoubleConverter();
+            var value = converter.Convert(10.25, typeof(object), "parameter", CultureInfo.CurrentCulture);
+            double d = 10.25;
             Assert.AreEqual(d, value);
         }
     }

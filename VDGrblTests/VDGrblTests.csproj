@@ -91,6 +91,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\BrushColorConverterTests.cs" />
+    <Compile Include="Tools\DotToCommaConverterTests.cs" />
     <Compile Include="Tools\DoubleConverterTests.cs" />
     <Compile Include="Tools\GCodeToolTests.cs" />
     <Compile Include="Tools\GrblToolTests.cs" />
