@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.Tools"
-             mc:Ignorable="d" Height="300" Width="280" DataContext="{Binding Source={StaticResource Locator}}">
+             mc:Ignorable="d" Height="300" Width="270" DataContext="{Binding Source={StaticResource Locator}}">
     <UserControl.InputBindings>
         <KeyBinding Key="NumPad1" Command="{Binding Main.JogSWCommand, Mode=OneWay}" 
                     CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
@@ -34,11 +34,11 @@
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Use to move the machine with buttons or keyboard-->
-        <GroupBox Header="{Binding Main.GroupBoxJoggingTitle}" HorizontalAlignment="Left" Margin="5" Style="{DynamicResource GroupBoxStyleVD}" 
+        <GroupBox Header="{Binding Main.GroupBoxJoggingTitle}" Margin="5,5,5,5" Style="{DynamicResource GroupBoxStyleVD}" 
                   IsEnabled="{Binding Main.IsManualSending}">
             <StackPanel>
                 <!--Buttons move all directions X, Y, Z-->
-                <Grid Margin="0" Width="250" Height="150" 
+                <Grid Margin="0" Width="160" Height="150" 
                       IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -155,13 +155,13 @@
                 <StackPanel Orientation="Horizontal" 
                             IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" >
                     <Label Content="Feed:" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
-                           Margin="5"/>
+                           Margin="5 5 0 5"/>
                     <Slider Name="FeedSlider" Maximum="{Binding Main.MaxFeedRate, Mode=OneWay}" Width="145" 
-                            HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0" Margin="5,0,5,0" 
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0" Margin="5 0 0 0"
                             Value="{Binding Main.FeedRate, Mode=TwoWay}" LargeChange="10" SmallChange="1" BorderThickness="1" 
                             Cursor="Hand" TickPlacement="TopLeft" />
                     <TextBox Text="{Binding Value, ElementName=FeedSlider, Mode=TwoWay, StringFormat=\{0:F0\}, UpdateSourceTrigger=PropertyChanged}" 
-                             Width="30" Height="30" Margin="5" VerticalContentAlignment="Center" 
+                             Width="40" Height="30" Margin="5 0 0 0" VerticalContentAlignment="Center" 
                              HorizontalContentAlignment="Center"/>
                 </StackPanel>
                 <!--Toggle buttons select Step for X, Y and Z-->

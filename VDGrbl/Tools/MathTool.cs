@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Media;
 
 namespace VDGrbl.Tools
 {
@@ -68,6 +72,54 @@ namespace VDGrbl.Tools
         public static double AngleChordAbscissa(double x0, double y0, double x1, double y1, double i, double j)
         {
                 return Math.Acos((x1 - x0) / Math.Sqrt(Math.Pow(x1 - x0, 2) + Math.Pow(y1 - y0, 2)));
+        }
+
+        /// <summary>
+        /// Get a couple (max X and max Y) of a pointcollection
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static Point MaxPointCollection(PointCollection points)
+        {
+            List<double> listX = new List<double>();
+            List<double> listY = new List<double>();
+            double xmax=0,ymax=0;
+
+            if (points != null)
+            {
+                foreach (Point p in points)
+                {
+                    listX.Add(Convert.ToDouble(p.X));
+                    listY.Add(Convert.ToDouble(p.Y));
+                }
+                xmax = listX.Max();
+                ymax = listY.Max();
+            }
+            return new Point(xmax,ymax);
+        }
+
+        /// <summary>
+        /// Get a couple (min X and min Y) of a pointcollection
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public static Point MinPointCollection(PointCollection points)
+        {
+            List<double> listX = new List<double>();
+            List<double> listY = new List<double>();
+            double xmin = 0, ymin = 0;
+
+            if (points != null)
+            {
+                foreach (Point p in points)
+                {
+                    listX.Add(Convert.ToDouble(p.X));
+                    listY.Add(Convert.ToDouble(p.Y));
+                }
+                xmin = listX.Min();
+                ymin = listY.Min();
+            }
+            return new Point(xmin, ymin);
         }
     }
 }

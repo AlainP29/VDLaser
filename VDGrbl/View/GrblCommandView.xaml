@@ -77,12 +77,6 @@
                     <Button Content="ResetY" Margin="5" VerticalAlignment="Center" Width="50" 
                             Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
                             Command="{Binding Main.ResetAxisYCommand, Mode=OneWay}"/>
-                    <Button Content="ResetZ" Margin="5" VerticalAlignment="Center" Width="50" 
-                            Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
-                            Command="{Binding Main.ResetAxisZCommand, Mode=OneWay}" IsEnabled="False"/>
-                    <Button Content="ResetAll" Margin="5" VerticalAlignment="Center" Width="50" 
-                            Style="{DynamicResource ControlStyleVD}" HorizontalAlignment="Left" 
-                            Command="{Binding Main.ResetAllAxisCommand, Mode=OneWay}" IsEnabled="False"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Row="4">
                     <Button Content="G28.1" Margin="5" VerticalAlignment="Center" Width="50" 

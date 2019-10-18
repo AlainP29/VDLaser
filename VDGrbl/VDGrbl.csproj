@@ -113,7 +113,7 @@
     <Compile Include="Model\DataFieldModel.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GraphicModel.cs" />
-    <Compile Include="Model\GrblModel.cs" />
+    <Compile Include="Model\CommandModel.cs" />
     <Compile Include="Model\InformationModel.cs" />
     <Compile Include="Model\JoggingModel.cs" />
     <Compile Include="Model\SettingsModel.cs" />

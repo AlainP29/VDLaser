@@ -611,6 +611,43 @@ namespace VDGrbl.Tools
             }
             return points;
         }
+
+        public PointCollection GetGCodePointCollection(double offsetAxisX, double offsetAxisY,double scale)
+        {
+            PointCollection points = new PointCollection();
+            if (scale != 0)
+            {
+
+                if (FileList.Count > 0)
+                {
+                    double xs = 0, xe;
+                    double ys = 0, ye;
+                    points.Add(new System.Windows.Point(offsetAxisX, offsetAxisY));
+                    foreach (string line in FileList)
+                    {
+                        ParseGCode(line);
+                        if (line.Contains("X") || line.Contains("Y"))
+                        {
+                            if (DMode == GcodeDMode.R)//Relatif mode
+                            {
+                                xe = Convert.ToDouble(X)*scale + xs;
+                                ye = Convert.ToDouble(Y)*scale + ys;
+                                points.Add(new System.Windows.Point(xe, ye));
+                                xs = xe;
+                                ys = ye;
+                            }
+                            else//Absolute mode
+                            {
+                                xe = Convert.ToDouble(X)*scale;
+                                ye = Convert.ToDouble(Y)*scale;
+                                points.Add(new System.Windows.Point(xe + offsetAxisX, ye + offsetAxisX));
+                            }
+                        }
+                    }
+                }
+            }
+            return points;
+        }
         #endregion
     }
 }

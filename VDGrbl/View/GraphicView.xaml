@@ -7,11 +7,19 @@
              d:DesignHeight="200" d:DesignWidth="200">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <GroupBox Header="{Binding Main.GroupBoxGraphicTitle}" Style="{DynamicResource GroupBoxStyleVD}">
-        <!--G-code file plotter-->
+            <!--G-code file plotter-->
             <ItemsControl ItemsSource="{Binding Main.GcodePaths}" Height="160" Width="160">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <Canvas>
+                        <Canvas RenderTransformOrigin="0.5,0.5">
+                            <Canvas.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleY="-1" ScaleX="1"/>
+                                    <SkewTransform AngleY="0" AngleX="0"/>
+                                    <RotateTransform Angle="0"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Canvas.RenderTransform>
                             <Canvas.Background>
                                 <VisualBrush TileMode="Tile" Viewbox="0,0,1,1" Viewport="0,0,10,10" 
                                              ViewportUnits="Absolute">

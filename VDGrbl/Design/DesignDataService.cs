@@ -5,9 +5,9 @@ namespace VDGrbl.Design
 {
     public class DesignDataService : IDataService
     {
-        public void GetGrbl(Action<GrblModel, Exception> callback)
+        public void GetCommand(Action<CommandModel, Exception> callback)
         {
-            var item = new GrblModel("[design]");
+            var item = new CommandModel("Command [design]");
             callback?.Invoke(item, null);
         }
         public void GetSerialPortSetting(Action<SerialPortSettingModel, Exception> callback)

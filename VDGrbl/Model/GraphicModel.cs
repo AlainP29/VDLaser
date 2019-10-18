@@ -10,6 +10,7 @@ namespace VDGrbl.Model
         public Brush GraphicFill { get; set; }
         public Brush GraphicStroke { get; set; }
         public double GraphicStrokeThickness { get; set; }
+        public bool IsFitCanvas { get; set; }
 
         public GraphicModel()
         {  }

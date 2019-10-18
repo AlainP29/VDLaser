@@ -11,9 +11,9 @@ namespace VDGrbl.Model
             var item = new SerialPortSettingModel("Port Settings");
             callback?.Invoke(item, null);
         }
-        public void GetGrbl(Action<GrblModel, Exception> callback)
+        public void GetCommand(Action<CommandModel, Exception> callback)
         {
-            var item = new GrblModel("");
+            var item = new CommandModel("Command");
             callback?.Invoke(item, null);
         }
         public void GetGCode(Action<GCodeModel, Exception> callback)

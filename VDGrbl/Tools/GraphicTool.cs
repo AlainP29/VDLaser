@@ -3,13 +3,29 @@ using System.Windows.Media;
 
 namespace VDGrbl.Tools
 {
-    class GraphicTool
+    public class GraphicTool
     {
         private readonly PointCollection points = new PointCollection();
+        public double Xmax { get; private set; }
+        public double Ymax { get; private set; }
+        public double ScaleFactor { get; private set; }
 
+        /// <summary>
+        /// Initialize a new instance of Graphictool class
+        /// </summary>
         public GraphicTool()
         {
             
+        }
+        /// <summary>
+        /// Initialize a new instance of graphictool class w/ max x, y G-code value 
+        /// </summary>
+        /// <param name="xmax"></param>
+        /// <param name="ymax"></param>
+        public GraphicTool(double xmax, double ymax)
+        {
+            Xmax = xmax;
+            Ymax = ymax;
         }
         public GraphicTool(PointCollection p)
         {
@@ -113,6 +129,11 @@ namespace VDGrbl.Tools
             };
 
             return myPathGeometry;
+        }
+        
+        private void GetScaleFactor(double canvasWidth, double canvasHeight)
+        {
+            ScaleFactor=System.Math.Max(canvasWidth / Xmax, canvasHeight / Ymax);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace VDGrbl.Tools.Tests
         [TestMethod()]
         public void FormatGcodeTest()
         {
-            Assert.AreEqual("g90g1x10y-15.5z-2f300", gt.FormatGcode(0, 1, 2, -3.1, -0.4, 300, 5));
+            Assert.AreEqual("G90 G1 X10 Y-15.5 F300", gt.FormatGcode(0, 1, 2, -3.1, 300, 5));
         }
 
         [TestMethod()]

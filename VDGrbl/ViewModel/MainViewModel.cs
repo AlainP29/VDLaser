@@ -51,7 +51,7 @@ namespace VDGrbl.ViewModel
         private string _groupBoxGrblSettingsTitle = string.Empty;
         private string _groupBoxGrblConsoleTitle = string.Empty;
         private string _groupBoxGrblControlTitle = string.Empty;
-        private string _groupBoxGrblCommandTitle = string.Empty;
+        private string _groupBoxCommandTitle = string.Empty;
         private string _groupBoxGCodeFileTitle = string.Empty;
         private string _groupBoxDataFieldTitle = string.Empty;
         private string _groupBoxInformationTitle = string.Empty;
@@ -180,8 +180,6 @@ namespace VDGrbl.ViewModel
         public RelayCommand<bool> IncreaseFeedRateCommand { get; private set; }
         public RelayCommand ResetAxisXCommand { get; private set; }
         public RelayCommand ResetAxisYCommand { get; private set; }
-        public RelayCommand ResetAxisZCommand { get; private set; }
-        public RelayCommand ResetAllAxisCommand { get; private set; }
         public RelayCommand StartLaserCommand { get; private set; }
         public RelayCommand StopLaserCommand { get; private set; }
         public RelayCommand LoadFileCommand { get; private set; }
@@ -365,23 +363,23 @@ namespace VDGrbl.ViewModel
 
         #region subregion send
         /// <summary>
-        /// Get the GroupBoxGrblCommandTitle property.
+        /// Get the GroupBoxCommandTitle property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string GroupBoxGrblCommandTitle
+        public string GroupBoxCommandTitle
         {
             get
             {
-                return _groupBoxGrblCommandTitle;
+                return _groupBoxCommandTitle;
             }
             set
             {
-                Set(ref _groupBoxGrblCommandTitle, value);
+                Set(ref _groupBoxCommandTitle, value);
             }
         }
 
         /// <summary>
-        /// Get the GrblModel property.
+        /// Get the ConsoleModel property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public ConsoleModel Console
@@ -413,7 +411,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string TXLine
@@ -429,7 +427,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Get the Macro property. Macro is a stored G-Code or Grbl commands which can be send manually
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string Macro1
@@ -446,7 +444,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Get the Macro property. Macro is a stored G-Code or Grbl commands which can be send manually
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string Macro2
@@ -463,7 +461,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Get the Macro property. Macro is a stored G-Code or Grbl commands which can be send manually
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string Macro3
@@ -480,7 +478,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Gets the TXLine property. TXLine is the transmetted G-Code or Grbl commands to the Arduino
+        /// Get the Macro property. Macro is a stored G-Code or Grbl commands which can be send manually
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string Macro4
@@ -557,7 +555,7 @@ namespace VDGrbl.ViewModel
         /// <summary>
         /// Sets the maximum feed rate allowed
         /// </summary>
-        public double MaxFeedRate { get; private set; } = 1000;
+        public double MaxFeedRate { get; private set; } = 2000;
 
         /// <summary>
         /// Gets the Step property. Step is the motion step
@@ -1641,7 +1639,7 @@ namespace VDGrbl.ViewModel
                         GetSerialPortSettings();
                     });
 
-                _dataService.GetGrbl(
+                _dataService.GetCommand(
                     (item, error) =>
                     {
                         if (error != null)
@@ -1650,7 +1648,7 @@ namespace VDGrbl.ViewModel
                             return;
                         }
                         logger.Info("MainViewModel|Load Grbl windows");
-                        GroupBoxGrblCommandTitle = item.GrblCommandHeader;
+                        GroupBoxCommandTitle = item.CommandHeader;
                     });
 
                 _dataService.GetGCode(
@@ -1820,9 +1818,7 @@ namespace VDGrbl.ViewModel
             IncreaseFeedRateCommand = new RelayCommand<bool>(IncreaseFeedRate, CanExecuteFeedRate);
             DecreaseFeedRateCommand = new RelayCommand<bool>(DecreaseFeedRate, CanExecuteFeedRate);
             ResetAxisXCommand = new RelayCommand(ResetAxisX, CanExecuteResetAxis);
-            ResetAxisYCommand = new RelayCommand(ResetAxisX, CanExecuteResetAxis);
-            ResetAxisZCommand = new RelayCommand(ResetAxisY, CanExecuteResetAxis);
-            ResetAllAxisCommand = new RelayCommand(ResetAxisZ, CanExecuteResetAxis);
+            ResetAxisYCommand = new RelayCommand(ResetAxisY, CanExecuteResetAxis);
             StartLaserCommand = new RelayCommand(StartLaser, CanExecuteLaser);
             StopLaserCommand = new RelayCommand(StopLaser, CanExecuteLaser);
             LoadFileCommand = new RelayCommand(OpenFile, CanExecuteOpenFile);
@@ -2745,26 +2741,6 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Sets current axis Z to 0.
-        /// </summary>
-        public void ResetAxisZ()
-        {
-            string line = "G10 P0 L20 Z0";
-            WriteString(line);
-            logger.Info("MainViewModel|Reset Z: {0}", line);
-        }
-
-        /// <summary>
-        /// Sets all current axis to 0.
-        /// </summary>
-        public void ResetAllAxis()
-        {
-            string line = "G10 P0 L20 X0 Y0 Z0";
-            WriteString(line);
-            logger.Info("MainViewModel|Reset All axis: {0}", line);
-        }
-
-        /// <summary>
         /// Allows/Disallows Reset axis. G10 command only available w/ 0.9j and above?
         /// </summary>
         /// <returns></returns>
@@ -2894,7 +2870,8 @@ namespace VDGrbl.ViewModel
             {
                 return true;
             }
-            else return false;
+            //else return false;
+             else return true;
         }
 
         /// <summary>
@@ -2927,7 +2904,8 @@ namespace VDGrbl.ViewModel
             logger.Info("MainWindow| Get GCode FileList");
             gcodeTool = new GCodeTool(FileList);
             logger.Info("MainWindow| Get GCode PointCollection");
-            GCodePoints = gcodeTool.GetGCodePointCollection(50,50);
+            //GCodePoints = gcodeTool.GetGCodePointCollection(50,50);
+            GCodePoints = gcodeTool.GetGCodePointCollection(10, 10, 0.5);
             TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
             EstimateJobTime = time.ToString(@"hh\:mm\:ss");
             GCodeDrawing(GCodePoints);
@@ -3170,11 +3148,12 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void GrblTest()
         {
-
+            //Test code here
         }
         
         public bool CanExecuteGrblTest()
         {
+            //Condition of test code here
             return true;
         }
         #endregion
