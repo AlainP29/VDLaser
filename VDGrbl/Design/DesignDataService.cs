@@ -20,9 +20,9 @@ namespace VDGrbl.Design
             var item = new GCodeModel("G-Code file [design]");
             callback?.Invoke(item, null);
         }
-        public void GetDataField(Action<DataFieldModel, Exception> callback)
+        public void GetDataField(Action<GrblItems, Exception> callback)
         {
-            var item = new DataFieldModel("Machine state [design]");
+            var item = new GrblItems("Machine state [design]");
             callback?.Invoke(item, null);
         }
         public void GetInformation(Action<InformationModel, Exception> callback)

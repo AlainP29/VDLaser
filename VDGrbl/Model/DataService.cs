@@ -21,9 +21,9 @@ namespace VDGrbl.Model
             var item = new GCodeModel("G-Code file");
             callback?.Invoke(item, null);
         }
-        public void GetDataField(Action<DataFieldModel, Exception> callback)
+        public void GetDataField(Action<GrblItems, Exception> callback)
         {
-            var item = new DataFieldModel("Machine state");
+            var item = new GrblItems("Machine state");
             callback?.Invoke(item, null);
         }
         public void GetInformation(Action<InformationModel, Exception> callback)

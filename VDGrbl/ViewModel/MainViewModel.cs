@@ -115,7 +115,6 @@ namespace VDGrbl.ViewModel
         private ConsoleModel _console = new ConsoleModel("TX", "RX");
         private GCodeModel _gcodeModel;
         private readonly GrblTool grbltool = new GrblTool();
-        private readonly Tools.GCodeTool gcodeToolBasic = new Tools.GCodeTool();
         private GCodeTool gcodeTool;
 
         #region subregion enum
