@@ -9,7 +9,18 @@ namespace VDGrbl.Tools.Tests
     public class MathToolTests
     {
         [TestMethod()]
-        public void DistanceTest()
+        public void DistanceTest1()
+        {
+            Assert.AreEqual(5, MathTool.Distance(3, 4));
+        }
+
+        [TestMethod()]
+        public void DistanceTest2()
+        {
+            Assert.AreEqual(5, MathTool.Distance(0, 0, 3, 4));
+        }
+        [TestMethod()]
+        public void DistanceTest3()
         {
             Assert.AreEqual(5, MathTool.Distance(0, 0, 3, 4, 1));
         }
@@ -36,6 +47,20 @@ namespace VDGrbl.Tools.Tests
             };
             var p = new Point(7, 23.1);
             Assert.AreEqual(p, MathTool.MinPointCollection(points));
+        }
+
+        [TestMethod()]
+        public void RayonGCodeTest()
+        {
+            Assert.AreEqual(2, MathTool.RayonGCode(2, 3, 4, 3));
+        }
+
+        [TestMethod()]
+        public void AngleChordAbscissaTest()
+        {
+            //double alpha =System.Math.Round(System.Math.PI / 4,15);
+            double alpha = 0.785398163397448;
+            Assert.AreEqual(alpha, System.Math.Round(MathTool.AngleChordAbscissa(0, 2, 1, 1,1,0)),15);
         }
     }
 }

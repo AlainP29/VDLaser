@@ -18,9 +18,9 @@ namespace VDGrbl.Tools
         #endregion
 
         #region Enum
-        public enum GcodeMMode : short { R, L, CW, CCW };
-        public enum GcodeDMode : short { A, R };
-        public enum MCodeState : short { End, Constant, Dynamic, Stop };
+        public enum GcodeMMode : Int32 { R, L, CW, CCW };
+        public enum GcodeDMode : Int32 { A, R };
+        public enum MCodeState : Int32 { End, Constant, Dynamic, Stop };
         #endregion
 
         #region public property
@@ -144,7 +144,7 @@ namespace VDGrbl.Tools
                 {
                     GCodeLine = line;
                 }
-                if (!line.StartsWith("$") || !line.StartsWith("%") || !line.StartsWith("(") || !line.StartsWith(";") || !line.StartsWith(";"))
+                if (!line.StartsWith("$",StringComparison.InvariantCulture) || !line.StartsWith("%", StringComparison.InvariantCulture) || !line.StartsWith("(", StringComparison.InvariantCulture) || !line.StartsWith(";", StringComparison.InvariantCulture) || !line.StartsWith(";", StringComparison.InvariantCulture))
                 {
                     IsGCode = true; //TODO
                 }
@@ -173,7 +173,7 @@ namespace VDGrbl.Tools
         /// <param name="fl"></param>
         /// <param name="s"></param>
         /// <returns></returns>
-        public string FormatGcode(int d, int g, double x, double y, double f, double s)
+        public static string FormatGcode(int d, int g, double x, double y, double f, double s)
         {
             try
             {
@@ -182,7 +182,7 @@ namespace VDGrbl.Tools
                 double X = x * s;
                 double Y = y * s;
                 double F = f;
-                string fLine = string.Format("G9{0} G{1} X{2} Y{3} F{4}", D, G, X, Y, F);
+                string fLine = string.Format(CultureInfo.CurrentCulture,"G9{0} G{1} X{2} Y{3} F{4}", D, G, X, Y, F);
                 if (fLine.Contains(","))
                 {
                     return fLine.Replace(',', '.');
@@ -192,7 +192,7 @@ namespace VDGrbl.Tools
                     return fLine;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex.ToString());
                 return null;
@@ -204,10 +204,14 @@ namespace VDGrbl.Tools
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        public string TrimGcode(string line)
+        public static string TrimGcode(string line)
         {
             char[] trimArray = new char[] { '\r', '\n' };
-            return line.ToLower().Replace(" ", string.Empty).TrimEnd(trimArray);
+            if (!string.IsNullOrEmpty(line))
+            {
+                return line.ToLower(CultureInfo.CurrentCulture).Replace(" ", string.Empty).TrimEnd(trimArray);
+            }
+            return null;
         }
 
         /// <summary>
@@ -215,7 +219,7 @@ namespace VDGrbl.Tools
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        public string TrimEndGcode(string line)
+        public static string TrimEndGcode(string line)
         {
             if (!string.IsNullOrEmpty(line))
             {
@@ -241,7 +245,7 @@ namespace VDGrbl.Tools
         /// </summary>
         public void ParseGCode()
         {
-            var arr = GCodeLine.ToUpper().Split(' ');
+            var arr = GCodeLine.ToUpper(CultureInfo.CurrentCulture).Split(' ');
             try
             {
                 for (int i = 0; i < arr.Length; i++)
@@ -298,7 +302,7 @@ namespace VDGrbl.Tools
         /// </summary>
         public void ParseGCode(string line)
         {
-            var arr = line.ToUpper().Split(' ');
+            var arr = line.ToUpper(CultureInfo.CurrentCulture).Split(' ');
             try
             {
                 for (int i = 0; i < arr.Length; i++)
@@ -356,21 +360,28 @@ namespace VDGrbl.Tools
         /// <param name="m"></param>
         public void ProcessMCode(string mcode)
         {
-            switch (mcode)
+            if (!string.IsNullOrEmpty(mcode))
             {
-                case "2":
-                    MCode = MCodeState.End;
-                    break;
-                case "3":
-                    MCode = MCodeState.Constant;
-                    break;
-                case "4":
-                    MCode = MCodeState.Dynamic;
-                    break;
-                case "5":
-                    MCode = MCodeState.Stop;
-                    break;
+                switch (mcode)
+                {
+                    case "2":
+                        MCode = MCodeState.End;
+                        break;
+                    case "3":
+                        MCode = MCodeState.Constant;
+                        break;
+                    case "4":
+                        MCode = MCodeState.Dynamic;
+                        break;
+                    case "5":
+                        MCode = MCodeState.Stop;
+                        break;
+                    default:
+                        MCode = MCodeState.End;
+                        break;
+                }
             }
+            else MCode = MCodeState.End;
         }
 
         /// <summary>

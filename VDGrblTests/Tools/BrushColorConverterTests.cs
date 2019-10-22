@@ -12,16 +12,18 @@ namespace VDGrbl.Tools.Tests
         public void ConvertTest()
         {
             BrushColorConverter converter = new BrushColorConverter();
-            var value = converter.Convert(true, typeof(bool), null, CultureInfo.CurrentCulture);
-            Assert.AreEqual(new SolidColorBrush(Colors.LightGreen).Color, value);
+            var value = converter.Convert(true, typeof(bool), null, CultureInfo.CurrentCulture).ToString();
+            //Assert.AreEqual(new SolidColorBrush(Colors.LightGreen).Color, value.);
+            var brush = new SolidColorBrush(Colors.LightGreen).ToString();
+            Assert.AreEqual(brush, value);
         }
 
         [TestMethod()]
         public void ConvertTest1()
         {
             BrushColorConverter converter = new BrushColorConverter();
-            var value = converter.Convert(true, typeof(bool), "parameter", CultureInfo.CurrentCulture);
-            Assert.AreEqual(new SolidColorBrush(Colors.LightGreen).Color, value);
+            var value = converter.Convert(true, typeof(bool), "parameter", CultureInfo.CurrentCulture).ToString();
+            Assert.AreEqual(new SolidColorBrush(Colors.LightGreen).ToString(), value);
         }
     }
 }

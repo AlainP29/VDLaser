@@ -18,7 +18,6 @@ namespace VDGrbl.Tools
     public class GrblTool
     {
         #region Fields
-        private readonly GCodeTool gcodeTool = new GCodeTool();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly SettingCodes GrblSettingCode = new SettingCodes();
         private readonly ErrorCodes GrblErrorCode = new ErrorCodes();
@@ -78,7 +77,7 @@ namespace VDGrbl.Tools
         {
                 if (!string.IsNullOrEmpty(line))
                 {
-                    string lineTrim = gcodeTool.TrimGcode(line);
+                    string lineTrim = GCodeTool.TrimGcode(line);
                     if (lineTrim.StartsWith("ok", StringComparison.CurrentCultureIgnoreCase))
                     {
                         ProcessResponse(lineTrim);

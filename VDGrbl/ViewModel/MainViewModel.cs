@@ -89,6 +89,7 @@ namespace VDGrbl.ViewModel
         private bool _isLaserEnabled = false;
         private bool _isRefresh = false;
 
+        private Collection<string> _collectionPortName;
         private readonly IDataService _dataService;
         private PointCollection _gcodePoints= new PointCollection();
         private PathGeometry _pathGeometry;
@@ -1036,10 +1037,21 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Get the ListPortName property. 
+        /// Get the CollectionPortNames property. 
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string[] ListPortNames { get; private set; }
+        public Collection<string> CollectionPortNames
+        {
+            get
+            {
+                return _collectionPortName;
+            }
+            private set
+            {
+                Set(ref _collectionPortName, value);
+                logger.Info("MainViewModel|Selected Port : {0}", value);
+            }
+        }
 
         /// <summary>
         /// Get the SelectedBaudRateName property.
@@ -1840,7 +1852,8 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                ListPortNames = SerialPort.GetPortNames();
+                //ListPortNames = SerialPort.GetPortNames();
+                _collectionPortName= new Collection<string>(SerialPort.GetPortNames());
                 logger.Info("MainViewModel|Get serial port names");
             }
             catch (Exception ex)
@@ -1859,9 +1872,11 @@ namespace VDGrbl.ViewModel
                 SelectedBaudRate = 115200;
                 IsBaudEnabled = true;
                 IsPortEnabled = true;
-                if (ListPortNames != null && ListPortNames.Length > 0)
+                if (CollectionPortNames != null && CollectionPortNames.Count > 0)
                 {
-                    SelectedPortName = ListPortNames[0];
+                    SelectedPortName = CollectionPortNames[0];
+                    logger.Info("MainViewModel|Port COM{0}", SelectedPortName);
+
                 }
                 else
                 {
@@ -2479,7 +2494,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogH(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(0,0, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = GCodeTool.FormatGcode(0,0, 0, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogH: {0}", line);
         }
@@ -2489,7 +2504,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogN(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 0, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = GCodeTool.FormatGcode(1,1, 0, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogN: {0}", line);
         }
@@ -2499,7 +2514,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogS(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 0, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = GCodeTool.FormatGcode(1,1, 0, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogS: {0}", line);
         }
@@ -2509,7 +2524,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogE(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 1, 0, FeedRate, Double.Parse(Step.Replace('.',',')));
+            string line = GCodeTool.FormatGcode(1,1, 1, 0, FeedRate, Double.Parse(Step.Replace('.',',')));
             WriteString(line);
             logger.Info("MainViewModel|JogE: {0}", line);
         }
@@ -2519,7 +2534,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogW(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = GCodeTool.FormatGcode(1,1, -1, 0, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogW: {0}", line);
         }
@@ -2529,7 +2544,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogNW(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, -1, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = GCodeTool.FormatGcode(1,1, -1, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogNW: {0}", line);
         }
@@ -2539,7 +2554,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogNE(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 1, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = GCodeTool.FormatGcode(1,1, 1, -1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogNE: {0}", line);
         }
@@ -2549,7 +2564,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogSW(bool parameter)
         {
-            string line =gcodeToolBasic.FormatGcode(1,1, -1, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = GCodeTool.FormatGcode(1,1, -1, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogSW: {0}", line);
         }
@@ -2559,7 +2574,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void JogSE(bool parameter)
         {
-            string line = gcodeToolBasic.FormatGcode(1,1, 1, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
+            string line = GCodeTool.FormatGcode(1,1, 1, 1, FeedRate, Double.Parse(Step.Replace('.', ',')));
             WriteString(line);
             logger.Info("MainViewModel|JogSE: {0}", line);
         }
@@ -3169,7 +3184,7 @@ namespace VDGrbl.ViewModel
             try
             {
                 string line = _serialPort.ReadLine();
-                RXLine = gcodeToolBasic.TrimEndGcode(line);
+                RXLine = GCodeTool.TrimEndGcode(line);
                 Console = new ConsoleModel(TXLine, RXLine);
                 if (IsVerbose)
                 {

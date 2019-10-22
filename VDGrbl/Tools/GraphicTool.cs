@@ -3,6 +3,9 @@ using System.Windows.Media;
 
 namespace VDGrbl.Tools
 {
+    /// <summary>
+    /// Provide tool to plot the GCode file in a canvas.
+    /// </summary>
     public class GraphicTool
     {
         private readonly PointCollection points = new PointCollection();

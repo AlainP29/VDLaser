@@ -12,19 +12,21 @@ namespace VDGrbl.Tools.Tests
     public class GCodeToolTests
     {
         GCodeTool gt = new GCodeTool();
-        readonly string line = "G91 X10 Y15 F200 S30 M5";
+        readonly string line = "G91 X10 Y15 F200 S30 M5 ";
+        readonly string line1 = "G91 X10 Y15 F200 S30";
+
         readonly List<string> list = new List<string> { "G91", "G1 X3 Y4 F100" };
 
         [TestMethod()]
         public void FormatGcodeTest()
         {
-            Assert.AreEqual("G90 G1 X10 Y-15.5 F300", gt.FormatGcode(0, 1, 2, -3.1, 300, 5));
+            Assert.AreEqual("G90 G1 X10 Y-15.5 F300", GCodeTool.FormatGcode(0, 1, 2, -3.1, 300, 5));
         }
 
         [TestMethod()]
         public void TrimGcodeTest()
         {
-            Assert.AreEqual("g91x10y15f200s30m5", gt.TrimGcode(line));
+            Assert.AreEqual("g91x10y15f200s30m5", GCodeTool.TrimGcode(line));
         }
 
         [TestMethod()]
@@ -32,7 +34,6 @@ namespace VDGrbl.Tools.Tests
         {
             Assert.AreEqual("01:27:56:000", gt.SecondToTime(5276));
         }
-
 
         [TestMethod()]
         public void ParseGcodeTestG()
@@ -74,6 +75,13 @@ namespace VDGrbl.Tools.Tests
         {
             gt = new GCodeTool(line);
             Assert.AreEqual(3, (int)gt.MCode);
+        }
+
+        [TestMethod()]
+        public void ProcessMCodeTest1()
+        {
+            gt = new GCodeTool(line1);
+            Assert.AreEqual(0, (int)gt.MCode);
         }
 
         [TestMethod()]

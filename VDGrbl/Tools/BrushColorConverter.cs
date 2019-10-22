@@ -21,9 +21,9 @@ namespace VDGrbl.Tools
             }
             if (parameter != null)
             {
-                return b ? new SolidColorBrush(Colors.LightGreen).Color : new SolidColorBrush(Colors.OrangeRed).Color;
+                return b ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.OrangeRed);
             }
-            return b ? new SolidColorBrush(Colors.LightGreen).Color : new SolidColorBrush(Colors.OrangeRed).Color;
+            return b ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.OrangeRed);
         }
 
         public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
