@@ -1,6 +1,6 @@
 ﻿namespace VDGrbl.Model
 {
-    public class DataFieldModel
+    public class GrblItems
     {
         public string DataFieldHeader { get; private set; }
         public double MposX { get; private set; }
@@ -14,7 +14,7 @@
         public MachineStatus MachineState { get; private set; }
         public enum MachineStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
 
-        public DataFieldModel(string dataFieldHeader)
+        public GrblItems(string dataFieldHeader)
         {
             DataFieldHeader = dataFieldHeader;
         }

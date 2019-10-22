@@ -8,10 +8,10 @@
         mc:Ignorable="d ignore"
         Height="540"
         Width="890"
-        Title="VDLaser v0.3.6" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Title="VDLaser v0.3.7" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
-    <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Source={StaticResource Locator}}">
+    <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Main, Mode=OneWay, Source={StaticResource Locator}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="2*"/>

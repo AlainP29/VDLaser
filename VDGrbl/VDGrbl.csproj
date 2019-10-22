@@ -110,7 +110,7 @@
     <Compile Include="Codes\ErrorCodes.cs" />
     <Compile Include="Model\ConsoleModel.cs" />
     <Compile Include="Model\ControlModel.cs" />
-    <Compile Include="Model\DataFieldModel.cs" />
+    <Compile Include="Model\GrblItems.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GraphicModel.cs" />
     <Compile Include="Model\CommandModel.cs" />

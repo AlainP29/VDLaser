@@ -7,7 +7,7 @@ namespace VDGrbl.Model
         void GetSerialPortSetting(Action<SerialPortSettingModel, Exception> callback);
         void GetCommand(Action<CommandModel, Exception> callback);
         void GetGCode(Action<GCodeModel, Exception> callback);
-        void GetDataField(Action<DataFieldModel, Exception> callback);
+        void GetDataField(Action<GrblItems, Exception> callback);
         void GetInformation(Action<InformationModel, Exception> callback);
         void GetSettings(Action<SettingsModel, Exception> callback);
         void GetLaserImage(Action<LaserImageModel, Exception> callback);
