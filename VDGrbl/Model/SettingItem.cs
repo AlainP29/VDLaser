@@ -1,19 +1,19 @@
 ﻿namespace VDGrbl.Model
 {
-    public class SettingsModel
+    public class SettingItem
     {
-        public string SettingsHeader { get; private set; }
+        public string SettingHeader { get; private set; }
         public string SettingCode { get; private set; }
         public string SettingValue { get; private set; }
         public string SettingDescription { get; private set; }
 
-        public SettingsModel()
+        public SettingItem()
         { }
-        public SettingsModel(string settingsHeader)
+        public SettingItem(string settingHeader)
         {
-            SettingsHeader = settingsHeader;
+            SettingHeader = settingHeader;
         }
-        public SettingsModel(string settingCode, string settingValue, string settingDescription)
+        public SettingItem(string settingCode, string settingValue, string settingDescription)
         {
             SettingCode = settingCode;
             SettingValue = settingValue;

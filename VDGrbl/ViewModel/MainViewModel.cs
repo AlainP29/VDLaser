@@ -48,7 +48,6 @@ namespace VDGrbl.ViewModel
         private string _imageName = string.Empty;
         private string _estimateJobTime = "00:00:00";
         private string _groupBoxPortSettingTitle = string.Empty;
-        private string _groupBoxGrblSettingsTitle = string.Empty;
         private string _groupBoxGrblConsoleTitle = string.Empty;
         private string _groupBoxGrblControlTitle = string.Empty;
         private string _groupBoxCommandTitle = string.Empty;
@@ -106,7 +105,7 @@ namespace VDGrbl.ViewModel
         private MachStatus _machineStatus = MachStatus.Idle;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
-        private ObservableCollection<SettingsModel> _settingCollection=new ObservableCollection<SettingsModel>();
+        private ObservableCollection<SettingItem> _settingCollection=new ObservableCollection<SettingItem>();
         private Queue<string> _fileQueue = new Queue<string>();
         private List<string> _fileList = new List<string>();
         private ObservableCollection<ConsoleModel> _consoleData;
@@ -191,34 +190,19 @@ namespace VDGrbl.ViewModel
         #endregion
 
         #region subregion setting
-        /// <summary>
-        /// Get the GroupBoxGrblSettingTitle property. In design mode it adds [design]
-        /// Changes to that property's value raise the PropertyChanged event.
-        /// </summary>
-        public string GroupBoxSettingsTitle
-        {
-            get
-            {
-                return _groupBoxGrblSettingsTitle;
-            }
-            set
-            {
-                Set(ref _groupBoxGrblSettingsTitle, value);
-            }
-        }
 
         /// <summary>
         /// Get the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// First get ListSettingModel then populate the observableCollection settingCollection for binding.
         /// </summary>
-        public List<SettingsModel> ListGrblSettings { get; set; }
+        public List<SettingItem> ListGrblSettings { get; set; }
 
         /// <summary>
         /// Gets the SettingCollection property. SettingCollection is populated w/ data from ListSettingModel
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<SettingsModel> SettingCollection
+        public ObservableCollection<SettingItem> SettingCollection
         {
             get
             {
@@ -1723,7 +1707,7 @@ namespace VDGrbl.ViewModel
                        GroupBoxConsoleTitle = item.ConsoleHeader;
                    });
 
-                _dataService.GetSettings(
+                /*_dataService.GetSettings(
                     (item, error) =>
                     {
                         if (error != null)
@@ -1733,7 +1717,7 @@ namespace VDGrbl.ViewModel
                         }
                         logger.Info("MainViewModel|Load settings window");
                         GroupBoxSettingsTitle = item.SettingsHeader;
-                    });
+                    });*/
 
                 _dataService.GetLaserImage(
                    (item, error) =>
@@ -2303,7 +2287,7 @@ namespace VDGrbl.ViewModel
         public void GrblSettings()
         {
             logger.Info("MainViewModel|Load Grbl settings");
-            SettingCollection = new ObservableCollection<SettingsModel>(ListGrblSettings);
+            SettingCollection = new ObservableCollection<SettingItem>(ListGrblSettings);
             IsRefresh = false;
         }
 

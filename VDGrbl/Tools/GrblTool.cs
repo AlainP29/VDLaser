@@ -57,8 +57,8 @@ namespace VDGrbl.Tools
         public MachStatus MachineStatus { get; private set; }
         public RespStatus ResponseStatus { get; private set; }
         public SolidColorBrush MachineStatusColor { get; private set; }
-        public SettingsModel GrblSettings {get; private set; }
-        public List<SettingsModel> ListGrblSettings { get; private set; } = new List<SettingsModel>();
+        public SettingItem GrblSettings {get; private set; }
+        public List<SettingItem> ListGrblSettings { get; private set; } = new List<SettingItem>();
         #endregion
 
         #region Constructor
@@ -260,13 +260,13 @@ namespace VDGrbl.Tools
                     {
                         if (arr.Length > 3)//Grbl version 0.9 (w/ setting description)
                         {
-                            GrblSettings = new SettingsModel(arr[0], arr[1], arr[2]);
+                            GrblSettings = new SettingItem(arr[0], arr[1], arr[2]);
                             ListGrblSettings.Add(GrblSettings);
                             logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl0.9 settings list: {0}|{1}|{2}", arr[0], arr[1], arr[2]);
                         }
                         else if(arr.Length==2)//Grbl version 1.1 (w/o setting description)
                         {
-                            GrblSettings = new SettingsModel(arr[0], arr[1], GrblSettingCode.SettingDict[arr[0]]);
+                            GrblSettings = new SettingItem(arr[0], arr[1], GrblSettingCode.SettingDict[arr[0]]);
                             ListGrblSettings.Add(GrblSettings);
                             logger.Info("GrblTool|ProcessGrblSettingResponse|Grbl1.1 settings list: {0}|{1}|{2}", arr[0], arr[1], GrblSettingCode.SettingDict[arr[0]]);
                         }

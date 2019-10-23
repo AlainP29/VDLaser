@@ -108,6 +108,7 @@
     <Compile Include="Codes\SettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
+    <Compile Include="Design\DesignSettingsService.cs" />
     <Compile Include="Model\ConsoleModel.cs" />
     <Compile Include="Model\ControlModel.cs" />
     <Compile Include="Model\GrblItems.cs" />
@@ -115,12 +116,14 @@
     <Compile Include="Model\GraphicModel.cs" />
     <Compile Include="Model\CommandModel.cs" />
     <Compile Include="Model\InformationModel.cs" />
+    <Compile Include="Model\ISettingsService.cs" />
     <Compile Include="Model\JoggingModel.cs" />
-    <Compile Include="Model\SettingsModel.cs" />
+    <Compile Include="Model\SettingItem.cs" />
     <Compile Include="Model\LaserImageModel.cs" />
     <Compile Include="Model\SerialPortSettingModel.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
+    <Compile Include="Model\SettingService.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Tools\BrushColorConverter.cs" />
     <Compile Include="Tools\GraphicTool.cs" />
@@ -132,7 +135,7 @@
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\MathTool.cs" />
     <Compile Include="Tools\DotToCommaConverter.cs" />
-    <Compile Include="ViewModel\DataFieldViewModel.cs" />
+    <Compile Include="ViewModel\SettingsViewModel.cs" />
     <Compile Include="View\ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>
     </Compile>
@@ -162,8 +165,8 @@
     <Compile Include="View\LaserView.xaml.cs">
       <DependentUpon>LaserView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\SettingsView.xaml.cs">
-      <DependentUpon>SettingsView.xaml</DependentUpon>
+    <Compile Include="View\SettingView.xaml.cs">
+      <DependentUpon>SettingView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ConsoleView.xaml.cs">
       <DependentUpon>ConsoleView.xaml</DependentUpon>
@@ -210,7 +213,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\SettingsView.xaml">
+    <Page Include="View\SettingView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

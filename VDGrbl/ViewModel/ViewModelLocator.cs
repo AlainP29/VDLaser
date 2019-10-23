@@ -35,14 +35,16 @@ namespace VDGrbl.ViewModel
             if (ViewModelBase.IsInDesignModeStatic)
             {
                 SimpleIoc.Default.Register<IDataService, Design.DesignDataService>();
+                SimpleIoc.Default.Register<ISettingsService, Design.DesignSettingsService>();
             }
             else
             {
                 SimpleIoc.Default.Register<IDataService, DataService>();
+                SimpleIoc.Default.Register<ISettingsService, SettingService>();
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
-            SimpleIoc.Default.Register<DataFieldViewModel>();//1model 1view 1viewmodel...
+            SimpleIoc.Default.Register<SettingsViewModel>();
         }
 
         /// <summary>
@@ -59,13 +61,13 @@ namespace VDGrbl.ViewModel
             }
         }
 
-        public DataFieldViewModel DataField
+        public SettingsViewModel Settings
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<DataFieldViewModel>();
+                return ServiceLocator.Current.GetInstance<SettingsViewModel>();
             }
-        }//1model 1view 1viewmodel...
+        }
 
         /// <summary>
         /// Cleans up all the resources.

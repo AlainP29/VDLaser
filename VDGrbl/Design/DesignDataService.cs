@@ -30,11 +30,11 @@ namespace VDGrbl.Design
             var item = new InformationModel("Infos [design]");
             callback?.Invoke(item, null);
         }
-        public void GetSettings(Action<SettingsModel, Exception> callback)
+        /*public void GetSettings(Action<SettingsItem, Exception> callback)
         {
-            var item = new SettingsModel("Settings [design]");
+            var item = new SettingsItem("Settings [design]");
             callback?.Invoke(item, null);
-        }
+        }*/
         public void GetLaserImage(Action<LaserImageModel, Exception> callback)
         {
             var item = new LaserImageModel("Laser image [design]");

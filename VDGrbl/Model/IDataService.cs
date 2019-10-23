@@ -9,7 +9,7 @@ namespace VDGrbl.Model
         void GetGCode(Action<GCodeModel, Exception> callback);
         void GetDataField(Action<GrblItems, Exception> callback);
         void GetInformation(Action<InformationModel, Exception> callback);
-        void GetSettings(Action<SettingsModel, Exception> callback);
+        //void GetSettings(Action<SettingsItem, Exception> callback);
         void GetLaserImage(Action<LaserImageModel, Exception> callback);
         void GetGraphic(Action<GraphicModel, Exception> callback);
         void GetControl(Action<ControlModel, Exception> callback);

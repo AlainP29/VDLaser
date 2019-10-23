@@ -31,11 +31,11 @@ namespace VDGrbl.Model
             var item = new InformationModel("Infos");
             callback?.Invoke(item, null);
         }
-        public void GetSettings(Action<SettingsModel, Exception> callback)
+        /*public void GetSettings(Action<SettingsItem, Exception> callback)
         {
-            var item = new SettingsModel("Settings");
+            var item = new SettingsItem("Settings");
             callback?.Invoke(item, null);
-        }
+        }*/
         public void GetLaserImage(Action<LaserImageModel, Exception> callback)
         {
             var item = new LaserImageModel("Laser image");

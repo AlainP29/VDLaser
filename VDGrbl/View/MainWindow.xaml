@@ -56,7 +56,7 @@
                                 <local:GrblCommandView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
                                 <local:InformationView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
                             </StackPanel>
-                            <local:SettingsView Margin="1" Height="Auto" Width="Auto"/>
+                            <local:SettingView Margin="1" Height="Auto" Width="Auto"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>

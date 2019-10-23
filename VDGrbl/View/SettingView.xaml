@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="VDGrbl.View.SettingsView"
+﻿<UserControl x:Class="VDGrbl.View.SettingView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,7 +7,7 @@
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Grbl setting informations (command '$$'). 
         It populates the grid with ID, value and description from Codes folder-->
-        <GroupBox Header="{Binding Main.GroupBoxSettingsTitle}" Margin="5" 
+        <GroupBox Header="{Binding Settings.GroupBoxSettingTitle}" Margin="5" 
                   Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
             <Grid Margin="0,10,-0.4,-0.6">
                 <Grid.RowDefinitions>
@@ -18,9 +18,9 @@
                 <StackPanel Orientation="Horizontal">
                     <Button Grid.Row="0" Width="90" Content="Load settings" HorizontalAlignment="Center" 
                             Style="{DynamicResource ControlStyleVD}" 
-                        VerticalAlignment="Center" Command="{Binding Main.GrblSettingsCommand, Mode=OneWay}" 
+                        VerticalAlignment="Center" Command="{Binding Settings.SettingCommand, Mode=OneWay}" 
                             Margin="100 0 10 0"/>
-                <Button Grid.Column="1" Command="{Binding Main.GrblRefreshSettingsCommand, FallbackValue=true, Mode=OneWay}" 
+                <Button Grid.Column="1" Command="{Binding Settings.RefreshSettingCommand, FallbackValue=true, Mode=OneWay}" 
                         HorizontalAlignment="Center" 
                         VerticalAlignment="Center" Margin="40 0 0 0"
                         Style="{DynamicResource ControlStyleVD}" ToolTip="Refresh Grbl settings">
@@ -31,7 +31,7 @@
                 </StackPanel>
                 <DataGrid Grid.Row="1" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
                           IsReadOnly="True" Width="280"
-                          ItemsSource="{Binding Main.SettingCollection}" Margin="0,0.2,-2,0" Height="220" 
+                          ItemsSource="{Binding Settings.SettingCollection}" Margin="0,0.2,-2,0" Height="220" 
                           VerticalAlignment="Top">
                     <DataGrid.HorizontalGridLinesBrush>
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>

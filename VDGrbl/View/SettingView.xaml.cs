@@ -5,9 +5,9 @@ namespace VDGrbl.View
     /// <summary>
     /// Logique d'interaction pour SettingsView.xaml
     /// </summary>
-    public partial class SettingsView : UserControl
+    public partial class SettingView : UserControl
     {
-        public SettingsView()
+        public SettingView()
         {
             InitializeComponent();
         }
