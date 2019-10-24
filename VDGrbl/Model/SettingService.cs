@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace VDGrbl.Model
 {
-    public class SettingService : ISettingsService
+    public class SettingService : ISettingService
     {
         public void GetSettings(Action<SettingItem, Exception> callback)
         {

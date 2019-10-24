@@ -35,16 +35,21 @@ namespace VDGrbl.ViewModel
             if (ViewModelBase.IsInDesignModeStatic)
             {
                 SimpleIoc.Default.Register<IDataService, Design.DesignDataService>();
-                SimpleIoc.Default.Register<ISettingsService, Design.DesignSettingsService>();
+                SimpleIoc.Default.Register<ISettingService, Design.DesignSettingService>();
+                SimpleIoc.Default.Register<IGrblService, Design.DesignGrblService>();
+
             }
             else
             {
                 SimpleIoc.Default.Register<IDataService, DataService>();
-                SimpleIoc.Default.Register<ISettingsService, SettingService>();
+                SimpleIoc.Default.Register<ISettingService, SettingService>();
+                SimpleIoc.Default.Register<IGrblService, GrblService>();
+
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
-            SimpleIoc.Default.Register<SettingsViewModel>();
+            SimpleIoc.Default.Register<SettingViewModel>();
+            SimpleIoc.Default.Register<GrblViewModel>();
         }
 
         /// <summary>
@@ -61,11 +66,19 @@ namespace VDGrbl.ViewModel
             }
         }
 
-        public SettingsViewModel Settings
+        public SettingViewModel Setting
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<SettingsViewModel>();
+                return ServiceLocator.Current.GetInstance<SettingViewModel>();
+            }
+        }
+
+        public GrblViewModel Grbl
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<GrblViewModel>();
             }
         }
 

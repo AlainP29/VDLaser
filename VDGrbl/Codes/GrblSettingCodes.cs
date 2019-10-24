@@ -1,18 +1,22 @@
-﻿using GalaSoft.MvvmLight;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace VDGrbl.Codes
 {
     /// <summary>
     /// Grbl settings codes.
     /// </summary>
-    public class SettingCodes
+    public class GrblSettingCodes
     {
+        /// <summary>
+        /// Get the dictionnary of setting messages v1.1: Key: IDXX - Value: Setting code description
+        /// </summary>
+        public Dictionary<string, string> SettingDict { get; } = new Dictionary<string, string>();
+
         /// <summary>
         /// List of the system settings for Grbl version 0.9 and 1.1 (SettingDict) only (get after sending $$ command).
         /// In Grbl version 1.1 the description is not save in the Arduino.
         /// </summary>
-        public SettingCodes()
+        public GrblSettingCodes()
         {
             SettingDict.Add("$0", "Step pulse, microseconds.");
             SettingDict.Add("$1", "Step idle delay, milliseconds.");
@@ -50,9 +54,6 @@ namespace VDGrbl.Codes
             SettingDict.Add("$132", "Z Max travel, mm.");
         }
 
-        /// <summary>
-        /// Get the dictionnary of setting messages v1.1: Key: IDXX - Value: Setting code description
-        /// </summary>
-        public Dictionary<string, string> SettingDict { get; } = new Dictionary<string, string>();
+        
     }
 }

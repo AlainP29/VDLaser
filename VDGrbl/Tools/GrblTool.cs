@@ -19,7 +19,7 @@ namespace VDGrbl.Tools
     {
         #region Fields
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-        private readonly SettingCodes GrblSettingCode = new SettingCodes();
+        private readonly GrblSettingCodes GrblSettingCode = new GrblSettingCodes();
         private readonly ErrorCodes GrblErrorCode = new ErrorCodes();
         private readonly AlarmCodes GrblAlarmCodec = new AlarmCodes();
 

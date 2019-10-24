@@ -105,22 +105,22 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Codes\AlarmCodes.cs" />
-    <Compile Include="Codes\SettingCodes.cs" />
+    <Compile Include="Codes\GrblSettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
-    <Compile Include="Design\DesignSettingsService.cs" />
+    <Compile Include="Design\DesignGrblService.cs" />
+    <Compile Include="Design\DesignSettingService.cs" />
     <Compile Include="Model\ConsoleModel.cs" />
-    <Compile Include="Model\ControlModel.cs" />
     <Compile Include="Model\GrblItems.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GraphicModel.cs" />
-    <Compile Include="Model\CommandModel.cs" />
-    <Compile Include="Model\InformationModel.cs" />
-    <Compile Include="Model\ISettingsService.cs" />
+    <Compile Include="Model\GrblService.cs" />
+    <Compile Include="Model\IGrblService.cs" />
+    <Compile Include="Model\ISettingService.cs" />
     <Compile Include="Model\JoggingModel.cs" />
     <Compile Include="Model\SettingItem.cs" />
     <Compile Include="Model\LaserImageModel.cs" />
-    <Compile Include="Model\SerialPortSettingModel.cs" />
+    <Compile Include="Model\SerialPortSettingItems.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
     <Compile Include="Model\SettingService.cs" />
@@ -135,26 +135,21 @@
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\MathTool.cs" />
     <Compile Include="Tools\DotToCommaConverter.cs" />
-    <Compile Include="ViewModel\SettingsViewModel.cs" />
+    <Compile Include="ViewModel\GrblViewModel.cs" />
+    <Compile Include="ViewModel\SettingViewModel.cs" />
     <Compile Include="View\ControlView.xaml.cs">
       <DependentUpon>ControlView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\GraphicView.xaml.cs">
       <DependentUpon>GraphicView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\GrblCommandView.xaml.cs">
-      <DependentUpon>GrblCommandView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\GCodeFileView.xaml.cs">
       <DependentUpon>GCodeFileView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\InformationView.xaml.cs">
-      <DependentUpon>InformationView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
-    <Compile Include="View\DataFieldView.xaml.cs">
-      <DependentUpon>DataFieldView.xaml</DependentUpon>
+    <Compile Include="View\MachineStateView.xaml.cs">
+      <DependentUpon>MachineStateView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ImageView.xaml.cs">
       <DependentUpon>ImageView.xaml</DependentUpon>
@@ -185,19 +180,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\GrblCommandView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\GCodeFileView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\InformationView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\DataFieldView.xaml">
+    <Page Include="View\MachineStateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

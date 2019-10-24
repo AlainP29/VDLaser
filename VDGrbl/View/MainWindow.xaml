@@ -19,7 +19,7 @@
         <!--Connection and display area-->
         <StackPanel>
             <local:SerialPortSettingView Margin="1,1,1.4,1" Width="Auto" Height="149"/>
-            <local:DataFieldView Margin="1" Width="Auto" Height="Auto"/>
+            <local:MachineStateView Margin="1" Width="Auto" Height="Auto"/>
             <local:ControlView Margin="1" Width="Auto" Height="Auto"/>
         </StackPanel>
         <!--Jogging area + settings informations-->
@@ -52,10 +52,6 @@
                     <Grid Background="#FFE5E5E5" Height="300" Margin="0">
                         <!-- Grbl settings and commands-->
                         <StackPanel Orientation="Horizontal">
-                            <StackPanel>
-                                <local:GrblCommandView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
-                                <local:InformationView Margin="1" Height="Auto" Width="Auto" VerticalAlignment="Top"/>
-                            </StackPanel>
                             <local:SettingView Margin="1" Height="Auto" Width="Auto"/>
                         </StackPanel>
                     </Grid>

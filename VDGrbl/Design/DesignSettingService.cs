@@ -7,7 +7,7 @@ using VDGrbl.Model;
 
 namespace VDGrbl.Design
 {
-    public class DesignSettingsService : ISettingsService
+    public class DesignSettingService : ISettingService
     {
         public void GetSettings(Action<SettingItem, Exception> callback)
         {

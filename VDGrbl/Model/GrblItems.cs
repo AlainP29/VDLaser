@@ -2,7 +2,8 @@
 {
     public class GrblItems
     {
-        public string DataFieldHeader { get; private set; }
+        public string MachineStateHeader { get; private set; }
+        public string ControleHeader { get; private set; }
         public double MposX { get; private set; }
         public double MposY { get; private set; }
         public double WposX { get; private set; }
@@ -14,9 +15,10 @@
         public MachineStatus MachineState { get; private set; }
         public enum MachineStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
 
-        public GrblItems(string dataFieldHeader)
+        public GrblItems(string grblHeader)
         {
-            DataFieldHeader = dataFieldHeader;
+            MachineStateHeader = grblHeader;
+            ControleHeader = grblHeader;
         }
     }
 }

@@ -6,6 +6,8 @@
         public string SettingCode { get; private set; }
         public string SettingValue { get; private set; }
         public string SettingDescription { get; private set; }
+        public string Version { get; private set; }
+        public string Build { get; private set; }
 
         public SettingItem()
         { }

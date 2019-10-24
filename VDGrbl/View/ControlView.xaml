@@ -7,7 +7,7 @@
              d:DesignHeight="110" d:DesignWidth="300">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Show main control-->
-        <GroupBox Header="{Binding Main.GroupBoxControlTitle}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0">
+        <GroupBox Header="{Binding Grbl.GroupBoxControleTitle}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0">
             <Grid Margin="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
