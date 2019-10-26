@@ -179,6 +179,7 @@ namespace VDGrbl.ViewModel
         public RelayCommand LoadFileCommand { get; private set; }
         public RelayCommand LoadImageCommand { get; private set; }
         public RelayCommand SendFileCommand { get; private set; }
+        public RelayCommand PauseFileCommand { get; private set; }
         public RelayCommand StopFileCommand { get; private set; }
         public RelayCommand<bool> DecreaseLaserPowerCommand { get; private set; }
         public RelayCommand<bool> IncreaseLaserPowerCommand { get; private set; }
@@ -1677,8 +1678,8 @@ namespace VDGrbl.ViewModel
             StopLaserCommand = new RelayCommand(StopLaser, CanExecuteLaser);
             LoadFileCommand = new RelayCommand(OpenFile, CanExecuteOpenFile);
             LoadImageCommand = new RelayCommand(OpenImage, CanExecuteOpenImage);
-            //StopFileCommand = new RelayCommand(StopFile, CanExecuteStopFile);
             SendFileCommand = new RelayCommand(StartSendingFileAsync, CanExecuteAsyncTask);
+            PauseFileCommand = new RelayCommand(PauseSendingFile, CanExecutePauseFile);
             StopFileCommand = new RelayCommand(StopSendingFileAsync, CanExecuteAsyncTask);
             IncreaseLaserPowerCommand = new RelayCommand<bool>(IncreaseLaserPower, CanExecuteLaserPower);
             DecreaseLaserPowerCommand = new RelayCommand<bool>(DecreaseLaserPower, CanExecuteLaserPower);
@@ -2051,6 +2052,8 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void ClearData()
         {
+            logger.Info("MainViewModel|Clear data");
+
             try
             {
                 if (_serialPort.IsOpen)
@@ -2058,22 +2061,26 @@ namespace VDGrbl.ViewModel
                     GrblReset();
                     _serialPort.DiscardInBuffer();
                     _serialPort.DiscardOutBuffer();
+                    ListConsoleData.Clear();
+                    ListGrblSettings.Clear();
+                    SettingCollection.Clear();
+                    logger.Info("MainViewModel|TXLine/RXLine and buffers erased");
                 }
                 Thread.Sleep(50);
                 RXLine = string.Empty;
                 TXLine = string.Empty;
                 GCodeLine = string.Empty;
-                FileQueue.Clear();
-                ListGrblSettings.Clear();
-                SettingCollection.Clear();
-                ListConsoleData.Clear();
-                GCodeData.Clear();
-                GcodePaths.Clear();
+                if (FileQueue.Count > 0)
+                {
+                    FileQueue.Clear();
+                    GCodeData.Clear();
+                    GcodePaths.Clear();
+                }
+                FileName = string.Empty;
                 NLine = 0;
                 PercentLine = 0;
                 RLine = 0;
                 EstimateJobTime = "00:00:00" ;
-                logger.Info("MainViewModel|TXLine/RXLine and buffers erased");
             }
             catch (Exception ex)
             {
@@ -2086,7 +2093,14 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecuteClearData()
         {
-            return IsManualSending && Buf=="15";
+            if (_serialPort.IsOpen)
+            {
+                return IsManualSending && Buf == "15";
+            }
+            else
+            {
+                return true;
+                    }
         }
         #endregion
 
@@ -2106,7 +2120,7 @@ namespace VDGrbl.ViewModel
         public void GrblStartCycle()
         {
             WriteByte(126);
-            logger.Info("MainViewModel|Start machin");
+            logger.Info("MainViewModel|Start");
         }
         
         /// <summary>
@@ -2708,7 +2722,7 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void OpenFile()
         {
-            if(FileQueue!=null)
+            if (FileQueue!=null)
             {
                 ClearData();
             }
@@ -2723,7 +2737,7 @@ namespace VDGrbl.ViewModel
                 {
                     FileName = openFile.FileName;
                     LoadFile(FileName);
-                    logger.Info("MainViewModel|OpenFile: {0}", FileName);
+                    logger.Info("MainViewModel|OpenFile1");
                 }
             }
             catch(Exception ex)
@@ -2741,10 +2755,15 @@ namespace VDGrbl.ViewModel
         {
             if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
+                logger.Info("MainViewModel|OpenFile");
                 return true;
             }
             //else return false;
-             else return true;
+            else
+            {
+                logger.Info("MainViewModel|OpenFile");
+                return true;
+            }
         }
 
         /// <summary>
@@ -2770,7 +2789,6 @@ namespace VDGrbl.ViewModel
                     i++;
                 }
             }
-            logger.Info(GCodeLine);
             NLine = FileQueue.Count;
             RLine = NLine;
             logger.Info("MainWindow| Get GCode FileList");
@@ -2860,7 +2878,8 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Cancel the task to send G-code file in async. Used with stop button.
+        /// Cancel the task to send G-code file in async mode. Pause the machine and clear queue. TOBEIMPROVE
+        /// Used with stop button.
         /// </summary>
         private void StopSendingFileAsync()
         {
@@ -2869,17 +2888,44 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Stop sending file");
                 cts.Cancel();
                 GrblFeedHold();
+                ResponseStatus = RespStatus.Q;
+                NLine = FileQueue.Count;
                 FileQueue.Clear();
                 cts.Dispose();
                 mre.Dispose();
+                IsSending = false;
+                IsManualSending = true;
             }
+        }
+        /// <summary>
+        /// Allows/Disallows SendFileAsynk and stopFileAsync method.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteAsyncTask()
+        {
+            if (FileQueue.Count > 0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
+            {
+                return true;
+            }
+            return false;
+        }
+        /// <summary>
+        /// Pause the machine and clear queue. TODO Use "mre" to pause task and resume...
+        /// Used with stop button.
+        /// </summary>
+        private void PauseSendingFile()
+        {
+                logger.Info("MainViewModel|Pause sending file");
+                GrblFeedHold();
+                ResponseStatus = RespStatus.Q;
+                IsSending = false;
         }
 
         /// <summary>
         /// Allows/Disallows SendFile method.
         /// </summary>
         /// <returns></returns>
-        public bool CanExecuteAsyncTask()
+        public bool CanExecutePauseFile()
         {
             if (FileQueue.Count > 0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
@@ -2916,43 +2962,6 @@ namespace VDGrbl.ViewModel
                 IsManualSending = true;
                 IsSending = false;
             }
-        }
-
-        /// <summary>
-        /// Allows/Disallows SendFile method.
-        /// </summary>
-        /// <returns></returns>
-        public bool CanExecuteSendFile()
-        {
-            if (FileQueue.Count>0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Changes status response pause sending file
-        /// </summary>
-        public void StopFile()
-        {
-            ResponseStatus = RespStatus.Q;
-            FileQueue.Clear();
-            NLine = FileQueue.Count;
-            IsManualSending = false;
-        }
-
-        /// <summary>
-        /// Allows/Disallows PauseFile method.
-        /// </summary>
-        /// <returns></returns>
-        public bool CanExecuteStopFile()
-        {
-            if (FileQueue.Count > 0)
-                {
-                return true;
-                }
-            return false;
         }
         #endregion
 
