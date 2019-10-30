@@ -114,16 +114,15 @@
     <Compile Include="Model\GrblItems.cs" />
     <Compile Include="Model\GCodeModel.cs" />
     <Compile Include="Model\GraphicModel.cs" />
-    <Compile Include="Model\GrblService.cs" />
-    <Compile Include="Model\IGrblService.cs" />
-    <Compile Include="Model\ISettingService.cs" />
+    <Compile Include="Service\GrblService.cs" />
+    <Compile Include="Service\IGrblService.cs" />
+    <Compile Include="Service\ISettingService.cs" />
     <Compile Include="Model\JoggingModel.cs" />
     <Compile Include="Model\SettingItem.cs" />
-    <Compile Include="Model\LaserImageModel.cs" />
     <Compile Include="Model\SerialPortSettingItems.cs" />
-    <Compile Include="Model\DataService.cs" />
-    <Compile Include="Model\IDataService.cs" />
-    <Compile Include="Model\SettingService.cs" />
+    <Compile Include="Service\DataService.cs" />
+    <Compile Include="Service\IDataService.cs" />
+    <Compile Include="Service\SettingService.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Tools\BrushColorConverter.cs" />
     <Compile Include="Tools\GraphicTool.cs" />
@@ -131,14 +130,13 @@
     <Compile Include="Tools\DoubleConverter.cs" />
     <Compile Include="Tools\GCodeTool.cs" />
     <Compile Include="Tools\GrblTool.cs" />
-    <Compile Include="Tools\RasterImageTool.cs" />
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\MathTool.cs" />
     <Compile Include="Tools\DotToCommaConverter.cs" />
     <Compile Include="ViewModel\GrblViewModel.cs" />
     <Compile Include="ViewModel\SettingViewModel.cs" />
-    <Compile Include="View\ControlView.xaml.cs">
-      <DependentUpon>ControlView.xaml</DependentUpon>
+    <Compile Include="View\ControleView.xaml.cs">
+      <DependentUpon>ControleView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\GraphicView.xaml.cs">
       <DependentUpon>GraphicView.xaml</DependentUpon>
@@ -163,7 +161,7 @@
     <Compile Include="View\SerialPortSettingView.xaml.cs">
       <DependentUpon>SerialPortSettingView.xaml</DependentUpon>
     </Compile>
-    <Page Include="View\ControlView.xaml">
+    <Page Include="View\ControleView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

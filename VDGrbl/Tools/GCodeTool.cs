@@ -1,10 +1,9 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Media;
-using Microsoft.Win32;
-using NLog;
-using System.Globalization;
 
 namespace VDGrbl.Tools
 {
@@ -175,8 +174,6 @@ namespace VDGrbl.Tools
         /// <returns></returns>
         public static string FormatGcode(int d, int g, double x, double y, double f, double s)
         {
-            try
-            {
                 int D = d;
                 int G = g;
                 double X = x * s;
@@ -191,12 +188,6 @@ namespace VDGrbl.Tools
                 {
                     return fLine;
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex.ToString());
-                return null;
-            }
         }
 
         /// <summary>
@@ -234,10 +225,18 @@ namespace VDGrbl.Tools
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-        public string SecondToTime(double s)
+        public static string SecondToTime(double s)
         {
-            TimeSpan ts = TimeSpan.FromSeconds(s);
-            return ts.ToString(@"hh\:mm\:ss\:fff");
+            try
+            {
+                TimeSpan ts = TimeSpan.FromSeconds(s);
+                return ts.ToString(@"hh\:mm\:ss\:fff", CultureInfo.CurrentCulture);
+            }
+            catch(FormatException ex)
+            {
+                logger.Error(CultureInfo.CurrentCulture, "GCodeTool|Exception SecondToTime raised {0}", ex.ToString());
+                return null;
+            }
         }
 
         /// <summary>
@@ -246,8 +245,7 @@ namespace VDGrbl.Tools
         public void ParseGCode()
         {
             var arr = GCodeLine.ToUpper(CultureInfo.CurrentCulture).Split(' ');
-            try
-            {
+           
                 for (int i = 0; i < arr.Length; i++)
                 {
                     //logger.Info("GCodeTool1" + arr[i].ToString());
@@ -291,11 +289,6 @@ namespace VDGrbl.Tools
                         arr[i] = string.Empty;
                     }
                 }
-            }
-            catch(Exception ex)
-            {
-                logger.Error("Method ParseGCode raised: {0}", ex.ToString());
-            }
         }
         /// <summary>
         /// Parse line. Get values of G-Code commands
@@ -303,8 +296,6 @@ namespace VDGrbl.Tools
         public void ParseGCode(string line)
         {
             var arr = line.ToUpper(CultureInfo.CurrentCulture).Split(' ');
-            try
-            {
                 for (int i = 0; i < arr.Length; i++)
                 {
                     //logger.Info("GCodeTool|ParseGCode2" + arr[i].ToString());
@@ -347,11 +338,6 @@ namespace VDGrbl.Tools
                         arr[i] = string.Empty;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.Error("Method ParseGCode raised: {0}", ex.ToString());
-            }
         }
 
         /// <summary>
@@ -362,24 +348,14 @@ namespace VDGrbl.Tools
         {
             if (!string.IsNullOrEmpty(mcode))
             {
-                switch (mcode)
+                MCode = mcode switch
                 {
-                    case "2":
-                        MCode = MCodeState.End;
-                        break;
-                    case "3":
-                        MCode = MCodeState.Constant;
-                        break;
-                    case "4":
-                        MCode = MCodeState.Dynamic;
-                        break;
-                    case "5":
-                        MCode = MCodeState.Stop;
-                        break;
-                    default:
-                        MCode = MCodeState.End;
-                        break;
-                }
+                    "2" => MCodeState.End,
+                    "3" => MCodeState.Constant,
+                    "4" => MCodeState.Dynamic,
+                    "5" => MCodeState.Stop,
+                    _ => MCodeState.End,
+                };
             }
             else MCode = MCodeState.End;
         }
@@ -444,10 +420,9 @@ namespace VDGrbl.Tools
         /// <returns></returns>
         public double CalculateJobTime(double maxFeedRate)
         {
-            double dist = 0, time = 0;
-            double x0 = 0, y0 = 0, x1 = 0, y1 = 0;
-            try
-            {
+            double time = 0;
+            double x0 = 0, y0 = 0;
+       
                 for (int i = 0; i < FileList.Count; i++)
                 {
                     if (FileList[i].Contains('.'))
@@ -459,11 +434,14 @@ namespace VDGrbl.Tools
                         GCodeLine = FileList[i];
                     }
                     ParseGCode();
+                    double y1=0;
+                    double x1=0;
+                    double dist=0;
                     if ((int)DMode == 0)
                     {
                         if (X != "0")//utiliser écriture simplifiée ?:
                         {
-                            x1 = Convert.ToDouble(X);
+                            x1 = Convert.ToDouble(X, CultureInfo.CurrentCulture);
                         }
                         else
                         {
@@ -471,7 +449,7 @@ namespace VDGrbl.Tools
                         }
                         if (Y != "0")
                         {
-                            y1 = Convert.ToDouble(Y);
+                            y1 = Convert.ToDouble(Y, CultureInfo.CurrentCulture);
                         }
                         else
                         {
@@ -486,7 +464,7 @@ namespace VDGrbl.Tools
                         {
                             if (F != "0")
                             {
-                                time += dist / Convert.ToDouble(F);
+                                time += dist / Convert.ToDouble(F, CultureInfo.CurrentCulture);
                             }
                             time += 0;
                         }
@@ -501,7 +479,7 @@ namespace VDGrbl.Tools
                     {
                         if (X != "0")
                         {
-                            x1 = Convert.ToDouble(X);
+                            x1 = Convert.ToDouble(X, CultureInfo.CurrentCulture);
                         }
                         else
                         {
@@ -509,7 +487,7 @@ namespace VDGrbl.Tools
                         }
                         if (Y != "0")
                         {
-                            y1 = Convert.ToDouble(Y);
+                            y1 = Convert.ToDouble(Y, CultureInfo.CurrentCulture);
                         }
                         else
                         {
@@ -524,7 +502,7 @@ namespace VDGrbl.Tools
                         {
                             if (F != "0")
                             {
-                                time += dist / Convert.ToDouble(F);
+                                time += dist / Convert.ToDouble(F, CultureInfo.CurrentCulture);
                             }
                             time += 0;
                         }
@@ -540,11 +518,6 @@ namespace VDGrbl.Tools
                         logger.Info("GCodeTool|CalculateJobTime DMode inconnu:" + DMode);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.Error("GCodeTool|Exception CalculateJobTime raised:" + ex);
-            }
             return Math.Round(time * 60);
         }
 

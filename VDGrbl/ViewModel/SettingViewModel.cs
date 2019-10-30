@@ -2,7 +2,7 @@
 using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Messaging;
 using NLog;
-using VDGrbl.Model;
+using VDGrbl.Service;
 
 namespace VDGrbl.ViewModel
 {
@@ -55,7 +55,7 @@ namespace VDGrbl.ViewModel
             _settingService = settingService;
             if (_settingService != null)
             {
-                _settingService.GetSettings(
+                _settingService.GetSetting(
                         (item, error) =>
                         {
                             if (error != null)
@@ -84,7 +84,7 @@ namespace VDGrbl.ViewModel
         /// Allows/disallows refresh grbl settings' button.
         /// </summary>
         /// <returns></returns>
-        public bool CanExecuteTestSettingCommand()
+        public static bool CanExecuteTestSettingCommand()
         {
             return true;
         }

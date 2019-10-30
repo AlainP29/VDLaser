@@ -1,6 +1,7 @@
 ﻿using System;
+using VDGrbl.Model;
 
-namespace VDGrbl.Model
+namespace VDGrbl.Service
 {
     public class DataService : IDataService
     {
@@ -14,12 +15,6 @@ namespace VDGrbl.Model
         public void GetGCode(Action<GCodeModel, Exception> callback)
         {
             var item = new GCodeModel("G-Code file");
-            callback?.Invoke(item, null);
-        }
-        
-        public void GetLaserImage(Action<LaserImageModel, Exception> callback)
-        {
-            var item = new LaserImageModel("Laser image");
             callback?.Invoke(item, null);
         }
         public void GetGraphic(Action<GraphicModel, Exception> callback)

@@ -16,6 +16,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using VDGrbl.Model;
 using VDGrbl.Tools;
+using VDGrbl.Service;
+using System.Globalization;
 
 namespace VDGrbl.ViewModel
 {
@@ -46,13 +48,11 @@ namespace VDGrbl.ViewModel
         private string _alarmMessage = string.Empty;
         private string _infoMessage = string.Empty;
         private string _fileName = string.Empty;
-        private string _imageName = string.Empty;
         private string _estimateJobTime = "00:00:00";
         private string _groupBoxPortSettingTitle = string.Empty;
         private string _groupBoxGrblConsoleTitle = string.Empty;
         private string _groupBoxGCodeFileTitle = string.Empty;
         private string _groupBoxConsoleTitle = string.Empty;
-        private string _groupBoxImageTitle = string.Empty;
         private string _groupBoxGraphicTitle = string.Empty;
         private string _groupBoxJoggingTitle = string.Empty;
         private string _selectedTransferDelay = string.Empty;
@@ -67,10 +67,6 @@ namespace VDGrbl.ViewModel
         private double _percentLine = 0;
         private double _laserPower = 0;
         private double _maxLaserPower = 2500;
-        private double _imageHeight;
-        private double _imageWidht;
-        private double _imageDpiX;
-        private double _imageDpiY;
         private double _strokeThickness = 2;
 
         private bool _isSelectedKeyboard = false;
@@ -90,9 +86,6 @@ namespace VDGrbl.ViewModel
         private PathGeometry _pathGeometry;
         private Brush _fill=Brushes.AliceBlue;
         private Brush _stroke=Brushes.White;
-        private BitmapSource _imageTransform = null;
-        private Image _imageLaser = new Image();
-        private PixelFormat _imageFormat;
         private SerialPort _serialPort;
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private readonly DispatcherTimer currentStatusTimer = new DispatcherTimer(DispatcherPriority.Normal);
@@ -112,7 +105,7 @@ namespace VDGrbl.ViewModel
         private GCodeModel _gcodeModel;
         private readonly GrblTool grbltool = new GrblTool();
         private GCodeTool gcodeTool;
-        private ManualResetEvent mre = new ManualResetEvent(false);//Use to monitor file sending
+        private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);//Use to monitor file sending
 
         #region subregion enum
         /// <summary>
@@ -177,7 +170,6 @@ namespace VDGrbl.ViewModel
         public RelayCommand StartLaserCommand { get; private set; }
         public RelayCommand StopLaserCommand { get; private set; }
         public RelayCommand LoadFileCommand { get; private set; }
-        public RelayCommand LoadImageCommand { get; private set; }
         public RelayCommand SendFileCommand { get; private set; }
         public RelayCommand PauseFileCommand { get; private set; }
         public RelayCommand StopFileCommand { get; private set; }
@@ -274,7 +266,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _errorMessage, value);
-                logger.Info("MainWindowModel|ErrorMessage {0}",value);
+                logger.Info(CultureInfo.CurrentCulture, "MainWindowModel|ErrorMessage {0}", value);
 
             }
         }
@@ -292,7 +284,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _alarmMessage, value);
-                logger.Info("MainWindowModel|AlarmMessage {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainWindowModel|AlarmMessage {0}", value);
 
             }
         }
@@ -310,7 +302,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _infoMessage, value);
-                logger.Info("MainWindowModel|InfoMessage {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainWindowModel|InfoMessage {0}", value);
 
             }
         }
@@ -328,7 +320,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isVerbose, value);
-                logger.Info("MainViewModel|IsVerbose {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|IsVerbose {0}", value);
 
             }
         }
@@ -345,7 +337,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isRefresh, value);
-                logger.Info("MainViewModel|IsRefresh {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|IsRefresh {0}", value);
             }
         }
         #endregion
@@ -396,7 +388,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _txLine, value);
-                logger.Info("MainViewModel|TXLine {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|TXLine {0}", value);
             }
         }
 
@@ -413,7 +405,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _macro1, value);
-                logger.Info("MainViewModel|Macro 1: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Macro 1: {0}", value);
             }
         }
 
@@ -430,7 +422,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _macro2, value);
-                logger.Info("MainViewModel|Macro 2: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Macro 2: {0}", value);
             }
         }
 
@@ -447,7 +439,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _macro3, value);
-                logger.Info("MainViewModel|Macro 3: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Macro 3: {0}", value);
             }
         }
 
@@ -522,7 +514,7 @@ namespace VDGrbl.ViewModel
                 {
                     _manualfeedRate = MaxFeedRate;
                 }
-                logger.Info("MainViewModel|Manual speed rate value : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Manual speed rate value : {0}", value);
             }
         }
 
@@ -544,7 +536,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _step, value);
-                logger.Info("MainViewModel|Manual step value : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Manual step value : {0}", value);
             }
         }
 
@@ -606,7 +598,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isJogEnabled, value);
-                logger.Info("MainViewModel|Jog is enabled: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Jog is enabled: {0}", value);
             }
         }
 
@@ -651,7 +643,7 @@ namespace VDGrbl.ViewModel
                     _laserPower = MaxLaserPower;
                 }
                 WriteString(string.Format("S{0}", _laserPower));
-                logger.Info("MainViewModel|Manual laser power value : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Manual laser power value : {0}", value);
             }
         }
 
@@ -667,7 +659,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _maxLaserPower, value);
-                logger.Info("MainViewModel|Max laser power value : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Max laser power value : {0}", value);
             }
         }
 
@@ -683,7 +675,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _selectedLaser, value);
-                logger.Info("MainViewModel|Selected laser : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Selected laser : {0}", value);
                 //MaxLaserPower = 500;
                 //WriteString("$30=500");
             }
@@ -698,7 +690,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _converterParameterLaser, value);
-                logger.Info("MainViewModel|ConverterParameterLaser : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|ConverterParameterLaser : {0}", value);
             }
         }
 
@@ -714,7 +706,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isLaserEnabled, value);
-                logger.Info("MainViewModel|IsLaserEnabled : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|IsLaserEnabled : {0}", value);
             }
         }
 
@@ -775,7 +767,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _fileName, value);
-                logger.Info("MainViewModel|File name : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|File name : {0}", value);
             }
         }
 
@@ -792,7 +784,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _estimateJobTime, value);
-                logger.Info("MainViewModel|Job time : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Job time : {0}", value);
             }
         }
 
@@ -843,7 +835,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _nLine, value);
-                logger.Info("MainViewModel|Total of lines: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Total of lines: {0}", value);
             }
         }
 
@@ -860,7 +852,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _rLine, value);
-                logger.Info("MainViewModel|Number of remaining lines: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Number of remaining lines: {0}", value);
             }
         }
 
@@ -911,7 +903,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isSending, value);
-                logger.Info("MainViewModel|IsSending {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|IsSending {0}", value);
             }
         }
 
@@ -944,7 +936,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _selectedTransferDelay, value);
-                logger.Info("MainViewModel|Set Transfer delay : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Set Transfer delay : {0}", value);
             }
         }
 
@@ -1012,7 +1004,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _selectedPortName, value);
-                logger.Info("MainViewModel|Selected Port : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Selected Port : {0}", value);
             }
         }
 
@@ -1046,7 +1038,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _selectedBaudRate, value);
-                logger.Info("MainViewModel|Selected Baudrate : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Selected Baudrate : {0}", value);
             }
         }
 
@@ -1068,7 +1060,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isPortEnabled, value);
-                logger.Info("MainViewModel|IsPortEnabled: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|IsPortEnabled: {0}", value);
             }
         }
 
@@ -1084,7 +1076,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isBaudEnabled, value);
-                logger.Info("MainViewModel|IsBaudEnabled: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|IsBaudEnabled: {0}", value);
             }
         }
         #endregion
@@ -1103,7 +1095,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _versionGrbl, value);
-                logger.Info("MainViewModel|VersionGrbl : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|VersionGrbl : {0}", value);
             }
         }
 
@@ -1120,7 +1112,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _buildInfoGrbl, value);
-                logger.Info("MainViewModel|BuildInfoGrbl : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|BuildInfoGrbl : {0}", value);
 
             }
         }
@@ -1273,155 +1265,6 @@ namespace VDGrbl.ViewModel
 
         #endregion
 
-        #region subregion image
-        /// <summary>
-        /// Get the GroupBoxImageTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string GroupBoxImageTitle
-        {
-            get
-            {
-                return _groupBoxImageTitle;
-            }
-            set
-            {
-                Set(ref _groupBoxImageTitle, value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ImagePath property. ImageName is the complete path w/name of the image file.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string ImageName
-        {
-            get
-            {
-                return _imageName;
-            }
-            set
-            {
-                Set(ref _imageName, value);
-                logger.Info("MainViewModel|Image path : {0}", value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ImageTransform property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public BitmapSource ImageTransform
-        {
-            get
-            {
-                return _imageTransform;
-            }
-            set
-            {
-                Set(ref _imageTransform, value);
-                logger.Info("MainViewModel|Image transform");
-            }
-        }
-
-        /// <summary>
-        /// Get the ImgTransform property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public Image ImageLaser
-        {
-            get
-            {
-                return _imageLaser;
-            }
-            set
-            {
-                Set(ref _imageLaser, value);
-                logger.Info("MainViewModel|Image laser");
-            }
-        }
-
-        /// <summary>
-        /// Get the ImageHeight property.
-        /// </summary>
-        public double ImageHeight
-        {
-            get
-            {
-                return _imageHeight;
-            }
-            set
-            {
-                Set(ref _imageHeight, value);
-                logger.Info("MainViewModel|Image height: {0}",value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ImageWidht property.
-        /// </summary>
-        public double ImageWidth
-        {
-            get
-            {
-                return _imageWidht;
-            }
-            set
-            {
-                Set(ref _imageWidht, value);
-                logger.Info("MainViewModel|Image widht: {0}", value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ImageDpiX property.
-        /// </summary>
-        public double ImageDpiX
-        {
-            get
-            {
-                return _imageDpiX;
-            }
-            set
-            {
-                Set(ref _imageDpiX, value);
-                logger.Info("MainViewModel|Image DpiX: {0}", value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ImageDpiY property.
-        /// </summary>
-        public double ImageDpiY
-        {
-            get
-            {
-                return _imageDpiY;
-            }
-            set
-            {
-                Set(ref _imageDpiY, value);
-                logger.Info("MainViewModel|Image DpiY: {0}", value);
-            }
-        }
-
-        /// <summary>
-        /// Get the ImageDpiY property.
-        /// </summary>
-        public PixelFormat ImageFormat
-        {
-            get
-            {
-                return _imageFormat;
-            }
-            set
-            {
-                Set(ref _imageFormat, value);
-                logger.Info("MainViewModel|Image Format: {0}", value);
-            }
-        }
-        #endregion
-
         #region Graphics
         /// <summary>
         /// Get the GroupBoxGraphicTitle property.
@@ -1531,7 +1374,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _strokeThickness, value);
-                logger.Info("MainViewModel|Image StrokeThickness: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Image StrokeThickness: {0}", value);
 
             }
         }
@@ -1559,8 +1402,6 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public MainViewModel(IDataService dataService)
         {
-            try
-            {
                 logger.Info("***Program started***");
                 _dataService = dataService;
                 if (_dataService != null)
@@ -1604,18 +1445,6 @@ namespace VDGrbl.ViewModel
                            GroupBoxConsoleTitle = item.ConsoleHeader;
                        });
 
-                    _dataService.GetLaserImage(
-                       (item, error) =>
-                       {
-                           if (error != null)
-                           {
-                               logger.Error("MainViewModel|Exception GetLaserImage raised: " + error);
-                               return;
-                           }
-                           logger.Info("MainViewModel|Load laser Image window");
-                           GroupBoxImageTitle = item.LaserImageHeader;
-                       });
-
                     _dataService.GetGraphic(
                        (item, error) =>
                        {
@@ -1644,11 +1473,6 @@ namespace VDGrbl.ViewModel
                 MyRelayCommands();
                 MyMessengers();
                 logger.Info("MainViewModel|MainWindow initialization finished");
-            }
-            catch (Exception ex)
-            {
-                logger.Error("MainViewModel|Exception MainViewModel raised: " + ex.ToString());
-            }
         }
         #endregion
 
@@ -1703,7 +1527,6 @@ namespace VDGrbl.ViewModel
             StartLaserCommand = new RelayCommand(StartLaser, CanExecuteLaser);
             StopLaserCommand = new RelayCommand(StopLaser, CanExecuteLaser);
             LoadFileCommand = new RelayCommand(OpenFile, CanExecuteOpenFile);
-            LoadImageCommand = new RelayCommand(OpenImage, CanExecuteOpenImage);
             SendFileCommand = new RelayCommand(StartSendingFileAsync, CanExecuteAsyncTask);
             PauseFileCommand = new RelayCommand(PauseSendingFile, CanExecutePauseFile);
             StopFileCommand = new RelayCommand(StopSendingFileAsync, CanExecuteAsyncTask);
@@ -1727,42 +1550,27 @@ namespace VDGrbl.ViewModel
         /// <param name="settingsInit"></param>
         public void GetSerialPortSettings()
         {
-            try
-            {
                 _collectionPortName= new Collection<string>(SerialPort.GetPortNames());
                 logger.Info("MainViewModel|Get serial port names");
-            }
-            catch (Exception ex)
-            {
-                logger.Error("MainViewModel|Exception GetSerialPortSettings raised: " + ex.ToString());
-            }
         }
         /// <summary>
         /// Set default settings for serial port
         /// </summary>
         public void DefaultPortSetting()
         {
-            try
-            {
                 SelectedBaudRate = 115200;
                 IsBaudEnabled = true;
                 IsPortEnabled = true;
                 if (CollectionPortNames != null && CollectionPortNames.Count > 0)
                 {
                     SelectedPortName = CollectionPortNames[0];
-                    logger.Info("MainViewModel|Port COM{0}", SelectedPortName);
-
+                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Port COM{0}", SelectedPortName);
                 }
                 else
                 {
                     logger.Info("MainViewModel|No port COM available");
                 }
                 logger.Info("MainViewModel|Serial port default settings loaded");
-            }
-            catch (Exception ex)
-            {
-                logger.Log(LogLevel.Error, "MainViewModel|Exception DefaultPortSettings raised: " + ex.ToString());
-            }
         }
         /// <summary>
         /// Reload serial port settings and set default values.
@@ -1805,7 +1613,7 @@ namespace VDGrbl.ViewModel
                 IsPortEnabled = false;
                 StartCommunication();
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 logger.Error("MainViewModel|Exception OpenSerialPort raised: " + ex.ToString());
             }
@@ -1831,7 +1639,7 @@ namespace VDGrbl.ViewModel
                 if (!VersionGrbl.StartsWith("0.9") || !VersionGrbl.StartsWith("1.1"))//Does not work neither readline in GrblBuildInfo to check grbl version...
                 {
                     //CloseSerialPort();
-                    logger.Info("MainViewModel| Unknown device or Bad Grbl version {0}", VersionGrbl);
+                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel| Unknown device or Bad Grbl version {0}", VersionGrbl);
                 }
                 if (!currentStatusTimer.IsEnabled)
                 {
@@ -1883,16 +1691,9 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void SendData()
         {
-            try
-            {
                 WriteString(TXLine);
-                logger.Info("MainViewModel|Data TX: {0}", TXLine);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", TXLine);
                 TXLine = string.Empty;
-            }
-            catch (Exception ex)
-            {
-                logger.Error("MainViewModel|Exception SendData raised: " + ex.ToString());
-            }
         }
         /// <summary>
         /// Allow/Disallow the Senddata method to be executed
@@ -1916,7 +1717,7 @@ namespace VDGrbl.ViewModel
         {
                 //_serialPort.WriteLine(Macro1);
             WriteString(Macro1);
-                logger.Info("MainViewModel|Data TX: {0}", Macro1);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", Macro1);
         }
         public bool CanExecuteSendM1Data()
         {
@@ -1938,7 +1739,7 @@ namespace VDGrbl.ViewModel
             //_serialPort.WriteLine(Macro2);
             WriteString(Macro2);
 
-            logger.Info("MainViewModel|Data TX: {0}", Macro2);
+            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", Macro2);
         }
         public bool CanExecuteSendM2Data()
         {
@@ -1958,7 +1759,7 @@ namespace VDGrbl.ViewModel
         {
             //_serialPort.WriteLine(Macro3);
             WriteString(Macro3);
-            logger.Info("MainViewModel|Data TX: {0}", Macro3);
+            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", Macro3);
         }
         public bool CanExecuteSendM3Data()
         {
@@ -1978,7 +1779,7 @@ namespace VDGrbl.ViewModel
         {
             //_serialPort.WriteLine(Macro4);
             WriteString(Macro4);
-            logger.Info("MainViewModel|Data TX: {0}", Macro4);
+            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", Macro4);
         }
         public bool CanExecuteSendM4Data()
         {
@@ -1997,21 +1798,14 @@ namespace VDGrbl.ViewModel
         /// <param name="b"></param>
         public void WriteByte(byte b)
         {
-            try
-            {
                 if (_serialPort.IsOpen)
                 {
                     _serialPort.Write(new byte[1] { b }, 0, 1);
                     if (b != 63)//Skips current status logger with DispatcherTimer
                     {
-                        logger.Info("MainViewModel|Method WriteByte: {0}", b);
+                        logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Method WriteByte: {0}", b);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.Error("MainViewModel|Exception WriteByte raised: " + ex.ToString());
-            }
         }
         /// <summary>
         /// Writes bytes to serial port.
@@ -2020,18 +1814,11 @@ namespace VDGrbl.ViewModel
         /// <param name="lengh"></param>
         public void WriteBytes(byte[] buffer, int lengh)
         {
-            try
-            {
                 if (_serialPort.IsOpen)
                 {
                     _serialPort.Write(buffer, 0, lengh);
                     logger.Info("MainViewModel|Method WriteBytes: {0}", buffer.ToString());
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.Error("MainViewModel|Exception WriteBytes raised: " + ex.ToString());
-            }
         }
         /// <summary>
         /// Writes a string to serial port
@@ -2039,19 +1826,12 @@ namespace VDGrbl.ViewModel
         /// <param name="data"></param>
         public void WriteString(string data)
         {
-            try
-            {
                 if (_serialPort.IsOpen)
                 {
                     _serialPort.WriteLine(data);
                     TXLine = data;
                 }
                 logger.Info("MainViewModel|Method WriteString: {0} done {1}", data, _serialPort.IsOpen);
-            }
-            catch (Exception ex)
-            {
-                logger.Error("MainViewModel|Exception WriteString raised: " + ex.ToString());
-            }
         }
         /// <summary>
         /// Clears group box Send and Data received + serial port and Grbl buffers
@@ -2059,9 +1839,6 @@ namespace VDGrbl.ViewModel
         public void ClearData()
         {
             logger.Info("MainViewModel|Clear data");
-
-            try
-            {
                 if (_serialPort.IsOpen)
                 {
                     GrblReset();
@@ -2087,11 +1864,6 @@ namespace VDGrbl.ViewModel
                 PercentLine = 0;
                 RLine = 0;
                 EstimateJobTime = "00:00:00" ;
-            }
-            catch (Exception ex)
-            {
-                logger.Error("MainViewModel|Exception ClearData raised: " + ex.ToString());
-            }
         }
         /// <summary>
         /// Allow/Disallow the cleardata method to be executed
@@ -2180,7 +1952,7 @@ namespace VDGrbl.ViewModel
             Task task = Task.Run(() =>
             {
                WriteString("$$");
-               mre.WaitOne();
+               manualResetEvent.WaitOne();
                SettingCollection = new ObservableCollection<SettingItem>(ListGrblSettings);
                if (!IsRefresh)
                {
@@ -2194,7 +1966,8 @@ namespace VDGrbl.ViewModel
            },token);
             try
             {
-                await task;
+                //await task;
+                await task.ConfigureAwait(false);
                 logger.Info("MainViewModel|Task load settings completed");
             }
 
@@ -2733,8 +2506,6 @@ namespace VDGrbl.ViewModel
                 ClearData();
             }
             OpenFileDialog openFile = new OpenFileDialog();
-            try
-            {
                 logger.Info("MainViewModel|OpenFile");
                 openFile.Title = "Fichier G-code";
                 openFile.Filter = "G-Code files|*.txt;*.gcode;*.ngc;*.nc,*.cnc|Tous les fichiers|*.*";
@@ -2745,12 +2516,6 @@ namespace VDGrbl.ViewModel
                     FileName = openFile.FileName;
                     LoadFile(FileName);
                 }
-            }
-            catch(Exception ex)
-            {
-                logger.Error("MainViewModel|Exception data received raised: " + ex.ToString());
-                ResponseStatus = RespStatus.NOk;
-            }
         }
 
         /// <summary>
@@ -2829,7 +2594,7 @@ namespace VDGrbl.ViewModel
                     {
                         progress.Report(0);
                     }
-                    mre.WaitOne();//Wait for the signal ok to continue task...
+                    manualResetEvent.WaitOne();//Wait for the signal ok to continue task...
                     logger.Info("MainViewModel|mre waitone");
                     Thread.Sleep(transferDelay);
                     if (!IsSending)
@@ -2844,24 +2609,14 @@ namespace VDGrbl.ViewModel
                     }
                 }
             }, token);
-            switch (SelectedTransferDelay)
+            transferDelay = SelectedTransferDelay switch
             {
-                case "Slow":
-                    transferDelay = 2000;
-                    break;
-                case "Normal":
-                    transferDelay = 750;
-                    break;
-                case "Fast":
-                    transferDelay = 250;
-                    break;
-                case "UltraFast":
-                    transferDelay = 0;
-                    break;
-                default:
-                    transferDelay = 750;
-                    break;
-            }
+                "Slow" => 2000,
+                "Normal" => 750,
+                "Fast" => 250,
+                "UltraFast" => 0,
+                _ => 750,
+            };
             logger.Info("MainViewModel|Transfer speed:", SelectedTransferDelay);
             try
             {
@@ -2896,7 +2651,7 @@ namespace VDGrbl.ViewModel
                 NLine = FileQueue.Count;
                 FileQueue.Clear();
                 cts.Dispose();
-                mre.Dispose();
+                manualResetEvent.Dispose();
                 IsSending = false;
                 IsManualSending = true;
             }
@@ -2953,7 +2708,7 @@ namespace VDGrbl.ViewModel
                     WriteString(TXLine);
                     IsManualSending = false;
                     IsSending = true;
-                    logger.Info("MainViewModel|BytesToWrite : {0}", _serialPort.BytesToWrite);
+                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|BytesToWrite : {0}", _serialPort.BytesToWrite);
                 }
                 else
                 {
@@ -2966,54 +2721,6 @@ namespace VDGrbl.ViewModel
                 IsManualSending = true;
                 IsSending = false;
             }
-        }
-        #endregion
-
-        #region subregion Image
-        private void OpenImage()
-        {
-            OpenFileDialog openImage = new OpenFileDialog
-            {
-                DefaultExt = ".jpg",
-                Filter = "Images |*.jpg;*.jpeg;*.jpeg;*.png;*.bmp"
-            };
-            try
-            {
-                if(openImage.ShowDialog().Value && openImage.FileName.Length>0)
-                {
-                    ImageName = openImage.FileName;
-                    logger.Info("MainViewModel|Load image, filename: {0}", ImageName);
-                    LoadRasterImage(ImageName);
-                }
-            }
-            catch(Exception ex)
-            {
-                logger.Info("MainViewModel|Exception LoadImage raised: {0}", ex.ToString());
-                ResponseStatus = RespStatus.NOk;
-            }
-        }
-
-        private bool CanExecuteOpenImage()
-        {
-            return true;
-        }
-
-        public void LoadRasterImage(string fileName)
-        {
-            BitmapImage ImgSource = new BitmapImage();
-            ImgSource.BeginInit();
-            ImgSource.UriSource = new Uri(fileName);
-            RenderOptions.SetBitmapScalingMode(ImgSource, BitmapScalingMode.HighQuality);
-            ImgSource.CacheOption = BitmapCacheOption.Default;
-            ImgSource.EndInit();
-            RasterImageTool RIT = new RasterImageTool();
-            ImageTransform = RIT.BSToBlackWhite(ImgSource);
-
-            ImageHeight = ImgSource.Height;
-            ImageWidth = ImageTransform.Width;
-            ImageDpiX = ImageTransform.DpiX;
-            ImageDpiY = ImageTransform.DpiY;
-            ImageFormat = ImageTransform.Format;
         }
         #endregion
 
@@ -3036,7 +2743,6 @@ namespace VDGrbl.ViewModel
             });
         }
         #endregion
-
         
         /// <summary>
         /// Write a notification message to serial port
@@ -3053,9 +2759,9 @@ namespace VDGrbl.ViewModel
                     _serialPort.WriteLine(data);
                     TXLine = data;
                 }
-                logger.Info("MainViewModel|Method Test: {0}", data);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Method Test: {0}", data);
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 logger.Error("MainViewModel|Exception Test raised: " + ex.ToString());
             }
@@ -3070,8 +2776,6 @@ namespace VDGrbl.ViewModel
         /// <param name="e"></param>
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            try
-            {
                 string line = _serialPort.ReadLine();
                 RXLine = GCodeTool.TrimEndGcode(line);
                 Console = new ConsoleModel(TXLine, RXLine);
@@ -3086,16 +2790,16 @@ namespace VDGrbl.ViewModel
                 }
                 grbltool.DataGrblSorter(line);
                 ResponseStatus = (RespStatus)grbltool.ResponseStatus;
-                logger.Info("MainViewModel|Buf: {0}",Buf);
-                logger.Info("MainViewModel|RX: {0}",RX);
-                int b = Convert.ToInt32(Buf);
-                int r = Convert.ToInt32(RX);
-                logger.Info("MainViewModel|b: {0}",b);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Buf: {0}", Buf);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|RX: {0}", RX);
+                int b = Convert.ToInt32(Buf, CultureInfo.CurrentCulture);
+                int r = Convert.ToInt32(RX, CultureInfo.CurrentCulture);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|b: {0}", b);
                 if (ResponseStatus==RespStatus.Ok && r>0)
                 {
-                    mre.Set();
+                    manualResetEvent.Set();
                     logger.Info("mre set");
-                    mre.Reset();
+                    manualResetEvent.Reset();
                 }
                
                 MachineStatus = (MachStatus)grbltool.MachineStatus;
@@ -3125,12 +2829,6 @@ namespace VDGrbl.ViewModel
                     ListConsoleData.RemoveAt(0);
                 }
                 ListGrblSettings = grbltool.ListGrblSettings;
-            }
-            catch (Exception ex )
-                {
-                logger.Error("MainViewModel|Exception data received raised: " + ex.ToString());
-                ResponseStatus = RespStatus.NOk;
-                }
         }
 
         /// <summary>
@@ -3182,7 +2880,7 @@ namespace VDGrbl.ViewModel
             cts.Dispose();
             // TODO: supprimer les marques de commentaire pour la ligne suivante si le finaliseur est remplacé ci-dessus.
             GC.SuppressFinalize(this);
-            mre.Dispose();
+            manualResetEvent.Dispose();
         }
         #endregion
     }

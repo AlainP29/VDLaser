@@ -121,7 +121,7 @@ namespace VDGrbl.Tools
         {
             if (!string.IsNullOrEmpty(data))
             {
-                logger.Info("GrblTool|ProcessInfoResponse|Data:{0}", data);
+                logger.Info(CultureInfo.CurrentCulture, "GrblTool|ProcessInfoResponse|Data:{0}", data);
 
                 ResponseStatus = RespStatus.Ok;
                 switch (data.Length)
@@ -179,7 +179,7 @@ namespace VDGrbl.Tools
         public void ProcessResponse(string data)
         {
             ResponseStatus = RespStatus.Ok;
-            logger.Info("GrblTool|ProcessResponse|Data:{0}", data);
+            logger.Info(CultureInfo.CurrentCulture, "GrblTool|ProcessResponse|Data:{0}", data);
         }
 
         /// <summary>

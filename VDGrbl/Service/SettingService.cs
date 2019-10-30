@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using VDGrbl.Model;
 
-namespace VDGrbl.Model
+namespace VDGrbl.Service
 {
     public class SettingService : ISettingService
     {
-        public void GetSettings(Action<SettingItem, Exception> callback)
+        public void GetSetting(Action<SettingItem, Exception> callback)
         {
             var item = new SettingItem("Settings");
             callback?.Invoke(item, null);

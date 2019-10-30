@@ -1,6 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
 using NLog;
 using VDGrbl.Model;
+using VDGrbl.Service;
 
 namespace VDGrbl.ViewModel
 {

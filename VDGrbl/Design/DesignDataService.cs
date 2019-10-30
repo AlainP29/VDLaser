@@ -1,5 +1,6 @@
 ﻿using System;
 using VDGrbl.Model;
+using VDGrbl.Service;
 
 namespace VDGrbl.Design
 {
@@ -13,12 +14,6 @@ namespace VDGrbl.Design
         public void GetGCode(Action<GCodeModel, Exception> callback)
         {
             var item = new GCodeModel("G-Code file [design]");
-            callback?.Invoke(item, null);
-        }
-        
-        public void GetLaserImage(Action<LaserImageModel, Exception> callback)
-        {
-            var item = new LaserImageModel("Laser image [design]");
             callback?.Invoke(item, null);
         }
         public void GetGraphic(Action<GraphicModel, Exception> callback)
