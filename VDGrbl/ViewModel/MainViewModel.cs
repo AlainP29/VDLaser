@@ -207,6 +207,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _settingCollection, value);
+                logger.Info("MainWindowModel|SettingCollection");
             }
         }
         #endregion
@@ -273,6 +274,8 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _errorMessage, value);
+                logger.Info("MainWindowModel|ErrorMessage {0}",value);
+
             }
         }
 
@@ -289,6 +292,8 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _alarmMessage, value);
+                logger.Info("MainWindowModel|AlarmMessage {0}", value);
+
             }
         }
 
@@ -305,6 +310,8 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _infoMessage, value);
+                logger.Info("MainWindowModel|InfoMessage {0}", value);
+
             }
         }
 
@@ -321,6 +328,8 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isVerbose, value);
+                logger.Info("MainViewModel|IsVerbose {0}", value);
+
             }
         }
         /// <summary>
@@ -335,8 +344,8 @@ namespace VDGrbl.ViewModel
             }
             set
             {
-
                 Set(ref _isRefresh, value);
+                logger.Info("MainViewModel|IsRefresh {0}", value);
             }
         }
         #endregion
@@ -387,6 +396,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _txLine, value);
+                logger.Info("MainViewModel|TXLine {0}", value);
             }
         }
 
@@ -657,6 +667,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _maxLaserPower, value);
+                logger.Info("MainViewModel|Max laser power value : {0}", value);
             }
         }
 
@@ -672,6 +683,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _selectedLaser, value);
+                logger.Info("MainViewModel|Selected laser : {0}", value);
                 //MaxLaserPower = 500;
                 //WriteString("$30=500");
             }
@@ -686,6 +698,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _converterParameterLaser, value);
+                logger.Info("MainViewModel|ConverterParameterLaser : {0}", value);
             }
         }
 
@@ -701,6 +714,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isLaserEnabled, value);
+                logger.Info("MainViewModel|IsLaserEnabled : {0}", value);
             }
         }
 
@@ -829,7 +843,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _nLine, value);
-                logger.Info("MainViewmodel|Number of lines: {0}", value);
+                logger.Info("MainViewModel|Total of lines: {0}", value);
             }
         }
 
@@ -846,6 +860,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _rLine, value);
+                logger.Info("MainViewModel|Number of remaining lines: {0}", value);
             }
         }
 
@@ -862,6 +877,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _buf, value);
+                //logger.Info("MainViewmodel|Buffer: {0}", value);
             }
         }
 
@@ -878,6 +894,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _rx, value);
+                //logger.Info("MainViewmodel|RX: {0}", value);
             }
         }
 
@@ -894,7 +911,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isSending, value);
-                logger.Info("MainViewModel|Is sending {0}", value);
+                logger.Info("MainViewModel|IsSending {0}", value);
             }
         }
 
@@ -1051,6 +1068,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isPortEnabled, value);
+                logger.Info("MainViewModel|IsPortEnabled: {0}", value);
             }
         }
 
@@ -1066,6 +1084,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isBaudEnabled, value);
+                logger.Info("MainViewModel|IsBaudEnabled: {0}", value);
             }
         }
         #endregion
@@ -1084,6 +1103,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _versionGrbl, value);
+                logger.Info("MainViewModel|VersionGrbl : {0}", value);
             }
         }
 
@@ -1100,9 +1120,10 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _buildInfoGrbl, value);
+                logger.Info("MainViewModel|BuildInfoGrbl : {0}", value);
+
             }
         }
-        
         #endregion
 
         #region subregion machine state
@@ -1332,7 +1353,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _imageHeight, value);
-                logger.Info("MainViewModel|Image height");
+                logger.Info("MainViewModel|Image height: {0}",value);
             }
         }
 
@@ -1348,7 +1369,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _imageWidht, value);
-                logger.Info("MainViewModel|Image widht");
+                logger.Info("MainViewModel|Image widht: {0}", value);
             }
         }
 
@@ -1364,7 +1385,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _imageDpiX, value);
-                logger.Info("MainViewModel|Image DpiX");
+                logger.Info("MainViewModel|Image DpiX: {0}", value);
             }
         }
 
@@ -1380,7 +1401,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _imageDpiY, value);
-                logger.Info("MainViewModel|Image DpiY");
+                logger.Info("MainViewModel|Image DpiY: {0}", value);
             }
         }
 
@@ -1396,7 +1417,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _imageFormat, value);
-                logger.Info("MainViewModel|Image Format");
+                logger.Info("MainViewModel|Image Format: {0}", value);
             }
         }
         #endregion
@@ -1478,6 +1499,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _fill, value);
+                logger.Info("MainViewModel|Image Fill: {0}", value);
             }
         }
         /// <summary>
@@ -1493,6 +1515,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _stroke, value);
+                logger.Info("MainViewModel|Image Stroke: {0}", value);
             }
         }
         /// <summary>
@@ -1508,6 +1531,8 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _strokeThickness, value);
+                logger.Info("MainViewModel|Image StrokeThickness: {0}", value);
+
             }
         }
         /// <summary>
@@ -1536,7 +1561,7 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                logger.Info("---Program started ! ---");
+                logger.Info("***Program started***");
                 _dataService = dataService;
                 if (_dataService != null)
                 {
@@ -1545,7 +1570,7 @@ namespace VDGrbl.ViewModel
                         {
                             if (error != null)
                             {
-                                logger.Error("MainViewModel|Exception GetPortSettings raised: " + error);
+                                logger.Error("MainViewModel|Exception GetSerialPortSetting raised: " + error);
                                 return;
                             }
                             logger.Info("MainViewModel|Load serial port window");
@@ -1559,7 +1584,7 @@ namespace VDGrbl.ViewModel
                         {
                             if (error != null)
                             {
-                                logger.Error("MainViewModel|Exception GCodeFile raised: " + error);
+                                logger.Error("MainViewModel|Exception GetGCode raised: " + error);
                                 return;
                             }
                             logger.Info("MainViewModel|Load GCode window");
@@ -1572,7 +1597,7 @@ namespace VDGrbl.ViewModel
                        {
                            if (error != null)
                            {
-                               logger.Error("MainViewModel|Exception Console raised: " + error);
+                               logger.Error("MainViewModel|Exception GetConsole raised: " + error);
                                return;
                            }
                            logger.Info("MainViewModel|Load Console window");
@@ -1584,10 +1609,10 @@ namespace VDGrbl.ViewModel
                        {
                            if (error != null)
                            {
-                               logger.Error("MainViewModel|Exception GCodeFile raised: " + error);
+                               logger.Error("MainViewModel|Exception GetLaserImage raised: " + error);
                                return;
                            }
-                           logger.Info("MainViewModel|Load Image window");
+                           logger.Info("MainViewModel|Load laser Image window");
                            GroupBoxImageTitle = item.LaserImageHeader;
                        });
 
@@ -1596,10 +1621,10 @@ namespace VDGrbl.ViewModel
                        {
                            if (error != null)
                            {
-                               logger.Error("MainViewModel|Exception GCodeFile raised: " + error);
+                               logger.Error("MainViewModel|Exception GetGraphic raised: " + error);
                                return;
                            }
-                           logger.Info("MainViewModel|Load Image window");
+                           logger.Info("MainViewModel|Load Graphic window");
                            GroupBoxGraphicTitle = item.GraphicHeader;
                        });
 
@@ -1608,10 +1633,10 @@ namespace VDGrbl.ViewModel
                        {
                            if (error != null)
                            {
-                               logger.Error("MainViewModel|Exception Jogging raised: " + error);
+                               logger.Error("MainViewModel|Exception GetJogging raised: " + error);
                                return;
                            }
-                           logger.Info("MainViewModel|Load Image window");
+                           logger.Info("MainViewModel|Load Jogging window");
                            GroupBoxJoggingTitle = item.JoggingHeader;
                        });
                 }
@@ -1628,6 +1653,7 @@ namespace VDGrbl.ViewModel
         #endregion
 
         #region Methods
+        #region subregion relaycommands & messengers
         /// <summary>
         /// List of RelayCommands (MVVM) bind to button in ViewModels
         /// </summary>
@@ -1686,12 +1712,13 @@ namespace VDGrbl.ViewModel
             logger.Info("MainViewModel|All RelayCommands loaded");
         }
         /// <summary>
-        /// Used to communicate between ViewModels
+        /// Used to communicate between ViewModels: SettingViewModel
         /// </summary>
         private void MyMessengers()
         {
             MessengerInstance.Register<NotificationMessage>(this, Test);
         }
+        #endregion
 
         #region subregion serial port method
         /// <summary>
@@ -1702,7 +1729,6 @@ namespace VDGrbl.ViewModel
         {
             try
             {
-                //ListPortNames = SerialPort.GetPortNames();
                 _collectionPortName= new Collection<string>(SerialPort.GetPortNames());
                 logger.Info("MainViewModel|Get serial port names");
             }
@@ -1711,11 +1737,10 @@ namespace VDGrbl.ViewModel
                 logger.Error("MainViewModel|Exception GetSerialPortSettings raised: " + ex.ToString());
             }
         }
-
         /// <summary>
         /// Set default settings for serial port
         /// </summary>
-        public void DefaultPortSettings()
+        public void DefaultPortSetting()
         {
             try
             {
@@ -1739,7 +1764,6 @@ namespace VDGrbl.ViewModel
                 logger.Log(LogLevel.Error, "MainViewModel|Exception DefaultPortSettings raised: " + ex.ToString());
             }
         }
-
         /// <summary>
         /// Reload serial port settings and set default values.
         /// </summary>
@@ -1747,7 +1771,7 @@ namespace VDGrbl.ViewModel
         {
             logger.Info("MainViewModel|Refresh serial port");
             GetSerialPortSettings();
-            DefaultPortSettings();
+            DefaultPortSetting();
         }
         /// <summary>
 /// Allows/Disallows RefreshSerialPort method to be executed.
@@ -1757,7 +1781,6 @@ namespace VDGrbl.ViewModel
         {
                 return !_serialPort.IsOpen;
         }
-
         /// <summary>
         /// Starts serial port communication
         /// </summary>
@@ -1795,7 +1818,6 @@ namespace VDGrbl.ViewModel
         {
             return !_serialPort.IsOpen && !String.IsNullOrEmpty(SelectedPortName);
         }
-
         /// <summary>
         /// Start timer and infos
         /// </summary>
@@ -1815,16 +1837,14 @@ namespace VDGrbl.ViewModel
                 {
                     InitializeDispatcherTimer();
                 }
-
             }
             else
             {
                 Cleanup();
                 CloseSerialPort();
-                logger.Info("MainViewModel| Wrong com port", VersionGrbl);
+                logger.Info("MainViewModel|Wrong com port", VersionGrbl);
             }
         }
-
         /// <summary>
     /// End serial port communication
     /// </summary>
@@ -1838,7 +1858,6 @@ namespace VDGrbl.ViewModel
                 IsBaudEnabled = true;//In cleanup?
                 IsPortEnabled = true;
             }
-            //catch (Exception ex)
             catch(InvalidOperationException ex)
             {
                 logger.Error(ex.GetType().FullName);
@@ -1846,13 +1865,11 @@ namespace VDGrbl.ViewModel
                 logger.Error("MainViewModel|Exception CloseSerialPort raised: " + ex.ToString());
             }
             finally
-                {
+            {
                 Cleanup();
                 logger.Info("MainViewModel|Port COM closed");
             }
-            
         }
-
         /// <summary>
         /// Allow/Disallow CloseSerialPort method to be executed
         /// </summary>
@@ -1861,7 +1878,6 @@ namespace VDGrbl.ViewModel
         {
             return _serialPort.IsOpen;
         }
-
         /// <summary>
         /// Sends G-code or Grb data (TXLine in manual Send data group box) to serial port.
         /// </summary>
@@ -1878,7 +1894,6 @@ namespace VDGrbl.ViewModel
                 logger.Error("MainViewModel|Exception SendData raised: " + ex.ToString());
             }
         }
-
         /// <summary>
         /// Allow/Disallow the Senddata method to be executed
         /// </summary>
@@ -1894,7 +1909,6 @@ namespace VDGrbl.ViewModel
             }
             return false;
         }
-
         /// <summary>
         /// Sends Macro1 to serial port.
         /// </summary>
@@ -1916,7 +1930,6 @@ namespace VDGrbl.ViewModel
             }
             return false;
         }
-
         /// <summary>
         /// Sends Macro2 to serial port.
         /// </summary>
@@ -1938,7 +1951,6 @@ namespace VDGrbl.ViewModel
             }
             return false;
         }
-
         /// <summary>
         /// Sends Macro3 to serial port.
         /// </summary>
@@ -1959,7 +1971,6 @@ namespace VDGrbl.ViewModel
             }
             return false;
         }
-
         /// <summary>
         /// Sends Macro4 to serial port.
         /// </summary>
@@ -1980,7 +1991,6 @@ namespace VDGrbl.ViewModel
             }
             return false;
         }
-
         /// <summary>
         /// Writes byte (7 bits) to serial port.
         /// </summary>
@@ -2003,7 +2013,6 @@ namespace VDGrbl.ViewModel
                 logger.Error("MainViewModel|Exception WriteByte raised: " + ex.ToString());
             }
         }
-
         /// <summary>
         /// Writes bytes to serial port.
         /// </summary>
@@ -2024,7 +2033,6 @@ namespace VDGrbl.ViewModel
                 logger.Error("MainViewModel|Exception WriteBytes raised: " + ex.ToString());
             }
         }
-
         /// <summary>
         /// Writes a string to serial port
         /// </summary>
@@ -2038,15 +2046,13 @@ namespace VDGrbl.ViewModel
                     _serialPort.WriteLine(data);
                     TXLine = data;
                 }
-                logger.Info("MainViewModel|Method WriteString: {0}", data);
+                logger.Info("MainViewModel|Method WriteString: {0} done {1}", data, _serialPort.IsOpen);
             }
             catch (Exception ex)
             {
                 logger.Error("MainViewModel|Exception WriteString raised: " + ex.ToString());
             }
         }
-        
-
         /// <summary>
         /// Clears group box Send and Data received + serial port and Grbl buffers
         /// </summary>
@@ -2655,27 +2661,28 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void DefaultSettings()
         {
-            DefaultPortSettings();
-            DefaultLaserSettings();
-            DefaultGraphicSettings();
+            DefaultPortSetting();
+            DefaultLaserSetting();
+            DefaultGraphicSetting();
         }
 
         /// <summary>
         /// Set default laser settings
         /// </summary>
-        public void DefaultLaserSettings()
+        public void DefaultLaserSetting()
         {
-            SelectedLaser=2500;
+            LaserPower = 0;
+            LaserColor = Brushes.LightGray;
+            SelectedLaser = 2500;
             MaxLaserPower = SelectedLaser;
             ConverterParameterLaser = 25;
-            logger.Info("MainWindows|Default laser settings");
-
+            logger.Info("MainViewModel|Default laser settings completed");
         }
 
         /// <summary>
         /// Set default graphic settings
         /// </summary>
-        public void DefaultGraphicSettings()
+        public void DefaultGraphicSetting()
         {
             GraphicTool gt = new GraphicTool();
             GcodePaths.Add(new GraphicModel
@@ -2685,7 +2692,7 @@ namespace VDGrbl.ViewModel
                 GraphicStroke = Stroke,
                 GraphicStrokeThickness = StrokeThickness,
             });
-            logger.Info("MainWindows|Default Coordinate Plane");
+            logger.Info("MainViewModel|Default Coordinate Plane");
         }
 
         /// <summary>
@@ -2693,7 +2700,6 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public override void Cleanup()
         {
-            // Clean up if needed
             if (currentStatusTimer.IsEnabled)
             {
                 currentStatusTimer.Stop();
@@ -2729,6 +2735,7 @@ namespace VDGrbl.ViewModel
             OpenFileDialog openFile = new OpenFileDialog();
             try
             {
+                logger.Info("MainViewModel|OpenFile");
                 openFile.Title = "Fichier G-code";
                 openFile.Filter = "G-Code files|*.txt;*.gcode;*.ngc;*.nc,*.cnc|Tous les fichiers|*.*";
                 openFile.FilterIndex = 1;
@@ -2737,7 +2744,6 @@ namespace VDGrbl.ViewModel
                 {
                     FileName = openFile.FileName;
                     LoadFile(FileName);
-                    logger.Info("MainViewModel|OpenFile1");
                 }
             }
             catch(Exception ex)
@@ -2755,13 +2761,11 @@ namespace VDGrbl.ViewModel
         {
             if (_serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
             {
-                logger.Info("MainViewModel|OpenFile");
                 return true;
             }
             //else return false;
             else
             {
-                logger.Info("MainViewModel|OpenFile");
                 return true;
             }
         }
@@ -2791,9 +2795,9 @@ namespace VDGrbl.ViewModel
             }
             NLine = FileQueue.Count;
             RLine = NLine;
-            logger.Info("MainWindow| Get GCode FileList");
+            logger.Info("MainViewModel|Get GCode FileList");
             gcodeTool = new GCodeTool(FileList);
-            logger.Info("MainWindow| Get GCode PointCollection");
+            logger.Info("MainViewModel|Get GCode PointCollection");
             //GCodePoints = gcodeTool.GetGCodePointCollection(50,50);
             GCodePoints = gcodeTool.GetGCodePointCollection(10, 10, 0.5);
             TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
@@ -2826,7 +2830,7 @@ namespace VDGrbl.ViewModel
                         progress.Report(0);
                     }
                     mre.WaitOne();//Wait for the signal ok to continue task...
-                    logger.Info("mre Waitone");
+                    logger.Info("MainViewModel|mre waitone");
                     Thread.Sleep(transferDelay);
                     if (!IsSending)
                     {
@@ -2949,7 +2953,7 @@ namespace VDGrbl.ViewModel
                     WriteString(TXLine);
                     IsManualSending = false;
                     IsSending = true;
-                    logger.Info("BytesToWrite : {0}",_serialPort.BytesToWrite);
+                    logger.Info("MainViewModel|BytesToWrite : {0}", _serialPort.BytesToWrite);
                 }
                 else
                 {
@@ -3021,7 +3025,7 @@ namespace VDGrbl.ViewModel
         {
             GraphicTool graphicTool = new GraphicTool(pc);
 
-            logger.Info("MainWindows|GrblTest Geometry");
+            logger.Info("MainViewModel|GrblTest Geometry");
 
             GcodePaths.Add(new GraphicModel
             {
@@ -3036,7 +3040,7 @@ namespace VDGrbl.ViewModel
         
         /// <summary>
         /// Write a notification message to serial port
-        /// This is a test command bind to TEST button for development purpose only.
+        /// This is a test command bind to TEST button in SettingViewModel for development purpose only.
         /// </summary>
         /// <param name="notificationMessage"></param>
         public void Test(NotificationMessage notificationMessage)
@@ -3082,11 +3086,11 @@ namespace VDGrbl.ViewModel
                 }
                 grbltool.DataGrblSorter(line);
                 ResponseStatus = (RespStatus)grbltool.ResponseStatus;
-                logger.Info(Buf);
-                logger.Info(RX);
+                logger.Info("MainViewModel|Buf: {0}",Buf);
+                logger.Info("MainViewModel|RX: {0}",RX);
                 int b = Convert.ToInt32(Buf);
                 int r = Convert.ToInt32(RX);
-                logger.Info(b);
+                logger.Info("MainViewModel|b: {0}",b);
                 if (ResponseStatus==RespStatus.Ok && r>0)
                 {
                     mre.Set();
@@ -3116,7 +3120,7 @@ namespace VDGrbl.ViewModel
                 BuildInfoGrbl = grbltool.BuildInfo;
                 InfoMessage = grbltool.InfoMessage;
                 ConsoleData = new ObservableCollection<ConsoleModel>(ListConsoleData);
-                if (ListConsoleData.Count>4)//Number of lines showed in data console
+                if (ListConsoleData.Count>5)//Number of lines showed in data console
                 {
                     ListConsoleData.RemoveAt(0);
                 }

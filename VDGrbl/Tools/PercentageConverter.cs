@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using NLog;
 
 namespace VDGrbl.Tools
 {
@@ -10,20 +11,25 @@ namespace VDGrbl.Tools
     [ValueConversion(typeof(object), typeof(double))]
     public class PercentageConverter : IValueConverter
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            double b = (double)value;
+            if (targetType != typeof(string))
+            {
+                logger.Error("PercentageConverter|The target must be a double");
+            }
+            if (value != null)
+            {
+                double b = (double)value;
 
-            if (targetType != typeof(double))
-            {
-                //throw new InvalidOperationException("The target must be a double");
+                if (parameter != null)//Parameter is a factor: max value/parameter=100
+                {
+                    int p = System.Convert.ToInt32(parameter, CultureInfo.CurrentCulture);
+                    return b / (100 * p);
+                }
+                return b / 100;
             }
-            if(parameter!=null)//Parameter is a factor: max value/parameter=100
-            {
-                int p = System.Convert.ToInt32(parameter,CultureInfo.CurrentCulture);
-                return b/(100*p);
-            }
-            return b / 100;
+            return null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

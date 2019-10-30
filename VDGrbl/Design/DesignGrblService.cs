@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VDGrbl.Model;
 
 namespace VDGrbl.Design
 {
-    public class DesignGrblService:IGrblService
+    public class DesignGrblService : IGrblService
     {
         public void GetMachineState(Action<GrblItems, Exception> callback)
         {

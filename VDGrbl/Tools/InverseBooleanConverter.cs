@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using NLog;
 
 namespace VDGrbl.Tools
 {
@@ -10,17 +11,23 @@ namespace VDGrbl.Tools
     [ValueConversion(typeof(bool), typeof(bool))]
     public class InverseBooleanConverter : IValueConverter
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (targetType != typeof(bool))
             {
-                //throw new InvalidOperationException("The target must be a boolean");
+                logger.Error("InverseBooleanConverter|The target must be a boolean");
             }
-            if (parameter != null)
+            if (value != null)
             {
-                return !System.Convert.ToBoolean(value, CultureInfo.CurrentCulture);
+            if (parameter != null)
+                {
+                    return !System.Convert.ToBoolean(value, CultureInfo.CurrentCulture);
+                }
+                else
+                    return !System.Convert.ToBoolean(value, CultureInfo.CurrentCulture);
             }
-            return !System.Convert.ToBoolean(value, CultureInfo.CurrentCulture);
+            return null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

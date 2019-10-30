@@ -65,7 +65,12 @@ namespace VDGrbl.ViewModel
                 return ServiceLocator.Current.GetInstance<MainViewModel>();
             }
         }
-
+        /// <summary>
+        /// Gets the Setting property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
+            "CA1822:MarkMembersAsStatic",
+            Justification = "This non-static member is needed for data binding purposes.")]
         public SettingViewModel Setting
         {
             get
@@ -73,7 +78,6 @@ namespace VDGrbl.ViewModel
                 return ServiceLocator.Current.GetInstance<SettingViewModel>();
             }
         }
-
         public GrblViewModel Grbl
         {
             get

@@ -6,9 +6,9 @@
         xmlns:ignore="http://www.galasoft.ch/ignore"
         xmlns:local="clr-namespace:VDGrbl.View"
         mc:Ignorable="d ignore"
-        Height="540"
+        Height="560"
         Width="890"
-        Title="VDLaser v0.3.7" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Title="VDLaser v0.3.8" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Main, Mode=OneWay, Source={StaticResource Locator}}">
@@ -19,21 +19,17 @@
         <!--Connection and display area-->
         <StackPanel>
             <local:SerialPortSettingView Margin="1,1,1.4,1" Width="Auto" Height="149"/>
-            <local:MachineStateView Margin="1" Width="Auto" Height="Auto"/>
-            <local:ControlView Margin="1" Width="Auto" Height="Auto"/>
+            <local:MachineStateView Margin="0 5 0 5" Width="Auto" Height="Auto"/>
+            <local:ControlView Margin="0 5 0 5" Width="Auto" Height="Auto"/>
         </StackPanel>
         <!--Jogging area + settings informations-->
         <StackPanel Grid.Column="2">
             <TabControl >
                 <TabItem Header="Jogging" Style="{DynamicResource ControlStyleVD}">
-                    <Grid Background="#FFE5E5E5" Height="320">
+                    <Grid Background="#FFE5E5E5" Height="300">
                         <StackPanel Orientation="Horizontal">
                             <!--Send/receive data area + manual laser control-->
-                            <StackPanel>
-                                <local:SendDataView Margin="1" Width="Auto" Height="Auto"/>
-                                <local:LaserView Margin="1" Width="Auto" Height="Auto"/>
-                            </StackPanel>
-                            <local:JoggingView Margin="1" VerticalAlignment="Top"/>
+                            <local:JoggingView Margin="1,1,1,0" VerticalAlignment="Top" Width="575" Height="300"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
@@ -56,17 +52,9 @@
                         </StackPanel>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Laser image" Style="{DynamicResource ControlStyleVD}" IsEnabled="False">
-                    <Grid Background="#FFE5E5E5" Height="300" Margin="0">
-                        <!-- Grbl laser image-->
-                        <StackPanel Orientation="Horizontal">
-                            <local:ImageView Margin="1,1,1,0" Height="290" Width="560" VerticalAlignment="Top"/>
-                        </StackPanel>
-                    </Grid>
-                </TabItem>
             </TabControl>
             <DockPanel>
-                <local:ConsoleView Margin="1" Height="Auto" Width="Auto"/>
+                <local:ConsoleView Margin="1" Height="197" Width="Auto"/>
             </DockPanel>
         </StackPanel>
     </Grid>

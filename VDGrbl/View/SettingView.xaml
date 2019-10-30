@@ -11,7 +11,7 @@
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <!--Grbl command and setting informations (command '$$'). 
         It populates the grid with ID, value and description from Codes folder-->
-        <GroupBox Header="{Binding Settings.GroupBoxSettingTitle}" Margin="5" 
+        <GroupBox Header="{Binding Setting.GroupBoxSettingTitle}" Margin="5" 
                   Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding Main.IsManualSending}">
             <Grid Margin="0,10,-0.4,-0.6" >
                 <Grid.ColumnDefinitions>

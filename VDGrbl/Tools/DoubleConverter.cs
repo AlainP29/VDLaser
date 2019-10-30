@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using NLog;
 
 namespace VDGrbl.Tools
 {
@@ -8,19 +9,24 @@ namespace VDGrbl.Tools
     /// Convert an object to double. Use in Xaml GCodeFileView.
     /// </summary>
     [ValueConversion(typeof(object), typeof(double))]
-    public class DoubleConverter:IValueConverter
+    public class DoubleConverter : IValueConverter
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (targetType != typeof(object))
+            if (targetType != typeof(string))
             {
-                //throw new InvalidOperationException("The target must be a double");
+                logger.Error("DoubleConverter|The target must be a double");
             }
-            if(parameter!=null)
+            if (value != null)
             {
-                return System.Convert.ToDouble(value,CultureInfo.CurrentCulture);
+                if (parameter != null)
+                {
+                    return System.Convert.ToDouble(value, CultureInfo.CurrentCulture);
+                }
+                return System.Convert.ToDouble(value, CultureInfo.CurrentCulture);
             }
-            return System.Convert.ToDouble(value, CultureInfo.CurrentCulture);
+            return null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

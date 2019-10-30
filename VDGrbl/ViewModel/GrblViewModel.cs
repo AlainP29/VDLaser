@@ -55,10 +55,10 @@ namespace VDGrbl.ViewModel
                         {
                             if (error != null)
                             {
-                                logger.Error("SettingViewModel|Exception setting raised: " + error);
+                                logger.Error("GrblViewModel|Exception setting raised: " + error);
                                 return;
                             }
-                            logger.Info("GrblViewModel|Load setting window");
+                            logger.Info("GrblViewModel|Load machine state window");
                             GroupBoxMachineStateTitle = item.MachineStateHeader;
                         });
 
@@ -70,7 +70,7 @@ namespace VDGrbl.ViewModel
                                 logger.Error("GrblViewModel|Exception controle raised: " + error);
                                 return;
                             }
-                            logger.Info("GrblViewModel|Load setting window");
+                            logger.Info("GrblViewModel|Load controle window");
                             GroupBoxControleTitle = item.ControleHeader;
                         });
             }

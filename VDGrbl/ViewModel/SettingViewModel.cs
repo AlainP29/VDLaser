@@ -21,6 +21,9 @@ namespace VDGrbl.ViewModel
         #endregion
 
         #region Messenger
+        /// <summary>
+        /// Used to communicate between ViewModels: MainViewModel
+        /// </summary>
         public void SendSettingMessage()
         {
             MessengerInstance.Send<NotificationMessage>(new NotificationMessage("$$"));
@@ -60,7 +63,7 @@ namespace VDGrbl.ViewModel
                                 logger.Error("SettingViewModel|Exception setting raised: " + error);
                                 return;
                             }
-                            logger.Info("SettingsViewModel|Load setting window");
+                            logger.Info("SettingViewModel|Load settings window");
                             GroupBoxSettingTitle = item.SettingHeader;
                         });
                 SettingRelayCommands();

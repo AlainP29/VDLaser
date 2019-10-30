@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDGrbl.Tools"
-             mc:Ignorable="d" Height="300" Width="270" DataContext="{Binding Source={StaticResource Locator}}">
+             mc:Ignorable="d" Height="300" Width="550" DataContext="{Binding Source={StaticResource Locator}}">
     <UserControl.InputBindings>
         <KeyBinding Key="NumPad1" Command="{Binding Main.JogSWCommand, Mode=OneWay}" 
                     CommandParameter="{Binding Main.IsSelectedKeyboard}"/>
@@ -28,15 +28,121 @@
                     CommandParameter="{Binding Main.IsSelectedKeyboard}" Modifiers="Ctrl"/>
         <KeyBinding Key="Up" Command="{Binding Main.IncreaseFeedRateCommand, Mode=OneWay}" 
                     CommandParameter="{Binding Main.IsSelectedKeyboard}" Modifiers="Ctrl"/>
+    <!--When keyboard is selected, use up/down+alt key to increase and decrease laser power-->
+        <KeyBinding Key="Down" Command="{Binding Main.DecreaseLaserPowerCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}" Modifiers="Alt"/>
+        <KeyBinding Key="Up" Command="{Binding Main.IncreaseLaserPowerCommand, Mode=OneWay}" CommandParameter="{Binding Main.IsSelectedKeyboard}" Modifiers="Alt"/>
     </UserControl.InputBindings>
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
+        <local:PercentageConverter x:Key="ConvertPercentage"/>
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        
+            <Grid>
+            <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <!--Show all the data sent manually/Jog/buttons to the Arduino. no stack, new data erase old data -->
+                <Grid IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" Grid.Column="0">
+                    <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="4*"/>
+                </Grid.RowDefinitions>
+                
+                    <StackPanel Orientation="Horizontal">
+                    
+                    <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                             VerticalContentAlignment="Center" 
+                             Text="{Binding Main.TXLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             Width="120">
+                        <TextBox.InputBindings>
+                            <KeyBinding Command="{Binding Main.SendCommand}" Key="Return"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button  Content="Send" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" 
+                             Width="75" 
+                             Command="{Binding Main.SendCommand, Mode=OneWay}"/>
+                    <TextBox  Text="{Binding Main.ResponseStatus, Mode=OneWay}" Margin="5" 
+                              VerticalContentAlignment="Center" 
+                              HorizontalContentAlignment="Center" Width="30" VerticalAlignment="Center" 
+                              IsReadOnly="True" 
+                              IsEnabled="False"/>
+                </StackPanel>
+                <!--Macro area: lines of G-code-->
+                <StackPanel Grid.Row="1" >
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M1" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
+                             Command="{Binding Main.SendM1Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                             VerticalContentAlignment="Center" 
+                             Text="{Binding Main.Macro1}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
+                             Command="{Binding Main.SendM2Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding Main.Macro2}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M3" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
+                             Command="{Binding Main.SendM3Command, Mode=OneTime}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding Main.Macro3}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M4" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
+                             Command="{Binding Main.SendM4Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding Main.Macro4}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+        <GroupBox Header="Laser" Style="{DynamicResource GroupBoxStyleVD}" Margin="0 10 0 0">
+                            <Grid Margin="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <!--Power on/off laser + indicator-->
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <RadioButton x:Name="ToggleBoutonLaserON" Content="ON" Margin="20,0,0,0" Background="LightGray" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" Command="{Binding Main.StartLaserCommand, Mode=OneWay}" 
+                                 Height="30" Width="30"/>
+                                    <RadioButton x:Name="ToggleBoutonLaserOFF" Content="OFF" Margin="20,0,0,0" Height="30" Width="30" 
+                                 Background="LightGray" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" 
+                                 Command="{Binding Main.StopLaserCommand, Mode=OneWay}"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding Main.ListLaser}" SelectedValue="{Binding Main.SelectedLaser}" 
+                              HorizontalAlignment="Center" Width="75" VerticalContentAlignment="Center" Margin="90 0 0 0" 
+                              VerticalAlignment="Center" IsEnabled="{Binding Main.IsLaserEnabled}"/>
+                                </StackPanel>
+                                <!--laser power-->
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" >
+                                    <Label Content="Power:" VerticalContentAlignment="Center"/>
+                                    <Slider x:Name="SliderPLaser" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center" 
+                            Width="150" TickPlacement="TopLeft" Maximum="{Binding Main.MaxLaserPower, Mode=OneWay}" 
+                            IsSnapToTickEnabled="True" 
+                            LargeChange="100" 
+                            Height="30" BorderThickness="1" Cursor="Hand" SmallChange="1" SelectionEnd="100" 
+                            Value="{Binding Main.LaserPower}"/>
+                                    <TextBox HorizontalAlignment="Left" Height="30" Margin="0,0,0,0" TextWrapping="Wrap" 
+                             Text="{Binding Value, ConverterParameter=25, Converter={StaticResource ConvertPercentage}, ElementName=SliderPLaser, Mode=TwoWay, StringFormat=\{0:P\}, UpdateSourceTrigger=PropertyChanged}" 
+                             VerticalAlignment="Center" Width="60" VerticalContentAlignment="Center" IsEnabled="False" 
+                             HorizontalContentAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </GroupBox>
+                    </StackPanel>
+            </Grid>
         <!--Use to move the machine with buttons or keyboard-->
-        <GroupBox Header="{Binding Main.GroupBoxJoggingTitle}" Margin="5,5,5,5" Style="{DynamicResource GroupBoxStyleVD}" 
-                  IsEnabled="{Binding Main.IsManualSending}">
-            <StackPanel>
+                <GroupBox Header="{Binding Main.GroupBoxJoggingTitle}" Margin="5,5,5,5" Style="{DynamicResource GroupBoxStyleVD}" 
+                  IsEnabled="{Binding Main.IsManualSending}" Grid.Column="1">
+                <StackPanel>
                 <!--Buttons move all directions X, Y, Z-->
                 <Grid Margin="0" Width="160" Height="150" 
                       IsEnabled="{Binding Main.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
@@ -197,6 +303,7 @@
                               IsChecked="{Binding Main.IsSelectedMetric}"/>
                 </StackPanel>
             </StackPanel>
-        </GroupBox>
+                </GroupBox>
+            </Grid>
     </Grid>
 </UserControl>

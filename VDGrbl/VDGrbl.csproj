@@ -151,23 +151,14 @@
     <Compile Include="View\MachineStateView.xaml.cs">
       <DependentUpon>MachineStateView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\ImageView.xaml.cs">
-      <DependentUpon>ImageView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\JoggingView.xaml.cs">
       <DependentUpon>JoggingView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\LaserView.xaml.cs">
-      <DependentUpon>LaserView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SettingView.xaml.cs">
       <DependentUpon>SettingView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ConsoleView.xaml.cs">
       <DependentUpon>ConsoleView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\SendDataView.xaml.cs">
-      <DependentUpon>SendDataView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SerialPortSettingView.xaml.cs">
       <DependentUpon>SerialPortSettingView.xaml</DependentUpon>
@@ -188,17 +179,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\ImageView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\JoggingView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="View\LaserView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\SettingView.xaml">
       <SubType>Designer</SubType>
@@ -221,10 +204,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="View\ConsoleView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\SendDataView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

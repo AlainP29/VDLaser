@@ -14,16 +14,20 @@ namespace VDGrbl.Tools
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
         {
-            bool b = (bool)value;
-            if (targetType != typeof(bool))
+            if (targetType != typeof(Brush))
             {
                 logger.Error("BrushColorConverter|The target must be a boolean");
             }
-            if (parameter != null)
+            if (value != null)
             {
+                bool b = (bool)value;
+                if (parameter != null)
+                {
+                    return b ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.OrangeRed);
+                }
                 return b ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.OrangeRed);
             }
-            return b ? new SolidColorBrush(Colors.LightGreen) : new SolidColorBrush(Colors.OrangeRed);
+            return null;
         }
 
         public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)

@@ -13,17 +13,24 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="2.3*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="0.7*"/>
+                    <RowDefinition Height="1.8*"/>
+                    <RowDefinition Height="0.7*"/>
                 </Grid.RowDefinitions>
                 <!--Display the report state: current machine status and laser led-->
                 <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" >
-                <TextBox Name="TextBoxMachineStatus" Margin="110 0 0 0" VerticalContentAlignment="Center" 
-                         HorizontalContentAlignment="Center" Background="{Binding Main.MachineStatusColor}"
+                <TextBox Name="TextBoxMachineStatus" 
+                         Margin="110 0 0 0" 
+                         VerticalContentAlignment="Center" 
+                         HorizontalContentAlignment="Center" 
+                         Background="{Binding Main.MachineStatusColor}"
                          Text="{Binding Main.MachineStatus, StringFormat={}{0}}" Height="24" Width="60" IsEnabled="False"/>
-                <Ellipse Height="20" Margin="75,8,0,7.2" Stroke="#FFABADB3" VerticalAlignment="Center" Width="20" 
-                             Fill="{Binding Main.LaserColor}" />
+                <Ellipse Height="20" 
+                         Margin="75,8,0,7.2" 
+                         Stroke="#FFABADB3" 
+                         VerticalAlignment="Center" 
+                         Width="20" 
+                         Fill="{Binding Main.LaserColor}" />
                 </StackPanel>
                 <!--Display the machine X-Y coordinates: real time machine and work position-->
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Row="1" Margin="1">
@@ -37,11 +44,32 @@
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Label Content=" MPos" HorizontalAlignment="Center" Grid.ColumnSpan="2"/>
-                            <Label Grid.Column="0" Grid.Row="1" Content="X" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                            <Label Grid.Column="1" Grid.Row="1" Content="Y" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                            <Label Grid.Column="0" Grid.Row="2" Content="{Binding Main.MPosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                            <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.MPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                            <Label Content=" MPos" 
+                                   VerticalContentAlignment="Top"
+                                   HorizontalAlignment="Center" 
+                                   Grid.ColumnSpan="2"/>
+                            <Label Grid.Column="0" 
+                                   Grid.Row="1" 
+                                   Content="X" 
+                                   VerticalContentAlignment="Top" 
+                                   HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="1" 
+                                   Grid.Row="1" 
+                                   Content="Y" 
+                                   VerticalContentAlignment="Top" 
+                                   HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="0" 
+                                   Grid.Row="2" 
+                                   Content="{Binding Main.MPosX, Mode=OneWay}" 
+                                   Margin="1" 
+                                   VerticalContentAlignment="Top" 
+                                   HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="1" 
+                                   Grid.Row="2" 
+                                   Content="{Binding Main.MPosY, Mode=OneWay}" 
+                                   Margin="1" 
+                                   VerticalContentAlignment="Top" 
+                                   HorizontalContentAlignment="Center"/>
                         </Grid>
                 </Border>
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1" Grid.Row="1" Margin="1">
@@ -55,24 +83,55 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Label Content=" WPos"  HorizontalAlignment="Center" Grid.ColumnSpan="2"/>
-                        <Label Grid.Column="0" Grid.Row="1" Content="X" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Label Grid.Column="1" Grid.Row="1" Content="Y" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Label Grid.Column="0" Grid.Row="2" Content="{Binding Main.WPosX, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                        <Label Grid.Column="1" Grid.Row="2" Content="{Binding Main.WPosY, Mode=OneWay}" Margin="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label Content=" WPos" 
+                               VerticalContentAlignment="Top"
+                               HorizontalAlignment="Center" 
+                               Grid.ColumnSpan="2"/>
+                        <Label Grid.Column="0" 
+                               Grid.Row="1" 
+                               Content="X" 
+                               VerticalContentAlignment="Top" 
+                               HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="1" 
+                               Grid.Row="1" 
+                               Content="Y" 
+                               VerticalContentAlignment="Top" 
+                               HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="0" 
+                               Grid.Row="2" 
+                               Content="{Binding Main.WPosX, Mode=OneWay}" 
+                               Margin="1" 
+                               VerticalContentAlignment="Top" 
+                               HorizontalContentAlignment="Center"/>
+                        <Label Grid.Column="1" 
+                               Grid.Row="2" 
+                               Content="{Binding Main.WPosY, Mode=OneWay}" 
+                               Margin="1" 
+                               VerticalContentAlignment="Top" 
+                               HorizontalContentAlignment="Center"/>
                     </Grid>
                 </Border>
                 <!--Display feed (X, Y axes speed) and laser power (<=>spindle speed)-->
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="0" Grid.Row="2" Margin="1">
                     <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="2">
-                    <Label Content="Feed: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10 0 0 0"/>
-                    <Label Content="{Binding Main.Feed, Mode=OneWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+                    <Label Content="Feed: " 
+                           VerticalContentAlignment="Center" 
+                           HorizontalContentAlignment="Left" 
+                           Margin="10 0 0 0"/>
+                    <Label Content="{Binding Main.Feed, Mode=OneWay}" 
+                           VerticalContentAlignment="Center" 
+                           HorizontalContentAlignment="Left"/>
                 </StackPanel>
                     </Border>
                 <Border BorderBrush="LightBlue" BorderThickness="1" Grid.Column="1" Grid.Row="2" Margin="1">
                     <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="2">
-                    <Label Content="Power: " VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Margin="10 0 0 0"/>
-                    <Label Content="{Binding Main.Speed, Mode=OneWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+                    <Label Content="Power: " 
+                           VerticalContentAlignment="Top" 
+                           HorizontalContentAlignment="Left" 
+                           Margin="10 0 0 0"/>
+                    <Label Content="{Binding Main.Speed, Mode=OneWay}" 
+                           VerticalContentAlignment="Top" 
+                           HorizontalContentAlignment="Left"/>
                     </StackPanel>
                 </Border>
             </Grid>
