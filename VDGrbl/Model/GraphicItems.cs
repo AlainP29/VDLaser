@@ -3,7 +3,7 @@ using System.Windows.Media;
 
 namespace VDGrbl.Model
 {
-    public class GraphicModel
+    public class GraphicItems
     {
         public string GraphicHeader { get; private set; }
         public PathGeometry GraphicPathGeometry { get; set; }
@@ -12,9 +12,9 @@ namespace VDGrbl.Model
         public double GraphicStrokeThickness { get; set; }
         public bool IsFitCanvas { get; set; }
 
-        public GraphicModel()
+        public GraphicItems()
         {  }
-        public GraphicModel(string graphicHeader)
+        public GraphicItems(string graphicHeader)
         {
             GraphicHeader = graphicHeader;
         }

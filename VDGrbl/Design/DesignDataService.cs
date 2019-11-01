@@ -16,9 +16,9 @@ namespace VDGrbl.Design
             var item = new GCodeModel("G-Code file [design]");
             callback?.Invoke(item, null);
         }
-        public void GetGraphic(Action<GraphicModel, Exception> callback)
+        public void GetGraphic(Action<GraphicItems, Exception> callback)
         {
-            var item = new GraphicModel("Graphic [design]");
+            var item = new GraphicItems("Graphic [design]");
             callback?.Invoke(item, null);
         }
         public void GetConsole(Action<ConsoleModel, Exception> callback)

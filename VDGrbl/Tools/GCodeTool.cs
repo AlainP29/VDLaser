@@ -434,9 +434,9 @@ namespace VDGrbl.Tools
                         GCodeLine = FileList[i];
                     }
                     ParseGCode();
-                    double y1=0;
-                    double x1=0;
-                    double dist=0;
+                    double y1;
+                    double x1;
+                    double dist;
                     if ((int)DMode == 0)
                     {
                         if (X != "0")//utiliser écriture simplifiée ?:

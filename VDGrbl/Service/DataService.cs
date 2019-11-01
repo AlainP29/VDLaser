@@ -17,9 +17,9 @@ namespace VDGrbl.Service
             var item = new GCodeModel("G-Code file");
             callback?.Invoke(item, null);
         }
-        public void GetGraphic(Action<GraphicModel, Exception> callback)
+        public void GetGraphic(Action<GraphicItems, Exception> callback)
         {
-            var item = new GraphicModel("Graphic");
+            var item = new GraphicItems("Graphic");
             callback?.Invoke(item, null);
         }
         public void GetConsole(Action<ConsoleModel, Exception> callback)

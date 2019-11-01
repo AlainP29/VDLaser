@@ -108,13 +108,16 @@
     <Compile Include="Codes\GrblSettingCodes.cs" />
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="Codes\ErrorCodes.cs" />
+    <Compile Include="Design\DesignGraphicService.cs" />
     <Compile Include="Design\DesignGrblService.cs" />
     <Compile Include="Design\DesignSettingService.cs" />
     <Compile Include="Model\ConsoleModel.cs" />
     <Compile Include="Model\GrblItems.cs" />
     <Compile Include="Model\GCodeModel.cs" />
-    <Compile Include="Model\GraphicModel.cs" />
+    <Compile Include="Model\GraphicItems.cs" />
+    <Compile Include="Service\GraphicService.cs" />
     <Compile Include="Service\GrblService.cs" />
+    <Compile Include="Service\IGraphicService.cs" />
     <Compile Include="Service\IGrblService.cs" />
     <Compile Include="Service\ISettingService.cs" />
     <Compile Include="Model\JoggingModel.cs" />
@@ -133,6 +136,7 @@
     <Compile Include="Tools\InverseBooleanConverter.cs" />
     <Compile Include="Tools\MathTool.cs" />
     <Compile Include="Tools\DotToCommaConverter.cs" />
+    <Compile Include="ViewModel\GraphicViewModel.cs" />
     <Compile Include="ViewModel\GrblViewModel.cs" />
     <Compile Include="ViewModel\SettingViewModel.cs" />
     <Compile Include="View\ControleView.xaml.cs">

@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="200">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
-        <GroupBox Header="{Binding Main.GroupBoxGraphicTitle}" Style="{DynamicResource GroupBoxStyleVD}">
+        <GroupBox Header="{Binding Graphic.GroupBoxGraphicTitle}" Style="{DynamicResource GroupBoxStyleVD}">
             <!--G-code file plotter-->
             <ItemsControl ItemsSource="{Binding Main.GcodePaths}" Height="160" Width="160">
                 <ItemsControl.ItemsPanel>

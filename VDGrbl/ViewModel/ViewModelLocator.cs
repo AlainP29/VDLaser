@@ -38,19 +38,20 @@ namespace VDGrbl.ViewModel
                 SimpleIoc.Default.Register<IDataService, Design.DesignDataService>();
                 SimpleIoc.Default.Register<ISettingService, Design.DesignSettingService>();
                 SimpleIoc.Default.Register<IGrblService, Design.DesignGrblService>();
-
+                SimpleIoc.Default.Register<IGraphicService, Design.DesignGraphicService>();
             }
             else
             {
                 SimpleIoc.Default.Register<IDataService, DataService>();
                 SimpleIoc.Default.Register<ISettingService, SettingService>();
                 SimpleIoc.Default.Register<IGrblService, GrblService>();
-
+                SimpleIoc.Default.Register<IGraphicService, GraphicService>();
             }
 
             SimpleIoc.Default.Register<MainViewModel>();
             SimpleIoc.Default.Register<SettingViewModel>();
             SimpleIoc.Default.Register<GrblViewModel>();
+            SimpleIoc.Default.Register<GraphicViewModel>();
         }
 
         /// <summary>
@@ -84,6 +85,13 @@ namespace VDGrbl.ViewModel
             get
             {
                 return ServiceLocator.Current.GetInstance<GrblViewModel>();
+            }
+        }
+        public GraphicViewModel Graphic
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<GraphicViewModel>();
             }
         }
 

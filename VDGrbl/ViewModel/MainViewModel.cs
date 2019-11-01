@@ -99,7 +99,7 @@ namespace VDGrbl.ViewModel
         private List<string> _fileList = new List<string>();
         private ObservableCollection<ConsoleModel> _consoleData;
         private ObservableCollection<GCodeModel> _gcodeData;
-        private ObservableCollection<GraphicModel> _paths=new ObservableCollection<GraphicModel>();
+        private ObservableCollection<GraphicItems> _paths=new ObservableCollection<GraphicItems>();
         private List<ConsoleModel> _listConsoleData = new List<ConsoleModel>();
         private ConsoleModel _console = new ConsoleModel("TX", "RX");
         private GCodeModel _gcodeModel;
@@ -1382,7 +1382,7 @@ namespace VDGrbl.ViewModel
         /// Get the Paths property. 
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public ObservableCollection<GraphicModel> GcodePaths
+        public ObservableCollection<GraphicItems> GcodePaths
         {
             get
             {
@@ -1971,9 +1971,9 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Task load settings completed");
             }
 
-            catch (AggregateException)
+            catch (OperationCanceledException ex)
             {
-                logger.Info("MainViewModel|Task load settings cancelled");
+                logger.Info("MainViewModel|Task load settings cancelled"+ex.ToString());
             }
 
             finally
@@ -2458,7 +2458,7 @@ namespace VDGrbl.ViewModel
         public void DefaultGraphicSetting()
         {
             GraphicTool gt = new GraphicTool();
-            GcodePaths.Add(new GraphicModel
+            GcodePaths.Add(new GraphicItems
             {
                 GraphicPathGeometry = gt.Axis(160, 160, 0),
                 GraphicFill = Fill,
@@ -2624,9 +2624,9 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Task sending file completed");
             }
 
-            catch (AggregateException)
+            catch (OperationCanceledException ex)
             {
-                logger.Info("MainViewModel|Task sending file cancelled");
+                logger.Info("MainViewModel|Task sending file cancelled" + ex.ToString());
             }
 
             finally
@@ -2734,7 +2734,7 @@ namespace VDGrbl.ViewModel
 
             logger.Info("MainViewModel|GrblTest Geometry");
 
-            GcodePaths.Add(new GraphicModel
+            GcodePaths.Add(new GraphicItems
             {
                 GraphicPathGeometry = graphicTool.Plotter(),
                 GraphicFill = Fill,
@@ -2828,7 +2828,7 @@ namespace VDGrbl.ViewModel
                 {
                     ListConsoleData.RemoveAt(0);
                 }
-                ListGrblSettings = grbltool.ListGrblSettings;
+            ListGrblSettings = grbltool.ListGrblSettings;
         }
 
         /// <summary>
@@ -2848,7 +2848,6 @@ namespace VDGrbl.ViewModel
         /// Disposes the serial communication
         /// </summary>
         private bool disposedValue = false; // Pour détecter les appels redondants
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -2856,7 +2855,9 @@ namespace VDGrbl.ViewModel
                 if (disposing)
                 {
                     ((IDisposable)_serialPort).Dispose();
-                    logger.Info("MainViewModel|Port COM disposed");
+                    cts.Dispose();
+                    manualResetEvent.Dispose();
+                    logger.Info("MainViewModel|Disposed");
                 }
 
                 // TODO: libérer les ressources non managées (objets non managés) et remplacer un finaliseur ci-dessous.
@@ -2877,10 +2878,8 @@ namespace VDGrbl.ViewModel
         {
             // Ne modifiez pas ce code. Placez le code de nettoyage dans Dispose(bool disposing) ci-dessus.
             Dispose(true);
-            cts.Dispose();
             // TODO: supprimer les marques de commentaire pour la ligne suivante si le finaliseur est remplacé ci-dessus.
             GC.SuppressFinalize(this);
-            manualResetEvent.Dispose();
         }
         #endregion
     }
