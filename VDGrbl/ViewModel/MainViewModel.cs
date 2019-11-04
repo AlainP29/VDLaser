@@ -18,6 +18,7 @@ using VDGrbl.Model;
 using VDGrbl.Tools;
 using VDGrbl.Service;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace VDGrbl.ViewModel
 {
@@ -178,11 +179,10 @@ namespace VDGrbl.ViewModel
         #endregion
 
         #region subregion setting
-
         /// <summary>
-        /// Get the ListSettingModel property. ListSettingsModel is populated w/ Grbl settings data ('$$' command)
+        /// Get the ListGrblSettings property. ListGrblSettings is populated w/ Grbl settings data ('$$' command)
         /// Changes to that property's value raise the PropertyChanged event. 
-        /// First get ListSettingModel then populate the observableCollection settingCollection for binding.
+        /// First get ListGrblSettings then populate the settingCollection (observableCollection) for binding.
         /// </summary>
         public List<SettingItem> ListGrblSettings { get; set; } = null;
 
@@ -266,7 +266,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _errorMessage, value);
-                logger.Info(CultureInfo.CurrentCulture, "MainWindowModel|ErrorMessage {0}", value);
+                logger.Error(CultureInfo.CurrentCulture, "MainWindowModel|ErrorMessage {0}", value);
 
             }
         }
@@ -284,8 +284,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _alarmMessage, value);
-                logger.Info(CultureInfo.CurrentCulture, "MainWindowModel|AlarmMessage {0}", value);
-
+                logger.Error(CultureInfo.CurrentCulture, "MainWindowModel|AlarmMessage {0}", value);
             }
         }
 
@@ -302,8 +301,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _infoMessage, value);
-                logger.Info(CultureInfo.CurrentCulture, "MainWindowModel|InfoMessage {0}", value);
-
+                //logger.Info(CultureInfo.CurrentCulture, "MainWindowModel|InfoMessage {0}", value);
             }
         }
 
@@ -477,7 +475,7 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Get the IsSendingFile property. When sending file we cannot use jog or send manual command.
+        /// Get the IsSendingFile property. When sending file we cannot use jog, send manual or clear command.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public bool IsManualSending
@@ -489,7 +487,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _isManualSending, value);
-                logger.Info("MainViewModel|Manual sending: {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Manual sending: {0}", value);
             }
         }
 
@@ -869,7 +867,6 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _buf, value);
-                //logger.Info("MainViewmodel|Buffer: {0}", value);
             }
         }
 
@@ -886,7 +883,6 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _rx, value);
-                //logger.Info("MainViewmodel|RX: {0}", value);
             }
         }
 
@@ -1095,7 +1091,6 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _versionGrbl, value);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|VersionGrbl : {0}", value);
             }
         }
 
@@ -1112,8 +1107,6 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _buildInfoGrbl, value);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|BuildInfoGrbl : {0}", value);
-
             }
         }
         #endregion
@@ -1564,7 +1557,6 @@ namespace VDGrbl.ViewModel
                 if (CollectionPortNames != null && CollectionPortNames.Count > 0)
                 {
                     SelectedPortName = CollectionPortNames[0];
-                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Port COM{0}", SelectedPortName);
                 }
                 else
                 {
@@ -1636,11 +1628,7 @@ namespace VDGrbl.ViewModel
                 GrblReset(); //Do a soft reset before starting a new job?
                 GrblBuildInfo();
                 //GrblRefreshSettingAsync();
-                if (!VersionGrbl.StartsWith("0.9") || !VersionGrbl.StartsWith("1.1"))//Does not work neither readline in GrblBuildInfo to check grbl version...
-                {
-                    //CloseSerialPort();
-                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel| Unknown device or Bad Grbl version {0}", VersionGrbl);
-                }
+                CheckInfos();
                 if (!currentStatusTimer.IsEnabled)
                 {
                     InitializeDispatcherTimer();
@@ -1685,6 +1673,29 @@ namespace VDGrbl.ViewModel
         public bool CanExecuteCloseSerialPort()
         {
             return _serialPort.IsOpen;
+        }
+        /// <summary>
+        /// Check grbl version 0.9 or 1.1.
+        /// </summary>
+        public void CheckInfos()
+        {
+                bool checkVersion = false;
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Checking Grbl version");
+                while (!checkVersion||VersionGrbl=="-")
+                {
+                Thread.Sleep(50);
+
+                if (VersionGrbl.StartsWith("0") || VersionGrbl.StartsWith("1"))//Does not work neither readline in GrblBuildInfo to check grbl version...
+                    {
+                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Grbl version {0}", VersionGrbl);
+                    checkVersion = true;
+                    }
+                    else
+                    {
+                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Bad Grbl version {0}", VersionGrbl);
+                    checkVersion = true;
+                    }
+                }
         }
         /// <summary>
         /// Sends G-code or Grb data (TXLine in manual Send data group box) to serial port.
@@ -2007,7 +2018,7 @@ namespace VDGrbl.ViewModel
         public void GrblBuildInfo()
         {
             WriteString("$I");
-            logger.Info("MainViewModel|Grbl infos:{0}");
+            logger.Info("MainViewModel|Grbl infos");
         }
 
         /// <summary>
@@ -2116,11 +2127,10 @@ namespace VDGrbl.ViewModel
         }
 
         /// <summary>
-        /// Write Grbl 'G30' command to set the pre-defined position 2.
+        /// Write Grbl 'G30.1' command to set the pre-defined position 2.
         /// </summary>
         public void GrblSetHome2()
         {
-
             WriteString("G30.1");
             logger.Info("MainViewModel|Grbl set home 2");
         }
@@ -2595,7 +2605,7 @@ namespace VDGrbl.ViewModel
                         progress.Report(0);
                     }
                     manualResetEvent.WaitOne();//Wait for the signal ok to continue task...
-                    logger.Info("MainViewModel|mre waitone");
+                    //logger.Info("MainViewModel|mre waitone");
                     Thread.Sleep(transferDelay);
                     if (!IsSending)
                     {
@@ -2790,19 +2800,26 @@ namespace VDGrbl.ViewModel
                 }
                 grbltool.DataGrblSorter(line);
                 ResponseStatus = (RespStatus)grbltool.ResponseStatus;
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Buf: {0}", Buf);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|RX: {0}", RX);
+            //logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Buf: {0}", Buf);
+            //logger.Info(CultureInfo.CurrentCulture, "MainViewModel|RX: {0}", RX);
+            try
+            {
                 int b = Convert.ToInt32(Buf, CultureInfo.CurrentCulture);
                 int r = Convert.ToInt32(RX, CultureInfo.CurrentCulture);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|b: {0}", b);
-                if (ResponseStatus==RespStatus.Ok && r>0)
+                //logger.Info(CultureInfo.CurrentCulture, "MainViewModel|b:{0}", b.GetType());
+
+                if (ResponseStatus==RespStatus.Ok && r>0)//Need to have buffer available $10=3
                 {
                     manualResetEvent.Set();
-                    logger.Info("mre set");
+                    //logger.Info("mre set");
                     manualResetEvent.Reset();
                 }
-               
-                MachineStatus = (MachStatus)grbltool.MachineStatus;
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Buf b/r" + ex.ToString());
+            }
+            MachineStatus = (MachStatus)grbltool.MachineStatus;
                 MachineStatusColor = (SolidColorBrush)grbltool.MachineStatusColor;
                 MPosX = grbltool.MachinePositionX;
                 MPosY = grbltool.MachinePositionY;

@@ -1,4 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.CommandWpf;
+using GalaSoft.MvvmLight.Messaging;
 using NLog;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -20,6 +22,25 @@ namespace VDGrbl.ViewModel
         private double _strokeThickness = 2;
         private PointCollection _gcodePoints = new PointCollection();
         private ObservableCollection<GraphicItems> _paths = new ObservableCollection<GraphicItems>();
+
+        #region RelayCommand
+        public RelayCommand TestGraphicCommand { get; private set; }
+        private void GraphicRelayCommands()
+        {
+            TestGraphicCommand = new RelayCommand(TestGraphic, CanExecuteTestGraphicCommand);
+        }
+        #endregion
+
+        #region Messenger
+        /// <summary>
+        /// Used to communicate between ViewModels: MainViewModel
+        /// </summary>
+        public void SendGraphicMessage()
+        {
+            MessengerInstance.Send<NotificationMessage>(new NotificationMessage("Draw"));
+            logger.Debug("GraphicViewModel|Notification sent");
+        }
+        #endregion
 
         #region Property
         /// <summary>
@@ -150,6 +171,7 @@ namespace VDGrbl.ViewModel
                                logger.Info("GraphicViewModel|Load Graphic window");
                                GroupBoxGraphicTitle = item.GraphicHeader;
                            });
+                GraphicRelayCommands();
             }
         }
         #endregion
@@ -171,6 +193,22 @@ namespace VDGrbl.ViewModel
                 GraphicStroke = Brushes.Red,
                 GraphicStrokeThickness = StrokeThickness,
             });
+        }
+        /// <summary>
+        /// Sends 'draw' command.
+        /// </summary>
+        public void TestGraphic()
+        {
+            logger.Debug("GraphicViewModel|Send notification");
+            SendGraphicMessage();
+        }
+        /// <summary>
+        /// Allows/disallows TestGraphic.
+        /// </summary>
+        /// <returns></returns>
+        public static bool CanExecuteTestGraphicCommand()
+        {
+            return true;
         }
         #endregion
     }

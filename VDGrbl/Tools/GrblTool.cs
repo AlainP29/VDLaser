@@ -49,8 +49,8 @@ namespace VDGrbl.Tools
         public string OverrideMachineSpeed { get; private set; } = "0";
         public string RxBuffer { get; private set; } = "0";
         public string PlannerBuffer { get; private set; } = "0";
-        public string VersionGrbl { get; set; } = "0.0";
-        public string BuildInfo { get; set; } = "0";
+        public string VersionGrbl { get; set; } = "-";
+        public string BuildInfo { get; set; } = "-";
         public string AlarmMessage { get; private set; } = string.Empty;
         public string ErrorMessage { get; private set; } = string.Empty;
         public string InfoMessage { get; private set; } = string.Empty;
@@ -104,13 +104,13 @@ namespace VDGrbl.Tools
                     }
                     else if (lineTrim.Contains("rbl"))
                     {
-                        InfoMessage = "View startup blocks"; //Grbl 0.9i ['$' for help] put something like $N0=G20 G54 G17 to get it
-                    }
-                    else
-                    {
-                        InfoMessage = "Unknown message";//TODO
-                    }
+                    ProcessInfoResponse(lineTrim);
                 }
+                else
+                {
+                    ProcessInfoResponse(lineTrim);
+                }
+            }
         }
 
         /// <summary>
@@ -195,21 +195,24 @@ namespace VDGrbl.Tools
                 if (VersionGrbl.StartsWith("1", StringComparison.InvariantCulture))//In version 1.1 all error codes have ID
                 {
                     ErrorMessage = GrblErrorCode.ErrorDict11[data.Split(':')[1]];
-                    logger.Info("GrblTool|ProcessErrorResponse|Error key:{0} | description:{1}", data.Split(':')[1], ErrorMessage);
+                    logger.Error("GrblTool|ProcessErrorResponse|Error key:{0} | description:{1}", data.Split(':')[1], ErrorMessage);
                 }
-                else
+                else if(VersionGrbl.Contains("9"))
                 {
                     if (data.Contains("ID"))//In version 0.9 only error code from 23 to 37 have ID
                     {
                         ErrorMessage = GrblErrorCode.ErrorDict09[data.Split(':')[2]];
-                        logger.Info("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[2], ErrorMessage);
+                        logger.Error("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[2], ErrorMessage);
                     }
                     else//Error codes w/o ID
                     {
                         ErrorMessage = GrblErrorCode.ErrorDict09[data.Split(':')[1]];
-                        logger.Info("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[1], ErrorMessage);
+                        logger.Error("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[1], ErrorMessage);
                     }
                 }
+                else
+                    logger.Error("GrblTool|ProcessErrorResponse|VersionGrbl not defined or unknown error message");
+
             }
         }
 
