@@ -128,7 +128,7 @@ namespace VDGrbl.ViewModel
         public RelayCommand ConnectCommand { get; private set; }
         public RelayCommand DisconnectCommand { get; private set; }
         public RelayCommand RefreshPortCommand { get; private set; }
-        public RelayCommand SendCommand { get; private set; }
+        public RelayCommand SendManualCommand { get; private set; }
         public RelayCommand SendM1Command { get; private set; }
         public RelayCommand SendM2Command { get; private set; }
         public RelayCommand SendM3Command { get; private set; }
@@ -1000,7 +1000,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _selectedPortName, value);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Selected Port : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Selected Port name: {0}", value);
             }
         }
 
@@ -1479,7 +1479,7 @@ namespace VDGrbl.ViewModel
             ConnectCommand = new RelayCommand(OpenSerialPort, CanExecuteOpenSerialPort);
             DisconnectCommand = new RelayCommand(CloseSerialPort, CanExecuteCloseSerialPort);
             RefreshPortCommand = new RelayCommand(RefreshSerialPort, CanExecuteRefreshSerialPort);
-            SendCommand = new RelayCommand(SendData, CanExecuteSendData);
+            SendManualCommand = new RelayCommand(SendData, CanExecuteSendData);
             SendM1Command = new RelayCommand(SendM1Data, CanExecuteSendM1Data);
             SendM2Command = new RelayCommand(SendM2Data, CanExecuteSendM2Data);
             SendM3Command = new RelayCommand(SendM3Data, CanExecuteSendM3Data);
@@ -1520,9 +1520,9 @@ namespace VDGrbl.ViewModel
             StartLaserCommand = new RelayCommand(StartLaser, CanExecuteLaser);
             StopLaserCommand = new RelayCommand(StopLaser, CanExecuteLaser);
             LoadFileCommand = new RelayCommand(OpenFile, CanExecuteOpenFile);
-            SendFileCommand = new RelayCommand(StartSendingFileAsync, CanExecuteAsyncTask);
+            SendFileCommand = new RelayCommand(StartSendingFileAsync, CanExecuteStartAsyncTask);
             PauseFileCommand = new RelayCommand(PauseSendingFile, CanExecutePauseFile);
-            StopFileCommand = new RelayCommand(StopSendingFileAsync, CanExecuteAsyncTask);
+            StopFileCommand = new RelayCommand(StopSendingFileAsync, CanExecuteStopAsyncTask);
             IncreaseLaserPowerCommand = new RelayCommand<bool>(IncreaseLaserPower, CanExecuteLaserPower);
             DecreaseLaserPowerCommand = new RelayCommand<bool>(DecreaseLaserPower, CanExecuteLaserPower);
             logger.Info("MainViewModel|All RelayCommands loaded");
@@ -1703,7 +1703,7 @@ namespace VDGrbl.ViewModel
         public void SendData()
         {
                 WriteString(TXLine);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", TXLine);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Manual Data TX: {0}", TXLine);
                 TXLine = string.Empty;
         }
         /// <summary>
@@ -1728,7 +1728,7 @@ namespace VDGrbl.ViewModel
         {
                 //_serialPort.WriteLine(Macro1);
             WriteString(Macro1);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", Macro1);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Macro1 Data TX: {0}", Macro1);
         }
         public bool CanExecuteSendM1Data()
         {
@@ -1750,7 +1750,7 @@ namespace VDGrbl.ViewModel
             //_serialPort.WriteLine(Macro2);
             WriteString(Macro2);
 
-            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", Macro2);
+            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Macro2 Data TX: {0}", Macro2);
         }
         public bool CanExecuteSendM2Data()
         {
@@ -1770,7 +1770,7 @@ namespace VDGrbl.ViewModel
         {
             //_serialPort.WriteLine(Macro3);
             WriteString(Macro3);
-            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", Macro3);
+            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Macro3 Data TX: {0}", Macro3);
         }
         public bool CanExecuteSendM3Data()
         {
@@ -1790,7 +1790,7 @@ namespace VDGrbl.ViewModel
         {
             //_serialPort.WriteLine(Macro4);
             WriteString(Macro4);
-            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Data TX: {0}", Macro4);
+            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Macro4 Data TX: {0}", Macro4);
         }
         public bool CanExecuteSendM4Data()
         {
@@ -1861,17 +1861,25 @@ namespace VDGrbl.ViewModel
                     logger.Info("MainViewModel|TXLine/RXLine and buffers erased");
                 }
                 Thread.Sleep(50);
-                RXLine = string.Empty;
-                TXLine = string.Empty;
-                GCodeLine = string.Empty;
+                
                 if (FileQueue.Count > 0)
                 {
                     FileQueue.Clear();
-                    GCodeData.Clear();
-                    GcodePaths.Clear();
+                    
                 }
-                FileName = string.Empty;
-                NLine = 0;
+            if (GCodeData != null)
+            {
+                GCodeData.Clear();
+            }
+            if (GcodePaths != null)
+            {
+                GcodePaths.Clear();
+            }
+            FileName = string.Empty;
+            RXLine = string.Empty;
+            TXLine = string.Empty;
+            GCodeLine = string.Empty;
+            NLine = 0;
                 PercentLine = 0;
                 RLine = 0;
                 EstimateJobTime = "00:00:00" ;
@@ -1904,12 +1912,12 @@ namespace VDGrbl.ViewModel
         }
        
         /// <summary>
-        /// Writes Grbl "~" real-time command (ascii dec 126) to start the machine after a pause or 'M0' command.
+        /// Writes Grbl "~" real-time command (ascii dec 126) to start or resume the machine after a pause or 'M0' command.
         /// </summary>
         public void GrblStartCycle()
         {
             WriteByte(126);
-            logger.Info("MainViewModel|Start");
+            logger.Info("MainViewModel|Start/Resume");
         }
         
         /// <summary>
@@ -2585,94 +2593,118 @@ namespace VDGrbl.ViewModel
         /// </summary>
         private async void StartSendingFileAsync()
         {
-            cts = new CancellationTokenSource();
-            CancellationToken token = cts.Token;
-            var progressHandler = new Progress<double>(value => PercentLine = value);
-            var progress = progressHandler as IProgress<double>;
-            //var task = Task.Run(() =>
-            Task task = Task.Run(() =>
+            if (MachineStatus == MachStatus.Hold)
             {
-                for(int i=0; i <= NLine; i++ )
+                GrblStartCycle();
+                ResponseStatus = RespStatus.Ok;
+            }
+            else
+            {
+                cts = new CancellationTokenSource();
+                CancellationToken token = cts.Token;
+                var progressHandler = new Progress<double>(value => PercentLine = value);
+                var progress = progressHandler as IProgress<double>;
+                //var task = Task.Run(() =>
+                Task task = Task.Run(() =>
                 {
-                    SendFile();
-                    logger.Info("MainViewModel|N{0}: {1}", i.ToString(), TXLine);
-                    if (progress != null && NLine != 0)
+                    for (int i = 0; i <= NLine; i++)
                     {
-                        progress.Report((NLine - RLine) / NLine);
+                        SendFile();
+                        logger.Info("MainViewModel|N{0}: {1}", i.ToString(CultureInfo.CurrentCulture), TXLine);
+                        if (progress != null && NLine != 0)
+                        {
+                            progress.Report((NLine - RLine) / NLine);
+                        }
+                        else
+                        {
+                            progress.Report(0);
+                        }
+                        manualResetEvent.WaitOne();//Wait for the signal ok to continue task...
+                        //logger.Info("MainViewModel|mre waitone");
+                        Thread.Sleep(transferDelay);
+                        if (!IsSending)
+                        {
+                            cts.Cancel();
+                        }
+                        if (token.IsCancellationRequested)
+                        {
+                            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Sending file canceled at line {0}", i.ToString());
+                            //throw new TaskCanceledException(t);
+                            break;
+                        }
                     }
-                    else
-                    {
-                        progress.Report(0);
-                    }
-                    manualResetEvent.WaitOne();//Wait for the signal ok to continue task...
-                    //logger.Info("MainViewModel|mre waitone");
-                    Thread.Sleep(transferDelay);
-                    if (!IsSending)
-                    {
-                        cts.Cancel();
-                    }
-                    if (token.IsCancellationRequested)
-                    {
-                        logger.Info("MainViewModel|Sending file canceled at line {0}", i.ToString());
-                        //throw new TaskCanceledException(t);
-                        break;
-                    }
+                }, token);
+
+                transferDelay = SelectedTransferDelay switch
+                {
+                    "Slow" => 2000,
+                    "Normal" => 750,
+                    "Fast" => 250,
+                    "UltraFast" => 0,
+                    _ => 750,
+                };
+                try
+                {
+                    await task.ConfigureAwait(false);
+                    logger.Info("MainViewModel|Task sending file completed");
                 }
-            }, token);
-            transferDelay = SelectedTransferDelay switch
-            {
-                "Slow" => 2000,
-                "Normal" => 750,
-                "Fast" => 250,
-                "UltraFast" => 0,
-                _ => 750,
-            };
-            logger.Info("MainViewModel|Transfer speed:", SelectedTransferDelay);
-            try
-            {
-                await task;
-                logger.Info("MainViewModel|Task sending file completed");
-            }
 
-            catch (OperationCanceledException ex)
-            {
-                logger.Info("MainViewModel|Task sending file cancelled" + ex.ToString());
-            }
+                catch (OperationCanceledException ex)
+                {
+                    logger.Info("MainViewModel|Task sending file cancelled" + ex.ToString());
+                }
 
-            finally
-            {
-                cts.Dispose();
-                logger.Info("MainViewModel|Task sending file cleared");
+                finally
+                {
+                    cts.Dispose();
+                    logger.Info("MainViewModel|Task sending file cleared");
+                }
             }
         }
-
         /// <summary>
         /// Cancel the task to send G-code file in async mode. Pause the machine and clear queue. TOBEIMPROVE
         /// Used with stop button.
         /// </summary>
         private void StopSendingFileAsync()
         {
-            if(cts!=null)
+            if (cts != null)
             {
                 logger.Info("MainViewModel|Stop sending file");
-                cts.Cancel();
+                try
+                {
+                    cts.Cancel();
+                }
+                catch (ObjectDisposedException ex)
+                {
+                    logger.Error("MainViewmodel|StopSendingFileAsync " + ex.ToString());
+                }
+            }
                 GrblFeedHold();
                 ResponseStatus = RespStatus.Q;
                 NLine = FileQueue.Count;
                 FileQueue.Clear();
-                cts.Dispose();
-                manualResetEvent.Dispose();
                 IsSending = false;
                 IsManualSending = true;
-            }
         }
         /// <summary>
-        /// Allows/Disallows SendFileAsynk and stopFileAsync method.
+        /// Allows/Disallows StartSendFileAsynk method.
         /// </summary>
         /// <returns></returns>
-        public bool CanExecuteAsyncTask()
+        public bool CanExecuteStartAsyncTask()
         {
-            if (FileQueue.Count > 0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
+            if (FileQueue.Count > 0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm && MachineStatus != MachStatus.Run)
+            {
+                return true;
+            }
+            return false;
+        }
+        /// <summary>
+        /// Allows/Disallows StopSendingFileAsynk method.
+        /// </summary>
+        /// <returns></returns>
+        public bool CanExecuteStopAsyncTask()
+        {
+            if (FileQueue.Count > 0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk)
             {
                 return true;
             }
@@ -2687,7 +2719,7 @@ namespace VDGrbl.ViewModel
                 logger.Info("MainViewModel|Pause sending file");
                 GrblFeedHold();
                 ResponseStatus = RespStatus.Q;
-                IsSending = false;
+                //IsSending = false;
         }
 
         /// <summary>
@@ -2696,7 +2728,7 @@ namespace VDGrbl.ViewModel
         /// <returns></returns>
         public bool CanExecutePauseFile()
         {
-            if (FileQueue.Count > 0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm)
+            if (FileQueue.Count > 0 && _serialPort.IsOpen && ResponseStatus != RespStatus.NOk && MachineStatus != MachStatus.Home && MachineStatus != MachStatus.Alarm && MachineStatus != MachStatus.Hold)
             {
                 return true;
             }
@@ -2709,16 +2741,17 @@ namespace VDGrbl.ViewModel
         public void SendFile()
         {
             RLine = FileQueue.Count;
+            string line;
             if (RLine > 0 && (int)ResponseStatus != 1)
             {
                 if (MachineStatus != MachStatus.Alarm)
                 {
                     ResponseStatus = RespStatus.Q;
-                    TXLine = FileQueue.Dequeue();
-                    WriteString(TXLine);
+                    line = FileQueue.Dequeue();
+                    WriteString(line);
                     IsManualSending = false;
                     IsSending = true;
-                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|BytesToWrite : {0}", _serialPort.BytesToWrite);
+                    //logger.Info(CultureInfo.CurrentCulture, "MainViewModel|BytesToWrite : {0}", _serialPort.BytesToWrite);
                 }
                 else
                 {
@@ -2794,30 +2827,26 @@ namespace VDGrbl.ViewModel
                     ListConsoleData.Add(Console);
                 }
                 else if (!line.StartsWith("<",StringComparison.OrdinalIgnoreCase)&&!line.StartsWith("$", StringComparison.OrdinalIgnoreCase))
-                //else if (!line.StartsWith("<", StringComparison.OrdinalIgnoreCase))
                 { 
                     ListConsoleData.Add(Console);
                 }
                 grbltool.DataGrblSorter(line);
                 ResponseStatus = (RespStatus)grbltool.ResponseStatus;
-            //logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Buf: {0}", Buf);
-            //logger.Info(CultureInfo.CurrentCulture, "MainViewModel|RX: {0}", RX);
             try
             {
                 int b = Convert.ToInt32(Buf, CultureInfo.CurrentCulture);
                 int r = Convert.ToInt32(RX, CultureInfo.CurrentCulture);
-                //logger.Info(CultureInfo.CurrentCulture, "MainViewModel|b:{0}", b.GetType());
 
                 if (ResponseStatus==RespStatus.Ok && r>0)//Need to have buffer available $10=3
                 {
                     manualResetEvent.Set();
                     //logger.Info("mre set");
                     manualResetEvent.Reset();
+                    //logger.Info("mre reset");
                 }
             }
-            catch (Exception ex)
+            catch (FormatException)
             {
-                logger.Error("Buf b/r" + ex.ToString());
             }
             MachineStatus = (MachStatus)grbltool.MachineStatus;
                 MachineStatusColor = (SolidColorBrush)grbltool.MachineStatusColor;
@@ -2841,7 +2870,7 @@ namespace VDGrbl.ViewModel
                 BuildInfoGrbl = grbltool.BuildInfo;
                 InfoMessage = grbltool.InfoMessage;
                 ConsoleData = new ObservableCollection<ConsoleModel>(ListConsoleData);
-                if (ListConsoleData.Count>5)//Number of lines showed in data console
+                if (ListConsoleData.Count>5)
                 {
                     ListConsoleData.RemoveAt(0);
                 }

@@ -62,7 +62,7 @@
                     </TextBox>
                     <Button  Content="Send" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" 
                              Width="75" 
-                             Command="{Binding Main.SendCommand, Mode=OneWay}"/>
+                             Command="{Binding Main.SendManualCommand, Mode=OneWay}"/>
                     <TextBox  Text="{Binding Main.ResponseStatus, Mode=OneWay}" Margin="5" 
                               VerticalContentAlignment="Center" 
                               HorizontalContentAlignment="Center" Width="30" VerticalAlignment="Center" 
