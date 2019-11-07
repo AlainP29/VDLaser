@@ -32,11 +32,16 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="1.5*"/>
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Version:" HorizontalAlignment="Left" Margin="5" 
-                       VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                            <Label Grid.Column="2" Content="Build:" HorizontalAlignment="Left" Margin="5" 
-                       VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
-                            <Label Grid.Column="1" Content="{Binding Main.VersionGrbl}" HorizontalAlignment="Left" 
+                            <Label Grid.Column="0" Content="Version:" 
+                                   HorizontalAlignment="Left" Margin="5" 
+                       VerticalAlignment="Top" VerticalContentAlignment="Center" 
+                                   HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="2" Content="Build:" 
+                                   HorizontalAlignment="Left" Margin="5" 
+                       VerticalAlignment="Top" VerticalContentAlignment="Center" 
+                                   HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="1" Content="{Binding Main.VersionGrbl}" 
+                                   HorizontalAlignment="Left" 
                        Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" 
                        HorizontalContentAlignment="Center"/>
                             <Label Grid.Column="3" Grid.Row="1" Content="{Binding Main.BuildInfoGrbl}" 
@@ -86,7 +91,7 @@
                             Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblBuildInfoCommand, Mode=OneWay}" 
                             ToolTip="View build info"/>
                                 <Button Content="$$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
-                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblSettingsCommand, Mode=OneWay}" 
+                            Style="{DynamicResource ControlStyleVD}" Command="{Binding Main.GrblRefreshSettingsCommand, Mode=OneWay}" 
                             ToolTip="View and write Grbl settings"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Grid.Row="2">
@@ -122,15 +127,14 @@
                             <StackPanel Orientation="Horizontal" Grid.Row="4">
                                 <Button Content="" HorizontalAlignment="Center" Margin="50, 10, 0, 10" 
                             VerticalAlignment="Center" Width="60" Style="{DynamicResource ControlStyleVD}" 
-                            Command="{Binding Settings.TestSettingCommand, Mode=OneWay}" IsEnabled="True"/>
-                                
+                            Command="{Binding Setting.RefreshSettingCommand, Mode=OneWay}" IsEnabled="True"/>
                             </StackPanel>
                         </Grid>
                     </Border>
                 </StackPanel>
                 <!--Grbl setting informations (command '$$'): get ID, value and description from SettingCodes-->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Command="{Binding Main.GrblRefreshSettingsCommand, FallbackValue=true, Mode=OneWay}" 
+                    <Button Command="{Binding Setting.RefreshSettingCommand, FallbackValue=true, Mode=OneWay}" 
                         HorizontalAlignment="Center" VerticalAlignment="Center" Margin="240 0 10 0"
                         Style="{DynamicResource ControlStyleVD}" ToolTip="Refresh Grbl settings">
                         <StackPanel Height="20" Width="20">
@@ -140,7 +144,7 @@
                 </StackPanel>
                 <DataGrid Grid.Row="1" Grid.Column="1" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
                           IsReadOnly="True" Width="280"
-                          ItemsSource="{Binding Main.SettingCollection}" Margin="5.4,0,3.4,0" Height="246" 
+                          ItemsSource="{Binding Setting.SettingCollection}" Margin="5.4,0,3.4,0" Height="246" 
                           VerticalAlignment="Top">
                     <DataGrid.HorizontalGridLinesBrush>
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>

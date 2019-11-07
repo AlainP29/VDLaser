@@ -138,7 +138,6 @@ namespace VDGrbl.ViewModel
         public RelayCommand GrblPauseCommand { get; private set; }
         public RelayCommand GrblCurrentStatusCommand { get; private set; }
         public RelayCommand GrblStartCommand { get; private set; }
-        public RelayCommand GrblRefreshSettingsCommand { get; private set; }
         public RelayCommand GrblParametersCommand { get; private set; }
         public RelayCommand GrblParserStateCommand { get; private set; }
         public RelayCommand GrblBuildInfoCommand { get; private set; }
@@ -186,8 +185,21 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public List<SettingItem> ListGrblSettings { get; set; } = null;
 
+        
+        /*public ObservableCollection<SettingItem> SettingCollection
+        {
+            get
+            {
+                return _settingCollection;
+            }
+            set
+            {
+                Set(ref _settingCollection, value);
+                logger.Info("MainWindowModel|SettingCollection");
+            }
+        }*/
         /// <summary>
-        /// Gets the SettingCollection property. SettingCollection is populated w/ data from ListSettingModel
+        /// Gets the SettingCollection property. SettingCollection (for binding) is populated w/ data from ListSettingModel
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public ObservableCollection<SettingItem> SettingCollection
@@ -198,8 +210,8 @@ namespace VDGrbl.ViewModel
             }
             set
             {
-                Set(ref _settingCollection, value);
-                logger.Info("MainWindowModel|SettingCollection");
+                Set<ObservableCollection<SettingItem>>(() => this.SettingCollection, ref _settingCollection, value);
+                logger.Info("MainViewModel|SettingCollection");
             }
         }
         #endregion
@@ -266,7 +278,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _errorMessage, value);
-                logger.Error(CultureInfo.CurrentCulture, "MainWindowModel|ErrorMessage {0}", value);
+                //logger.Error(CultureInfo.CurrentCulture, "MainWindowModel|ErrorMessage {0}", value);
 
             }
         }
@@ -284,7 +296,7 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _alarmMessage, value);
-                logger.Error(CultureInfo.CurrentCulture, "MainWindowModel|AlarmMessage {0}", value);
+                //logger.Error(CultureInfo.CurrentCulture, "MainWindowModel|AlarmMessage {0}", value);
             }
         }
 
@@ -941,7 +953,6 @@ namespace VDGrbl.ViewModel
         /// Bind to combobox.
         /// </summary>
         public string[] ListTransferDelay { get; private set; } = { "Slow", "Normal", "Fast", "UltraFast" };
-
         /// <summary>
         /// Gets the GCodeLine property. GCodeLine is the G-Code line displayed.
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -1109,6 +1120,10 @@ namespace VDGrbl.ViewModel
                 Set(ref _buildInfoGrbl, value);
             }
         }
+        /// <summary>
+        /// If versionGrbl=1.1 =>LastVersion is true else false
+        /// </summary>
+        public bool LastVersion { get; set; } = true;
         #endregion
 
         #region subregion machine state
@@ -1463,8 +1478,8 @@ namespace VDGrbl.ViewModel
                        });
                 }
                 DefaultSettings();
-                MyRelayCommands();
-                MyMessengers();
+                MainRelayCommands();
+                MainMessengers();
                 logger.Info("MainViewModel|MainWindow initialization finished");
         }
         #endregion
@@ -1474,7 +1489,7 @@ namespace VDGrbl.ViewModel
         /// <summary>
         /// List of RelayCommands (MVVM) bind to button in ViewModels
         /// </summary>
-        private void MyRelayCommands()
+        private void MainRelayCommands()
         {
             ConnectCommand = new RelayCommand(OpenSerialPort, CanExecuteOpenSerialPort);
             DisconnectCommand = new RelayCommand(CloseSerialPort, CanExecuteCloseSerialPort);
@@ -1489,7 +1504,6 @@ namespace VDGrbl.ViewModel
             GrblPauseCommand = new RelayCommand(GrblFeedHold, CanExecuteRealTimeCommand);
             GrblCurrentStatusCommand = new RelayCommand(GrblCurrentStatus, CanExecuteRealTimeCommand);
             GrblStartCommand = new RelayCommand(GrblStartCycle, CanExecuteRealTimeCommand);
-            GrblRefreshSettingsCommand = new RelayCommand(GrblRefreshSettingAsync, CanExecuteOtherCommand);
             GrblParametersCommand = new RelayCommand(GrblParameters, CanExecuteOtherCommand);
             GrblParserStateCommand = new RelayCommand(GrblParserState, CanExecuteOtherCommand);
             GrblBuildInfoCommand = new RelayCommand(GrblBuildInfo, CanExecuteOtherCommand);
@@ -1530,9 +1544,15 @@ namespace VDGrbl.ViewModel
         /// <summary>
         /// Used to communicate between ViewModels: SettingViewModel
         /// </summary>
-        private void MyMessengers()
+        private void MainMessengers()
         {
-            MessengerInstance.Register<NotificationMessage>(this, Test);
+            MessengerInstance.Register<NotificationMessage>(this, GetGrblSetting);//Receive notification from SettingViewModel
+        }
+        public void SearchSettingCollection()
+        {
+            MessengerInstance.Send<PropertyChangedMessage<ObservableCollection<SettingItem>>>(new PropertyChangedMessage<ObservableCollection<SettingItem>>(null, this.SettingCollection, nameof(SettingCollection)));
+            logger.Info("MainViewModel|SearchSettingCollection()");
+
         }
         #endregion
 
@@ -1685,12 +1705,19 @@ namespace VDGrbl.ViewModel
                 {
                 Thread.Sleep(50);
 
-                if (VersionGrbl.StartsWith("0") || VersionGrbl.StartsWith("1"))//Does not work neither readline in GrblBuildInfo to check grbl version...
+                if (VersionGrbl.StartsWith("1"))//Does not work neither readline in GrblBuildInfo to check grbl version...
                     {
                     logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Grbl version {0}", VersionGrbl);
                     checkVersion = true;
+                    LastVersion = true;
                     }
-                    else
+                else if (VersionGrbl.StartsWith("0"))//Does not work neither readline in GrblBuildInfo to check grbl version...
+                {
+                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Grbl version {0}", VersionGrbl);
+                    checkVersion = true;
+                    LastVersion = false;
+                }
+                else
                     {
                     logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Bad Grbl version {0}", VersionGrbl);
                     checkVersion = true;
@@ -1879,6 +1906,9 @@ namespace VDGrbl.ViewModel
             RXLine = string.Empty;
             TXLine = string.Empty;
             GCodeLine = string.Empty;
+            ErrorMessage = string.Empty;
+            AlarmMessage = string.Empty;
+            InfoMessage = string.Empty;
             NLine = 0;
                 PercentLine = 0;
                 RLine = 0;
@@ -1973,7 +2003,8 @@ namespace VDGrbl.ViewModel
                WriteString("$$");
                manualResetEvent.WaitOne();
                SettingCollection = new ObservableCollection<SettingItem>(ListGrblSettings);
-               if (!IsRefresh)
+                SearchSettingCollection();
+                if (!IsRefresh)
                {
                    cts.Cancel();
                }
@@ -2456,7 +2487,6 @@ namespace VDGrbl.ViewModel
             DefaultLaserSetting();
             DefaultGraphicSetting();
         }
-
         /// <summary>
         /// Set default laser settings
         /// </summary>
@@ -2469,7 +2499,6 @@ namespace VDGrbl.ViewModel
             ConverterParameterLaser = 25;
             logger.Info("MainViewModel|Default laser settings completed");
         }
-
         /// <summary>
         /// Set default graphic settings
         /// </summary>
@@ -2485,7 +2514,6 @@ namespace VDGrbl.ViewModel
             });
             logger.Info("MainViewModel|Default Coordinate Plane");
         }
-
         /// <summary>
         /// Does nothing yet...
         /// </summary>
@@ -2502,7 +2530,6 @@ namespace VDGrbl.ViewModel
             base.Cleanup();
             logger.Info("MainViewModel|Clean...");
         }
-
         /// <summary>
         /// Initializes DispatcherTimer to query Grbl report state at 4Hz (5Hz is max recommended).
         /// </summary>
@@ -2513,7 +2540,6 @@ namespace VDGrbl.ViewModel
             currentStatusTimer.Start();
             logger.Info("MainViewModel|Initialize Dispatcher Timer");
         }
-
         /// <summary>
         /// Selects the G-code file to send to the Arduino.
         /// </summary>
@@ -2535,7 +2561,6 @@ namespace VDGrbl.ViewModel
                     LoadFile(FileName);
                 }
         }
-
         /// <summary>
         /// Allows/Disallows LoadFile method.
         /// </summary>
@@ -2552,7 +2577,6 @@ namespace VDGrbl.ViewModel
                 return true;
             }
         }
-
         /// <summary>
         /// Load G-Code file and save lines to a queue and a list.
         /// </summary>
@@ -2587,7 +2611,6 @@ namespace VDGrbl.ViewModel
             EstimateJobTime = time.ToString(@"hh\:mm\:ss");
             GCodeDrawing(GCodePoints);
         }
-
         /// <summary>
         /// Send the G-Code file in async mode.
         /// </summary>
@@ -2721,7 +2744,6 @@ namespace VDGrbl.ViewModel
                 ResponseStatus = RespStatus.Q;
                 //IsSending = false;
         }
-
         /// <summary>
         /// Allows/Disallows SendFile method.
         /// </summary>
@@ -2734,7 +2756,6 @@ namespace VDGrbl.ViewModel
             }
             return false;
         }
-
         /// <summary>
         /// Sends G-code file line by line =>startSendingFile
         /// </summary>
@@ -2792,22 +2813,11 @@ namespace VDGrbl.ViewModel
         /// This is a test command bind to TEST button in SettingViewModel for development purpose only.
         /// </summary>
         /// <param name="notificationMessage"></param>
-        public void Test(NotificationMessage notificationMessage)
+        public void GetGrblSetting(NotificationMessage notificationMessage)
         {
-            string data = notificationMessage.Notification;
-            try
-            {
-                if (_serialPort.IsOpen)
-                {
-                    _serialPort.WriteLine(data);
-                    TXLine = data;
-                }
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Method Test: {0}", data);
-            }
-            catch (IOException ex)
-            {
-                logger.Error("MainViewModel|Exception Test raised: " + ex.ToString());
-            }
+            string notify = notificationMessage.Notification;
+            logger.Info("Notification {0} received", notify);
+            GrblRefreshSettingAsync();
         }
         #endregion
 
@@ -2830,7 +2840,7 @@ namespace VDGrbl.ViewModel
                 { 
                     ListConsoleData.Add(Console);
                 }
-                grbltool.DataGrblSorter(line);
+                grbltool.DataGrblSorter(line,LastVersion);
                 ResponseStatus = (RespStatus)grbltool.ResponseStatus;
             try
             {
@@ -2869,6 +2879,8 @@ namespace VDGrbl.ViewModel
                 VersionGrbl = grbltool.VersionGrbl;
                 BuildInfoGrbl = grbltool.BuildInfo;
                 InfoMessage = grbltool.InfoMessage;
+                AlarmMessage = grbltool.AlarmMessage;
+                ErrorMessage = grbltool.ErrorMessage;
                 ConsoleData = new ObservableCollection<ConsoleModel>(ListConsoleData);
                 if (ListConsoleData.Count>5)
                 {

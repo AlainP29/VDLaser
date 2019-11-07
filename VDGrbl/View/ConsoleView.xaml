@@ -11,11 +11,12 @@
     <!--Show data sent + response-->
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <GroupBox Header="{Binding Main.GroupBoxConsoleTitle}" Style="{DynamicResource GroupBoxStyleVD}"
-                  IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" Margin="0,0,0,10">
-            <Grid Margin="5">
+                  IsEnabled="{Binding Main.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" 
+                  Margin="0,0,0,5">
+            <Grid Margin="5 0 5 0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="0.2*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="5*"/>
@@ -37,17 +38,27 @@
                         <DataGridTextColumn Header="Line sent" Binding="{Binding TXData, Mode=OneWay}"
                                             Width="300" MinWidth="70" MaxWidth="380"/>
                         <DataGridTextColumn Header="Response" Binding="{Binding RXData, Mode=OneWay}"
-                                            Width="300" MinWidth="60" MaxWidth="380" CanUserResize="True" CanUserSort="True"/>
+                                            Width="300" MinWidth="60" MaxWidth="380" CanUserResize="True" 
+                                            CanUserSort="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <!--Clear (datagrid, textbox) + verbose (machine state)-->
                 <StackPanel Grid.Row="0" Grid.Column="1">
                     <Button Content="Clear" Margin="0 25 0 5" Width="50" 
                             Command="{Binding Main.ClearCommand, Mode=OneWay}" 
-                        Style="{DynamicResource ControlStyleVD}"/>
+                        Style="{DynamicResource ControlStyleVD}" ToolTip="Clear data Console, Gcode and Graphic"/>
                     <CheckBox Content="Verbose" Margin="10,30,5,0" 
                               VerticalContentAlignment="Center" 
                               IsChecked="{Binding Main.IsVerbose, Mode=TwoWay}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+                    <Label Content="Message : "/>
+                    <TextBlock  Text="{Binding Main.AlarmMessage}"
+                               Style="{StaticResource AlarmStyleVD}" 
+                               ScrollViewer.VerticalScrollBarVisibility="Disabled" 
+                               VerticalAlignment="Center" TextWrapping="WrapWithOverflow" 
+                                ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    </TextBlock>
                 </StackPanel>
             </Grid>
         </GroupBox>

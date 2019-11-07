@@ -26,4 +26,10 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+    <Style x:Key="AlarmStyleVD" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI Light"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontStyle" Value="Italic"/>
+        <Setter Property="Foreground" Value="IndianRed"/>
+    </Style>
 </ResourceDictionary>

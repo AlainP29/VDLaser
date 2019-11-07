@@ -73,7 +73,7 @@ namespace VDGrbl.Tools
         /// Sorts Grbl data received like Grbl informations, response, coordinates, settings...
         /// </summary>
         /// <param name="line"></param>
-        public void DataGrblSorter(string line)
+        public void DataGrblSorter(string line,bool version)
         {
                 if (!string.IsNullOrEmpty(line))
                 {
@@ -88,7 +88,7 @@ namespace VDGrbl.Tools
                     }
                     else if (lineTrim.StartsWith("alarm", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        ProcessAlarmResponse(lineTrim);
+                        ProcessAlarmResponse(lineTrim,version);
                     }
                     else if (lineTrim.StartsWith("<", StringComparison.CurrentCulture) && lineTrim.EndsWith(">", StringComparison.CurrentCulture))
                     {
@@ -180,6 +180,8 @@ namespace VDGrbl.Tools
         {
             ResponseStatus = RespStatus.Ok;
             logger.Info(CultureInfo.CurrentCulture, "GrblTool|ProcessResponse|Data:{0}", data);
+            AlarmMessage = string.Empty;
+            ErrorMessage = string.Empty;
         }
 
         /// <summary>
@@ -221,25 +223,33 @@ namespace VDGrbl.Tools
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public void ProcessAlarmResponse(string data)
+        public void ProcessAlarmResponse(string data, bool version)
         {
             ResponseStatus = RespStatus.NOk;
             MachineStatusColor = Brushes.Red;
             MachineStatus = MachStatus.Alarm;
-            logger.Info("GrblTool|ProcessResponse|Data:{0}|RespStatus:{1}|MachStatus:{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
-            if(!string.IsNullOrEmpty(data))
+            logger.Info("GrblTool|ProcessAlarmResponse|Data:{0}|RespStatus:{1}|MachStatus:{2}", data, ResponseStatus.ToString(), MachineStatus.ToString());
+            try
             {
-                if (VersionGrbl.StartsWith("1",StringComparison.InvariantCulture))
+                if (!string.IsNullOrEmpty(data))
                 {
-                    AlarmMessage = GrblAlarmCodec.AlarmDict11[data.Split(':')[1]];
-                    logger.Info("GrblTool|ProcessAlarmResponse11|Alarm key {0} | description:{1}", data.Split(':')[1], AlarmMessage);
-                }
-                else
-                {
-                    AlarmMessage = GrblAlarmCodec.AlarmDict09[data.Split(':')[1]];
-                    logger.Info("GrblTool|ProcessAlarmResponse09|Alarm key {0} | description:{1}", data.Split(':')[1], AlarmMessage);
+                    logger.Info("GrblTool|ProcessAlarmResponse {0} VersionGrbl {1}", data,version);
 
+                    if (version)
+                    {
+                        AlarmMessage = GrblAlarmCodec.AlarmDict11[data.Split(':')[1]];
+                        logger.Info("GrblTool|ProcessAlarmResponse11|Alarm key {0} | description:{1}", data.Split(':')[1], AlarmMessage);
+                    }
+                    else
+                    {
+                        AlarmMessage = GrblAlarmCodec.AlarmDict09[data.Split(':')[1]];
+                        logger.Info("GrblTool|ProcessAlarmResponse09|Alarm key {0} | description:{1}", data.Split(':')[1], AlarmMessage);
+                    }
                 }
+            }
+            catch(Exception ex)
+            {
+                logger.Error("GrblTool|ProcessAlarmResponse {0}",data);
             }
         }
 

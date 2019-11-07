@@ -47,14 +47,14 @@
                 </StackPanel>
                 <!--Buttons: load, start and stop sending file-->
                 <StackPanel Grid.Row="0" Orientation="Horizontal">
-                    <Button VerticalAlignment="Center" Height="30" Width="30"
+                    <Button VerticalAlignment="Center" Height="30" Width="30" ToolTip="Load Gcode file"
                             Margin="5" Style="{DynamicResource ControlStyleVD}"
                             Command="{Binding Main.LoadFileCommand, Mode=OneWay}">
                         <StackPanel Height="20" Width="20">
                             <Image Source="/VDGrbl;component/Skins/Images/iconOpenFile40.png"/>
                         </StackPanel>
                     </Button>
-                    <Button VerticalAlignment="Center"
+                    <Button VerticalAlignment="Center" ToolTip="Start/resume sending file"
                             Margin="5" Style="{DynamicResource ControlStyleVD}" 
                             Command="{Binding Main.SendFileCommand, Mode=OneWay}"
                             Height="30" Width="30">
@@ -62,7 +62,7 @@
                             <Image Source="/VDGrbl;component/Skins/Images/iconPlay40.png"/>
                         </StackPanel>
                     </Button>
-                    <Button VerticalAlignment="Center"
+                    <Button VerticalAlignment="Center" ToolTip="Pause sending file"
                             Margin="5" Style="{DynamicResource ControlStyleVD}" 
                             Command="{Binding Main.PauseFileCommand, Mode=OneWay}"
                             Height="30" Width="30">
@@ -70,7 +70,7 @@
                             <Image Source="/VDGrbl;component/Skins/Images/iconPause40.png"/>
                         </StackPanel>
                     </Button>
-                    <Button VerticalAlignment="Center"
+                    <Button VerticalAlignment="Center" ToolTip="Stop sending file"
                             Margin="5" Style="{DynamicResource ControlStyleVD}" 
                             Command="{Binding Main.StopFileCommand, Mode=OneWay}"
                             Height="30" Width="30">
@@ -84,9 +84,11 @@
                 <!--Transfer delay between two lines-->
                 <StackPanel Grid.Row="1" Orientation="Horizontal">
                     <Label Content="Transfer :" Margin="5, 0, 0, 0" VerticalContentAlignment="Center"/>
-                    <ComboBox Height="22.4" Width="Auto" ItemsSource="{Binding Main.ListTransferDelay}" SelectedValue="{Binding Main.SelectedTransferDelay}" 
-                              SelectedIndex="1" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Margin="0" IsEnabled="{Binding Main.IsManualSending}"/>
-
+                    <ComboBox Height="22.4" Width="Auto" ItemsSource="{Binding Main.ListTransferDelay}" 
+                              SelectedValue="{Binding Main.SelectedTransferDelay}" 
+                              SelectedIndex="1" HorizontalContentAlignment="Left" 
+                              VerticalContentAlignment="Center" Margin="0" 
+                              IsEnabled="{Binding Main.IsManualSending}"/>
                 </StackPanel>
                 <!--Total of lines sent + number of motion command queued-->
                 <StackPanel Grid.Row="2" Orientation="Horizontal">

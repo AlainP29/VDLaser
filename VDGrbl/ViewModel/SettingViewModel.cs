@@ -3,6 +3,10 @@ using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Messaging;
 using NLog;
 using VDGrbl.Service;
+using System.Collections;
+using System.Collections.ObjectModel;
+using VDGrbl.Model;
+using System.Collections.Generic;
 
 namespace VDGrbl.ViewModel
 {
@@ -11,12 +15,20 @@ namespace VDGrbl.ViewModel
         private readonly ISettingService _settingService;
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private string _groupBoxSettingTitle = string.Empty;
+        private ObservableCollection<SettingItem> _settingCollection = new ObservableCollection<SettingItem>();
 
         #region RelayCommand
-        public RelayCommand TestSettingCommand { get; private set; }
+        public RelayCommand RefreshSettingCommand { get; private set; }
         private void SettingRelayCommands()
         {
-            TestSettingCommand = new RelayCommand(TestSetting, CanExecuteTestSettingCommand);
+            RefreshSettingCommand = new RelayCommand(RefreshSetting, CanExecuteRefreshSettingCommand);
+            logger.Info("SettingViewModel|SettingRelayCommands initialised");
+
+        }
+        private void SettingMessengers()
+        {
+            MessengerInstance.Register<PropertyChangedMessage<ObservableCollection<SettingItem>>>(this, SearchMainViewModelChanged);
+            logger.Info("SettingViewModel|SettingMessengers initialised");
         }
         #endregion
 
@@ -26,8 +38,8 @@ namespace VDGrbl.ViewModel
         /// </summary>
         public void SendSettingMessage()
         {
-            MessengerInstance.Send<NotificationMessage>(new NotificationMessage("$$"));
-            logger.Debug("SettingViewModel|Notification sent");
+            MessengerInstance.Send<NotificationMessage>(new NotificationMessage("GetSetting"));
+            logger.Info("SettingViewModel|Notification GetSetting sent");
         }
         #endregion
 
@@ -45,6 +57,22 @@ namespace VDGrbl.ViewModel
             set
             {
                 Set(ref _groupBoxSettingTitle, value);
+            }
+        }
+        /// <summary>
+        /// Gets the SettingCollection property. SettingCollection is populated w/ data from ListSettingModel
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ObservableCollection<SettingItem> SettingCollection
+        {
+            get
+            {
+                return _settingCollection;
+            }
+            set
+            {
+                Set(ref _settingCollection, value);
+                logger.Info("SettingViewModel|SettingCollection updated");
             }
         }
         #endregion
@@ -67,15 +95,16 @@ namespace VDGrbl.ViewModel
                             GroupBoxSettingTitle = item.SettingHeader;
                         });
                 SettingRelayCommands();
+                SettingMessengers();
             }
         }
         #endregion
 
         #region Method
         /// <summary>
-        /// Sends the Grbl '$$' command to get all particular $x=var settings of the machine
+        /// Sends the Grbl '$$' command with messenger to Main class to get all particular $x=var settings of the machine
         /// </summary>
-        public void TestSetting()
+        public void RefreshSetting()
         {
             logger.Debug("SettingViewModel|Send notification");
             SendSettingMessage();
@@ -84,9 +113,18 @@ namespace VDGrbl.ViewModel
         /// Allows/disallows refresh grbl settings' button.
         /// </summary>
         /// <returns></returns>
-        public static bool CanExecuteTestSettingCommand()
+        public static bool CanExecuteRefreshSettingCommand()
         {
             return true;
+        }
+
+        private void SearchMainViewModelChanged(PropertyChangedMessage<ObservableCollection<SettingItem>> propertyDetails)
+        {
+            if (propertyDetails.PropertyName == nameof(SettingCollection))
+            {
+                SettingCollection=propertyDetails.NewValue;
+                logger.Info("SettingViewModel|SearchMainViewModelChanged()");
+            }
         }
         #endregion
     }

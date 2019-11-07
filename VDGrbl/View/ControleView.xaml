@@ -18,7 +18,7 @@
                     <StackPanel Orientation="Horizontal">
                     <Button Width="60" Height="22" HorizontalAlignment="Center" 
                             Style="{DynamicResource ControlStyleVD}"
-                            Command="{Binding Main.GrblHomingCommand, Mode=OneWay}" Margin="5,10,0,0" Content="Home">
+                            Command="{Binding Main.GrblHomingCommand, Mode=OneWay}" Margin="5,10,0,0" Content="Home" ToolTip="Homing the machine">
                     </Button>
                     <Button Content="H1" Width="27" Height="22.4" 
                             ToolTip="Pre-defined position 1 set by G28.1 in Grbl settings"
@@ -32,10 +32,10 @@
                     <StackPanel Orientation="Horizontal" >
                         <Button Width="60" Height="22.4" Margin="5 10 0 0" Content="Resume" 
                                 Command="{Binding Main.GrblStartCommand}"
-                                Style="{DynamicResource ControlStyleVD}"/>
+                                Style="{DynamicResource ControlStyleVD}" ToolTip="Start/Resume cycle"/>
                         <Button Width="60" Height="22.4" Margin="5 10 0 0" Content="Pause" 
                                 Command="{Binding Main.GrblPauseCommand}"
-                                Style="{DynamicResource ControlStyleVD}"/>
+                                Style="{DynamicResource ControlStyleVD}" ToolTip="Pause cycle"/>
                     </StackPanel>
                 </StackPanel>
                 <!--Emergency stop (reset) and unlock ($X)-->
@@ -45,12 +45,12 @@
                             Command="{Binding Main.GrblResetCommand, Mode=OneWay}">
                         <StackPanel>
                             <Image Source="/VDGrbl;component/Skins/Images/iconStop40.png" 
-                                   RenderTransformOrigin="0.5,0.5"/>
+                                   RenderTransformOrigin="0.5,0.5" ToolTip="Reset machine"/>
                         </StackPanel>
                     </Button>
                     <Button Content="Unlock" Margin="0 0 0 0" Width="50" 
                             Command="{Binding Main.GrblKillAlarmCommand, Mode=OneWay}" 
-                        Style="{DynamicResource ControlStyleVD}"/>
+                        Style="{DynamicResource ControlStyleVD}" ToolTip="Unlock after reset"/>
                 </StackPanel>
             </Grid>
         </GroupBox>

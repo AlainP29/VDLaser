@@ -57,11 +57,11 @@
                              Text="{Binding Main.TXLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                              Width="120">
                         <TextBox.InputBindings>
-                            <KeyBinding Command="{Binding Main.SendCommand}" Key="Return"/>
+                            <KeyBinding Command="{Binding Main.SendManualCommand}" Key="Return"/>
                         </TextBox.InputBindings>
                     </TextBox>
                     <Button  Content="Send" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" 
-                             Width="75" 
+                             Width="75" ToolTip="Send line manually"
                              Command="{Binding Main.SendManualCommand, Mode=OneWay}"/>
                     <TextBox  Text="{Binding Main.ResponseStatus, Mode=OneWay}" Margin="5" 
                               VerticalContentAlignment="Center" 
