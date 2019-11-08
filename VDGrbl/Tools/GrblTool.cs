@@ -84,7 +84,7 @@ namespace VDGrbl.Tools
                     }
                     else if (lineTrim.StartsWith("error", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        ProcessErrorResponse(lineTrim);
+                        ProcessErrorResponse(lineTrim,version);
                     }
                     else if (lineTrim.StartsWith("alarm", StringComparison.CurrentCultureIgnoreCase))
                     {
@@ -189,17 +189,17 @@ namespace VDGrbl.Tools
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public void ProcessErrorResponse(string data)
+        public void ProcessErrorResponse(string data, bool version)
         {
             ResponseStatus = RespStatus.Ok;//It is an error but still ok to send next command
             if (!string.IsNullOrEmpty(data))
             {
-                if (VersionGrbl.StartsWith("1", StringComparison.InvariantCulture))//In version 1.1 all error codes have ID
+                if (version)//In version 1.1 all error codes have ID
                 {
                     ErrorMessage = GrblErrorCode.ErrorDict11[data.Split(':')[1]];
                     logger.Error("GrblTool|ProcessErrorResponse|Error key:{0} | description:{1}", data.Split(':')[1], ErrorMessage);
                 }
-                else if(VersionGrbl.Contains("9"))
+                else
                 {
                     if (data.Contains("ID"))//In version 0.9 only error code from 23 to 37 have ID
                     {
@@ -212,9 +212,6 @@ namespace VDGrbl.Tools
                         logger.Error("GrblTool|ProcessErrorResponse|Error key {0} | description:{1}", data.Split(':')[1], ErrorMessage);
                     }
                 }
-                else
-                    logger.Error("GrblTool|ProcessErrorResponse|VersionGrbl not defined or unknown error message");
-
             }
         }
 
@@ -249,7 +246,7 @@ namespace VDGrbl.Tools
             }
             catch(Exception ex)
             {
-                logger.Error("GrblTool|ProcessAlarmResponse {0}",data);
+                logger.Error(CultureInfo.CurrentCulture,"GrblTool|ProcessAlarmResponse {0}",ex.ToString());
             }
         }
 

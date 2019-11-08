@@ -95,7 +95,7 @@ namespace VDGrbl.ViewModel
         private MachStatus _machineStatus = MachStatus.Idle;
         private SolidColorBrush _machineStatusColor = new SolidColorBrush(Colors.LightGray);
         private SolidColorBrush _laserColor = new SolidColorBrush(Colors.LightGray);
-        private ObservableCollection<SettingItem> _settingCollection=new ObservableCollection<SettingItem>();
+        private List<SettingItem> _listGrblSettings = new List<SettingItem>();
         private Queue<string> _fileQueue = new Queue<string>();
         private List<string> _fileList = new List<string>();
         private ObservableCollection<ConsoleModel> _consoleData;
@@ -183,35 +183,16 @@ namespace VDGrbl.ViewModel
         /// Changes to that property's value raise the PropertyChanged event. 
         /// First get ListGrblSettings then populate the settingCollection (observableCollection) for binding.
         /// </summary>
-        public List<SettingItem> ListGrblSettings { get; set; } = null;
-
-        
-        /*public ObservableCollection<SettingItem> SettingCollection
+        public List<SettingItem> ListSetting
         {
             get
             {
-                return _settingCollection;
+                return _listGrblSettings;
             }
             set
             {
-                Set(ref _settingCollection, value);
-                logger.Info("MainWindowModel|SettingCollection");
-            }
-        }*/
-        /// <summary>
-        /// Gets the SettingCollection property. SettingCollection (for binding) is populated w/ data from ListSettingModel
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public ObservableCollection<SettingItem> SettingCollection
-        {
-            get
-            {
-                return _settingCollection;
-            }
-            set
-            {
-                Set<ObservableCollection<SettingItem>>(() => this.SettingCollection, ref _settingCollection, value);
-                logger.Info("MainViewModel|SettingCollection");
+                Set<List<SettingItem>>(() => this.ListSetting, ref _listGrblSettings, value);
+                logger.Info("MainViewModel|ListSetting");
             }
         }
         #endregion
@@ -1479,7 +1460,7 @@ namespace VDGrbl.ViewModel
                 }
                 DefaultSettings();
                 MainRelayCommands();
-                MainMessengers();
+                //MainMessengers();
                 logger.Info("MainViewModel|MainWindow initialization finished");
         }
         #endregion
@@ -1548,11 +1529,10 @@ namespace VDGrbl.ViewModel
         {
             MessengerInstance.Register<NotificationMessage>(this, GetGrblSetting);//Receive notification from SettingViewModel
         }
-        public void SearchSettingCollection()
+        public void SearchListSetting()
         {
-            MessengerInstance.Send<PropertyChangedMessage<ObservableCollection<SettingItem>>>(new PropertyChangedMessage<ObservableCollection<SettingItem>>(null, this.SettingCollection, nameof(SettingCollection)));
-            logger.Info("MainViewModel|SearchSettingCollection()");
-
+            MessengerInstance.Send<PropertyChangedMessage<List<SettingItem>>>(new PropertyChangedMessage<List<SettingItem>>(null, this.ListSetting, nameof(ListSetting)));
+            logger.Info("MainViewModel|SearchListSetting()");
         }
         #endregion
 
@@ -1624,6 +1604,7 @@ namespace VDGrbl.ViewModel
                 IsBaudEnabled = false;
                 IsPortEnabled = false;
                 StartCommunication();
+                MainMessengers();
             }
             catch (IOException ex)
             {
@@ -1645,9 +1626,8 @@ namespace VDGrbl.ViewModel
         {
             if(_serialPort.IsOpen)
             {
-                GrblReset(); //Do a soft reset before starting a new job?
+                GrblReset();
                 GrblBuildInfo();
-                //GrblRefreshSettingAsync();
                 CheckInfos();
                 if (!currentStatusTimer.IsEnabled)
                 {
@@ -1673,6 +1653,7 @@ namespace VDGrbl.ViewModel
                 _serialPort.Close();
                 IsBaudEnabled = true;//In cleanup?
                 IsPortEnabled = true;
+                MessengerInstance.Unregister<NotificationMessage>(this, GetGrblSetting);
             }
             catch(InvalidOperationException ex)
             {
@@ -1883,8 +1864,7 @@ namespace VDGrbl.ViewModel
                     _serialPort.DiscardInBuffer();
                     _serialPort.DiscardOutBuffer();
                     ListConsoleData.Clear();
-                    ListGrblSettings.Clear();
-                    SettingCollection.Clear();
+                    ListSetting.Clear();
                     logger.Info("MainViewModel|TXLine/RXLine and buffers erased");
                 }
                 Thread.Sleep(50);
@@ -1992,9 +1972,9 @@ namespace VDGrbl.ViewModel
         private async void GrblRefreshSettingAsync()
         {
             logger.Info("MainViewModel|Load Grbl settings");
-            if (ListGrblSettings.Count > 0)
+            if (ListSetting.Count > 0)
             {
-                ListGrblSettings.Clear();
+                ListSetting.Clear();
             }
             cts = new CancellationTokenSource();
             CancellationToken token = cts.Token;
@@ -2002,8 +1982,8 @@ namespace VDGrbl.ViewModel
             {
                WriteString("$$");
                manualResetEvent.WaitOne();
-               SettingCollection = new ObservableCollection<SettingItem>(ListGrblSettings);
-                SearchSettingCollection();
+               ListSetting = grbltool.ListGrblSettings;
+                SearchListSetting();
                 if (!IsRefresh)
                {
                    cts.Cancel();
@@ -2886,7 +2866,7 @@ namespace VDGrbl.ViewModel
                 {
                     ListConsoleData.RemoveAt(0);
                 }
-            ListGrblSettings = grbltool.ListGrblSettings;
+            //ListGrblSettings = grbltool.ListGrblSettings;
         }
 
         /// <summary>

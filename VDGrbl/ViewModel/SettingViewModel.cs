@@ -16,8 +16,8 @@ namespace VDGrbl.ViewModel
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private string _groupBoxSettingTitle = string.Empty;
         private ObservableCollection<SettingItem> _settingCollection = new ObservableCollection<SettingItem>();
-
-        #region RelayCommand
+        private List<SettingItem> _listSetting = new List<SettingItem>();
+        #region RelayCommand & Messengers
         public RelayCommand RefreshSettingCommand { get; private set; }
         private void SettingRelayCommands()
         {
@@ -25,21 +25,14 @@ namespace VDGrbl.ViewModel
             logger.Info("SettingViewModel|SettingRelayCommands initialised");
 
         }
+        /// <summary>
+        /// Register for change in MainViewModel/setting collection property
+        /// </summary>
         private void SettingMessengers()
         {
-            MessengerInstance.Register<PropertyChangedMessage<ObservableCollection<SettingItem>>>(this, SearchMainViewModelChanged);
+            //MessengerInstance.Register<PropertyChangedMessage<ObservableCollection<SettingItem>>>(this, SearchSettingCollectionMainViewModelChanged);
+            MessengerInstance.Register<PropertyChangedMessage<List<SettingItem>>>(this, SearchListSettingMainViewModelChanged);
             logger.Info("SettingViewModel|SettingMessengers initialised");
-        }
-        #endregion
-
-        #region Messenger
-        /// <summary>
-        /// Used to communicate between ViewModels: MainViewModel
-        /// </summary>
-        public void SendSettingMessage()
-        {
-            MessengerInstance.Send<NotificationMessage>(new NotificationMessage("GetSetting"));
-            logger.Info("SettingViewModel|Notification GetSetting sent");
         }
         #endregion
 
@@ -75,6 +68,23 @@ namespace VDGrbl.ViewModel
                 logger.Info("SettingViewModel|SettingCollection updated");
             }
         }
+        /// <summary>
+        /// Gets the ListSetting property. SettingCollection is populated w/ data from ListSettingModel
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public List<SettingItem> ListSetting
+        {
+            get
+            {
+                return _listSetting;
+            }
+            set
+            {
+                Set(ref _listSetting, value);
+                logger.Info("SettingViewModel|ListSetting updated");
+                SettingCollection = new ObservableCollection<SettingItem>(ListSetting);
+            }
+        }
         #endregion
 
         #region Constructor
@@ -102,10 +112,22 @@ namespace VDGrbl.ViewModel
 
         #region Method
         /// <summary>
+        /// Used to communicate between ViewModels: MainViewModel
+        /// </summary>
+        public void SendSettingMessage()
+        {
+            MessengerInstance.Send<NotificationMessage>(new NotificationMessage("GetSetting"));
+            logger.Info("SettingViewModel|Notification GetSetting sent");
+        }
+        /// <summary>
         /// Sends the Grbl '$$' command with messenger to Main class to get all particular $x=var settings of the machine
         /// </summary>
         public void RefreshSetting()
         {
+            if(SettingCollection.Count>0)
+            {
+                SettingCollection.Clear();
+            }
             logger.Debug("SettingViewModel|Send notification");
             SendSettingMessage();
         }
@@ -117,13 +139,28 @@ namespace VDGrbl.ViewModel
         {
             return true;
         }
-
-        private void SearchMainViewModelChanged(PropertyChangedMessage<ObservableCollection<SettingItem>> propertyDetails)
+        /// <summary>
+        /// Get new value of MainViewModel setting collection change
+        /// </summary>
+        /// <param name="propertyDetails"></param>
+        private void SearchSettingCollectionMainViewModelChanged(PropertyChangedMessage<ObservableCollection<SettingItem>> propertyDetails)
         {
             if (propertyDetails.PropertyName == nameof(SettingCollection))
             {
                 SettingCollection=propertyDetails.NewValue;
                 logger.Info("SettingViewModel|SearchMainViewModelChanged()");
+            }
+        }
+        /// <summary>
+        /// Get new value of MainViewModel list setting change
+        /// </summary>
+        /// <param name="propertyDetails"></param>
+        private void SearchListSettingMainViewModelChanged(PropertyChangedMessage<List<SettingItem>> propertyDetails)
+        {
+            if (propertyDetails.PropertyName == nameof(ListSetting))
+            {
+                ListSetting = propertyDetails.NewValue;
+                logger.Info("SettingViewModel|SearchMainViewModelChanged()1");
             }
         }
         #endregion
