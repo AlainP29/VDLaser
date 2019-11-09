@@ -5,11 +5,11 @@ using NLog;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Media;
-using VDGrbl.Model;
-using VDGrbl.Service;
-using VDGrbl.Tools;
+using VDLaser.Model;
+using VDLaser.Service;
+using VDLaser.Tools;
 
-namespace VDGrbl.ViewModel
+namespace VDLaser.ViewModel
 {
     public class GraphicViewModel : ViewModelBase
     {

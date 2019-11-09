@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VDGrbl.Codes
+namespace VDLaser.Codes
 {
     /// <summary>
     /// Grbl Error codes.

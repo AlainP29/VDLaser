@@ -1,8 +1,8 @@
 ﻿using System;
-using VDGrbl.Model;
-using VDGrbl.Service;
+using VDLaser.Model;
+using VDLaser.Service;
 
-namespace VDGrbl.Design
+namespace VDLaser.Design
 {
     public class DesignGrblService : IGrblService
     {

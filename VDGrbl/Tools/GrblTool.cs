@@ -1,7 +1,7 @@
 ﻿using System;
 using NLog;
-using VDGrbl.Codes;
-using VDGrbl.Model;
+using VDLaser.Codes;
+using VDLaser.Model;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Collections.ObjectModel;
 using System.Globalization;
 
-namespace VDGrbl.Tools
+namespace VDLaser.Tools
 {
     /// <summary>
     /// Tools to parse grbl data send or received

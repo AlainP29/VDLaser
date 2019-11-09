@@ -1,7 +1,7 @@
 ﻿using System;
-using VDGrbl.Model;
+using VDLaser.Model;
 
-namespace VDGrbl.Service
+namespace VDLaser.Service
 {
     public interface IGrblService
     {

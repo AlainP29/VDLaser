@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29403.142
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VDGrbl", "VDGrbl\VDGrbl.csproj", "{7D011CDF-20BA-43CA-9FBD-6770A68D91CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VDLaser", "VDGrbl\VDLaser.csproj", "{7D011CDF-20BA-43CA-9FBD-6770A68D91CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VDGrblTests", "VDGrblTests\VDGrblTests.csproj", "{4CC30ABD-55B0-4311-A2E1-A5FEF342F483}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VDLaserTests", "VDGrblTests\VDLaserTests.csproj", "{4CC30ABD-55B0-4311-A2E1-A5FEF342F483}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace VDGrbl.View
+namespace VDLaser.View
 {
     /// <summary>
     /// Logique d'interaction pour SerialPortSettingsView.xaml

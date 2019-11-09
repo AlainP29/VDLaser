@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using NLog;
 
-namespace VDGrbl.Tools
+namespace VDLaser.Tools
 {
     /// <summary>
     /// Convert an object to double. Use in Xaml GCodeFileView.

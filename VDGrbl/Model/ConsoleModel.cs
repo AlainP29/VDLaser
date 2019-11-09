@@ -1,5 +1,5 @@
 ﻿
-namespace VDGrbl.Model
+namespace VDLaser.Model
 {
     public class ConsoleModel
     {

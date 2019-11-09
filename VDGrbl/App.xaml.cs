@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using GalaSoft.MvvmLight.Threading;
 
-namespace VDGrbl
+namespace VDLaser
 {
 
     /// <summary>

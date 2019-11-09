@@ -1,9 +1,9 @@
-﻿<UserControl x:Name="userControl" x:Class="VDGrbl.View.JoggingView"
+﻿<UserControl x:Name="userControl" x:Class="VDLaser.View.JoggingView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:VDGrbl.Tools"
+             xmlns:local="clr-namespace:VDLaser.Tools"
              mc:Ignorable="d" Height="300" Width="550" DataContext="{Binding Source={StaticResource Locator}}">
     <UserControl.InputBindings>
         <KeyBinding Key="NumPad1" Command="{Binding Main.JogSWCommand, Mode=OneWay}" 

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using NLog;
 
-namespace VDGrbl.Tools
+namespace VDLaser.Tools
 {
     /// <summary>
     /// Convert an object (double) to percentage used in StringFormat=\{0:P\}. Use in Xaml laserView.

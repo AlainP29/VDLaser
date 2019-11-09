@@ -1,9 +1,9 @@
 ﻿using GalaSoft.MvvmLight;
 using NLog;
-using VDGrbl.Model;
-using VDGrbl.Service;
+using VDLaser.Model;
+using VDLaser.Service;
 
-namespace VDGrbl.ViewModel
+namespace VDLaser.ViewModel
 {
     public class GrblViewModel : ViewModelBase
     {

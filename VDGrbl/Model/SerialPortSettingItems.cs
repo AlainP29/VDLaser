@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace VDGrbl.Model
+namespace VDLaser.Model
 {
     public class SerialPortSettingItems
     {

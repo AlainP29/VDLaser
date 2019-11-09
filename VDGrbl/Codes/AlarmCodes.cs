@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace VDGrbl.Codes
+namespace VDLaser.Codes
 {
     /// <summary>
     /// Grbl alarm codes

@@ -15,10 +15,10 @@ using GalaSoft.MvvmLight.Ioc;
 using CommonServiceLocator;
 using NLog;
 
-using VDGrbl.Model;
-using VDGrbl.Service;
+using VDLaser.Model;
+using VDLaser.Service;
 
-namespace VDGrbl.ViewModel
+namespace VDLaser.ViewModel
 {
     /// <summary>
     /// This class contains static references to all the view models in the

@@ -1,9 +1,9 @@
-﻿using VDGrbl.Tools;
+﻿using VDLaser.Tools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.Windows.Media;
 
-namespace VDGrbl.Tools.Tests
+namespace VDLaser.Tools.Tests
 {
     [TestClass()]
     public class BrushColorConverterTests

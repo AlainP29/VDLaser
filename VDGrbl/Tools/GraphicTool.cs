@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Media;
 
-namespace VDGrbl.Tools
+namespace VDLaser.Tools
 {
     /// <summary>
     /// Provide tool to plot the GCode file in a canvas.

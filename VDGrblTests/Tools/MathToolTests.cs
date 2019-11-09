@@ -1,9 +1,9 @@
-﻿using VDGrbl.Tools;
+﻿using VDLaser.Tools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows.Media;
 using System.Windows;
 
-namespace VDGrbl.Tools.Tests
+namespace VDLaser.Tools.Tests
 {
     [TestClass()]
     public class MathToolTests

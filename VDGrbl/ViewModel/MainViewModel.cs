@@ -14,13 +14,13 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using VDGrbl.Model;
-using VDGrbl.Tools;
-using VDGrbl.Service;
+using VDLaser.Model;
+using VDLaser.Tools;
+using VDLaser.Service;
 using System.Globalization;
 using System.Diagnostics;
 
-namespace VDGrbl.ViewModel
+namespace VDLaser.ViewModel
 {
     /// <summary>
     /// This class contains properties that the main View can data bind to.

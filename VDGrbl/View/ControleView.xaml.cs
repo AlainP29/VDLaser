@@ -1,7 +1,7 @@
 ﻿using System.Windows.Controls;
 using System;
 
-namespace VDGrbl.View
+namespace VDLaser.View
 {
     /// <summary>
     /// Logique d'interaction pour ControleView.xaml

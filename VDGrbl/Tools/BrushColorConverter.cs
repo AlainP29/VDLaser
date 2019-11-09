@@ -3,7 +3,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using NLog;
 
-namespace VDGrbl.Tools
+namespace VDLaser.Tools
 {
     /// <summary>
     /// Convert a bool to a brushcolor. Use in Xaml SerialPortSettingView

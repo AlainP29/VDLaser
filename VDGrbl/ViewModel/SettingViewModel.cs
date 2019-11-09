@@ -2,13 +2,13 @@
 using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Messaging;
 using NLog;
-using VDGrbl.Service;
+using VDLaser.Service;
 using System.Collections;
 using System.Collections.ObjectModel;
-using VDGrbl.Model;
+using VDLaser.Model;
 using System.Collections.Generic;
 
-namespace VDGrbl.ViewModel
+namespace VDLaser.ViewModel
 {
     public class SettingViewModel : ViewModelBase
     {

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace VDGrbl.Properties
+namespace VDLaser.Properties
 {
     using System;
 

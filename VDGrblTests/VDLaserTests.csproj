@@ -104,9 +104,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VDGrbl\VDGrbl.csproj">
+    <ProjectReference Include="..\VDGrbl\VDLaser.csproj">
       <Project>{7D011CDF-20BA-43CA-9FBD-6770A68D91CA}</Project>
-      <Name>VDGrbl</Name>
+      <Name>VDLaser</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

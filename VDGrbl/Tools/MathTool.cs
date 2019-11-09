@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 
-namespace VDGrbl.Tools
+namespace VDLaser.Tools
 {
     public static class MathTool
     {

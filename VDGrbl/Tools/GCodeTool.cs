@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Media;
 
-namespace VDGrbl.Tools
+namespace VDLaser.Tools
 {
     /// <summary>
     /// G-code class: usefull tool to format, check or parse G-code file.

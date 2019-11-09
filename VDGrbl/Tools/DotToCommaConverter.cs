@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using NLog;
 
-namespace VDGrbl.Tools
+namespace VDLaser.Tools
 {
     [ValueConversion(typeof(object), typeof(string))]
         public class DotToCommaConverter : IValueConverter
