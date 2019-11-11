@@ -43,21 +43,21 @@
                         </StackPanel>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Graphic" Style="{DynamicResource ControlStyleVD}">
+                <TabItem Header="Grbl settings" Style="{DynamicResource ControlStyleVD}">
+                    <Grid Background="#FFE5E5E5" Height="300" Margin="0">
+                        <!-- Grbl settings and commands-->
+                        <StackPanel Orientation="Horizontal">
+                            <local:SettingView Margin="1" Height="Auto" Width="Auto"/>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Graphic" Style="{DynamicResource ControlStyleVD}" Visibility="Hidden">
                     <Grid Background="#FFE5E5E5" Height="300" Margin="0">
                         <StackPanel Orientation="Horizontal">
                             <!--Graphic area-->
                             <StackPanel Orientation="Horizontal">
                                 <local:GraphicView Margin="1" Width="Auto" Height="Auto"/>
                             </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Grbl settings" Style="{DynamicResource ControlStyleVD}">
-                    <Grid Background="#FFE5E5E5" Height="300" Margin="0">
-                        <!-- Grbl settings and commands-->
-                        <StackPanel Orientation="Horizontal">
-                            <local:SettingView Margin="1" Height="Auto" Width="Auto"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
