@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDLaser.Tools"
              mc:Ignorable="d" 
-             d:DesignHeight="240" d:DesignWidth="400">
+             d:DesignHeight="290" d:DesignWidth="500">
     <UserControl.Resources>
         <local:DoubleConverter x:Key="ConvertDouble"/>
     </UserControl.Resources>
@@ -31,7 +31,7 @@
                     <!--Show G-code text-->
                     <DataGrid AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True"
                           IsReadOnly="True"
-                          ItemsSource="{Binding Main.GCodeData}" Margin="0,0,0,0" Height="200" 
+                          ItemsSource="{Binding Main.GCodeData}" Margin="0,0,0,0" Height="230" 
                               VerticalAlignment="Top">
                         <DataGrid.HorizontalGridLinesBrush>
                             <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>
@@ -95,7 +95,7 @@
                     <Label Content="Total lines:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
                     <TextBox Text="{Binding Main.NLine}" Margin="7,5,0,5" IsReadOnly="True" VerticalContentAlignment="Center" 
                              Width="40" HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
-                    <Label Content="RX:" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <Label Content="RX:" VerticalAlignment="Center" Margin="20,0,0,0"/>
                     <TextBox Text="{Binding Main.RX}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" 
                              VerticalContentAlignment="Center" Width="30" Height="23"/>
                 </StackPanel>
@@ -105,7 +105,7 @@
                     <TextBox Text="{Binding Main.RLine}" Margin="0 5 0 5" IsReadOnly="True" VerticalContentAlignment="Center" 
                              Width="40" 
                              HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
-                    <Label Content="Buf:" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <Label Content="Buf:" VerticalAlignment="Center" Margin="20,0,0,0"/>
                     <TextBox Text="{Binding Main.Buf, Mode=OneWay}" Margin="0,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" 
                              VerticalContentAlignment="Center" Width="30" Height="23"/>
                 </StackPanel>
@@ -121,7 +121,7 @@
                     <Grid Margin="20,0,0,0">
                         <ProgressBar Maximum="1" Value="{Binding Main.PercentLine}" Height="20" 
                                  HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" 
-                                 HorizontalContentAlignment="Center" Width="150" Foreground="#FF78DD8A"/>
+                                 HorizontalContentAlignment="Center" Width="200" Foreground="#FF78DD8A"/>
                         <TextBlock Text="{Binding Main.PercentLine, Converter={StaticResource ConvertDouble}, 
                             StringFormat=\{0:P0\}}"
                                Width="150" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>

@@ -4,11 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="200">
+             d:DesignHeight="290" d:DesignWidth="600">
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
         <GroupBox Header="{Binding Graphic.GroupBoxGraphicTitle}" Style="{DynamicResource GroupBoxStyleVD}">
             <!--G-code file plotter-->
-            <ItemsControl ItemsSource="{Binding Main.GcodePaths}" Height="160" Width="160">
+            <ItemsControl ItemsSource="{Binding Main.GcodePaths}" Height="260" Width="360">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas RenderTransformOrigin="0.5,0.5">

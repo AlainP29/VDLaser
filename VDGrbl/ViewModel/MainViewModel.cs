@@ -379,7 +379,7 @@ namespace VDLaser.ViewModel
             set
             {
                 Set(ref _txLine, value);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|TXLine {0}", value);
+                //logger.Info(CultureInfo.CurrentCulture, "MainViewModel|TXLine {0}", value);
             }
         }
 
@@ -1557,12 +1557,12 @@ namespace VDLaser.ViewModel
                 if (CollectionPortNames != null && CollectionPortNames.Count > 0)
                 {
                     SelectedPortName = CollectionPortNames[0];
-                }
-                else
+                logger.Info("MainViewModel|Serial port default settings loaded");
+            }
+            else
                 {
                     logger.Info("MainViewModel|No port COM available");
                 }
-                logger.Info("MainViewModel|Serial port default settings loaded");
         }
         /// <summary>
         /// Reload serial port settings and set default values.
@@ -2431,7 +2431,7 @@ namespace VDLaser.ViewModel
         public void ResetAxisY()
         {
             //string line = "G10 P0 L20 Y0";
-            string line = "G92 X0";
+            string line = "G92 Y0";
             WriteString(line);
             logger.Info("MainViewModel|Reset Y: {0}", line);
         }

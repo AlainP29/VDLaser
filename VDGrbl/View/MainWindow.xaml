@@ -8,7 +8,7 @@
         mc:Ignorable="d ignore"
         Height="560"
         Width="890"
-        Title="VDLaser v0.3.8" WindowStartupLocation="Manual" ResizeMode="NoResize"
+        Title="VD Laser" WindowStartupLocation="Manual" ResizeMode="NoResize"
         Icon="/VDGrbl;component/Skins/Images/Favicon-VD.png">
     <!--Main window of the application: composed of several user control -->
     <Grid x:Name="LayoutRoot" Background="#FFE5E5E5" DataContext="{Binding Main, Mode=OneWay, Source={StaticResource Locator}}">
@@ -38,7 +38,16 @@
                         <StackPanel Orientation="Horizontal">
                             <!--Send file area-->
                             <StackPanel Orientation="Horizontal">
-                                <local:GCodeFileView Margin="1" Width="400" Height="Auto"/>
+                                <local:GCodeFileView Margin="1" Width="550" Height="Auto"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Graphic" Style="{DynamicResource ControlStyleVD}">
+                    <Grid Background="#FFE5E5E5" Height="300" Margin="0">
+                        <StackPanel Orientation="Horizontal">
+                            <!--Graphic area-->
+                            <StackPanel Orientation="Horizontal">
                                 <local:GraphicView Margin="1" Width="Auto" Height="Auto"/>
                             </StackPanel>
                         </StackPanel>

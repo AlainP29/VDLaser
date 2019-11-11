@@ -78,33 +78,38 @@ namespace VDLaser.Tools
                 if (!string.IsNullOrEmpty(line))
                 {
                     string lineTrim = GCodeTool.TrimGcode(line);
-                    if (lineTrim.StartsWith("ok", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        ProcessResponse(lineTrim);
-                    }
-                    else if (lineTrim.StartsWith("error", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        ProcessErrorResponse(lineTrim,version);
-                    }
-                    else if (lineTrim.StartsWith("alarm", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        ProcessAlarmResponse(lineTrim,version);
-                    }
-                    else if (lineTrim.StartsWith("<", StringComparison.CurrentCulture) && lineTrim.EndsWith(">", StringComparison.CurrentCulture))
-                    {
-                        ProcessCurrentStatusResponse(lineTrim);
-                    }
-                    else if (lineTrim.StartsWith("$", StringComparison.CurrentCulture) && lineTrim.Contains("="))
-                    {
-                        ProcessGrblSettingResponse(lineTrim);
-                    }
-                    else if (lineTrim.StartsWith("[", StringComparison.CurrentCulture) && lineTrim.EndsWith("]", StringComparison.CurrentCulture))
-                    {
-                        ProcessInfoResponse(lineTrim);
-                    }
-                    else if (lineTrim.Contains("rbl"))
-                    {
+                if (lineTrim.StartsWith("ok", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    ProcessResponse(lineTrim);
+                }
+                else if (lineTrim.StartsWith("error", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    ProcessErrorResponse(lineTrim, version);
+                }
+                else if (lineTrim.StartsWith("alarm", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    ProcessAlarmResponse(lineTrim, version);
+                }
+                else if (lineTrim.StartsWith("<", StringComparison.CurrentCulture) && lineTrim.EndsWith(">", StringComparison.CurrentCulture))
+                {
+                    ProcessCurrentStatusResponse(lineTrim);
+                }
+                else if (lineTrim.StartsWith("$", StringComparison.CurrentCulture) && lineTrim.Contains("="))
+                {
+                        if (lineTrim.StartsWith("$n", StringComparison.CurrentCulture)|| lineTrim.StartsWith("$N", StringComparison.CurrentCulture))
+                        {
+                            ProcessStartupBlockResponse(lineTrim);
+                        }
+                        else
+                            ProcessGrblSettingResponse(lineTrim);
+                }
+                else if (lineTrim.StartsWith("[", StringComparison.CurrentCulture) && lineTrim.EndsWith("]", StringComparison.CurrentCulture))
+                {
                     ProcessInfoResponse(lineTrim);
+                }
+                else if (lineTrim.Contains("rbl"))
+                {
+                    ProcessResetResponse(lineTrim);
                 }
                 else
                 {
@@ -112,7 +117,14 @@ namespace VDLaser.Tools
                 }
             }
         }
-
+        /// <summary>
+        /// Get Grbl reset response
+        /// </summary>
+        /// <param name="data"></param>
+        private void ProcessResetResponse(string data)
+        {
+            logger.Info(CultureInfo.CurrentCulture,"GrblTool|ProcessResetResponse: {0}", data);
+        }
         /// <summary>
         /// Process Grbl build informations.
         /// </summary>
@@ -144,8 +156,11 @@ namespace VDLaser.Tools
                         break;
 
                     case 20:
-                        VersionGrbl = data.Substring(5, 4);//[Ver:1.1h.20150620:]
-                        BuildInfo = data.Substring(10, 8);
+                        if (!data.Contains("rbl"))
+                        {
+                            VersionGrbl = data.Substring(5, 4);//[Ver:1.1h.20150620:]
+                            BuildInfo = data.Substring(10, 8);
+                        }
                         break;
 
                     case 21:
@@ -154,10 +169,6 @@ namespace VDLaser.Tools
 
                     case 23 when !data.Contains("PLB")://For C#7 test only :-)
                         InfoMessage = "View G-code parameters";
-                        break;
-
-                    case 24:
-                        InfoMessage = "View startup blocks"; //Grbl 0.9i ['$' for help] put something like $N0=G20 G54 G17 to get it
                         break;
 
                     case 44:
@@ -461,6 +472,14 @@ namespace VDLaser.Tools
                     }
                 }
             }
+        }
+        /// <summary>
+        /// Get Grbl startup block message
+        /// </summary>
+        /// <param name="data"></param>
+        public static void ProcessStartupBlockResponse(string data)
+        {
+            logger.Info(CultureInfo.CurrentCulture, "GrblTool|ProcessStartupBlockResponse|Data:{0}", data);
         }
         #endregion
     }
