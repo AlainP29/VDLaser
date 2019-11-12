@@ -60,7 +60,7 @@ namespace VDLaser.Tools.Tests
         {
             //double alpha =System.Math.Round(System.Math.PI / 4,15);
             double alpha = 0.785398163397448;
-            Assert.AreEqual(alpha, System.Math.Round(MathTool.AngleChordAbscissa(0, 2, 1, 1,1,0)),15);
+            Assert.AreEqual(alpha, System.Math.Round(MathTool.AngleChordAbscissa(0, 2, 1, 1)),15);
         }
     }
 }

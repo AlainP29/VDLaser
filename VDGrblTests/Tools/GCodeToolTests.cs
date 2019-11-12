@@ -32,7 +32,7 @@ namespace VDLaser.Tools.Tests
         [TestMethod()]
         public void SecondToTimeTest()
         {
-            Assert.AreEqual("01:27:56:000", gt.SecondToTime(5276));
+            Assert.AreEqual("01:27:56:000", GCodeTool.SecondToTime(5276));
         }
 
         [TestMethod()]

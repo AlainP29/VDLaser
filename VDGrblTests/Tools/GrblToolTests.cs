@@ -28,7 +28,7 @@ namespace VDLaser.Tools.Tests
         public void DataGrblSorterTest()
         {
             mvm = new GrblTool();
-            mvm.DataGrblSorter(currentStatus);
+            mvm.DataGrblSorter(currentStatus, true);
             Assert.AreEqual("Run", mvm.MachineStatus.ToString());
         }
 
@@ -49,10 +49,10 @@ namespace VDLaser.Tools.Tests
         }
 
         [TestMethod()]
-        public void ProcessInfoResponseGrblTest()
+        public void ProcessStartupBlockResponseGrblTest()
         {
             mvm = new GrblTool();
-            mvm.ProcessInfoResponse(infoGrbl);
+            mvm.ProcessStartupBlockResponse(infoGrbl);
             Assert.AreEqual("View startup blocks", mvm.InfoMessage);
         }
 
@@ -67,44 +67,45 @@ namespace VDLaser.Tools.Tests
         [TestMethod()]
         public void ProcessResponseError11Test()
         {
-            mvm = new GrblTool();
-            mvm.VersionGrbl = "1.1";
-            mvm.ProcessErrorResponse(err11);
+            mvm = new GrblTool
+            {
+                VersionGrbl = "1.1"
+            };
+            mvm.ProcessErrorResponse(err11, true);
             Assert.AreEqual("Laser mode requires PWM output.", mvm.ErrorMessage);
         }
 
         [TestMethod()]
         public void ProcessResponseError09Test()
         {
-            mvm = new GrblTool();
-            mvm.VersionGrbl = "0.9";
-            mvm.ProcessErrorResponse(err09);
+            mvm = new GrblTool
+            {
+                VersionGrbl = "0.9"
+            };
+            mvm.ProcessErrorResponse(err09, false);
             Assert.AreEqual("The number value suffix of a G-code word is missing in the G-code block, or when configuring a $Nx=line or $x=val Grbl setting and the x is not a number value.", mvm.ErrorMessage);
         }
 
         [TestMethod()]
         public void ProcessResponseError09IDTest()
         {
-            mvm = new GrblTool();
-            mvm.VersionGrbl = "0.9";
-            mvm.ProcessErrorResponse(err09ID);
+            mvm = new GrblTool
+            {
+                VersionGrbl = "0.9"
+            };
+            mvm.ProcessErrorResponse(err09ID, false);
             Assert.AreEqual("A G-code word was repeated in the block.", mvm.ErrorMessage);
         }
 
         [TestMethod()]
         public void ProcessResponseAlarmTest()
         {
-            mvm = new GrblTool();
-            mvm.VersionGrbl = "1.1";
-            mvm.ProcessAlarmResponse(ala);
+            mvm = new GrblTool
+            {
+                VersionGrbl = "1.1"
+            };
+            mvm.ProcessAlarmResponse(ala, true);
             Assert.AreEqual("Homing fail. Reset during active homing cycle.", mvm.AlarmMessage);
-        }
-
-        [TestMethod()]
-        public void ProcessSettingsResponseTest()
-        {
-            string[] arr = set.Split(new Char[] { '=', ' ', '\r', '\n' });
-            Assert.AreEqual("10.000", arr[1]);
         }
 
         [TestMethod()]
@@ -123,7 +124,6 @@ namespace VDLaser.Tools.Tests
             Assert.AreEqual("30.860", mvm.MachinePositionY);
         }
 
-
         [TestMethod()]
         public void ProcessCurrentStatusResponseBuf()
         {
@@ -138,6 +138,13 @@ namespace VDLaser.Tools.Tests
             mvm = new GrblTool();
             mvm.ProcessCurrentStatusResponse(currentStatus);
             Assert.AreEqual("2", mvm.RxBuffer);
+        }
+
+        [TestMethod()]
+        public void ProcessGrblSettingResponseTest()
+        {
+            string[] arr = set.Split(new Char[] { '=', ' ', '\r', '\n' });//Use moq for real unit test
+            Assert.AreEqual("10.000", arr[1]);
         }
     }
 }

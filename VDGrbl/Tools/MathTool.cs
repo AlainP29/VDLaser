@@ -66,10 +66,8 @@ namespace VDLaser.Tools
         /// <param name="y0"></param>
         /// <param name="x1"></param>
         /// <param name="y1"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
         /// <returns></returns>
-        public static double AngleChordAbscissa(double x0, double y0, double x1, double y1, double i, double j)
+        public static double AngleChordAbscissa(double x0, double y0, double x1, double y1)
         {
                 return Math.Acos((x1 - x0) / Math.Sqrt(Math.Pow(x1 - x0, 2) + Math.Pow(y1 - y0, 2)));
         }

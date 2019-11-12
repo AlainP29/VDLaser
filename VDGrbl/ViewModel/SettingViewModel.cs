@@ -2,11 +2,11 @@
 using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Messaging;
 using NLog;
-using VDLaser.Service;
-using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using VDLaser.Model;
-using System.Collections.Generic;
+using VDLaser.Service;
+
 
 namespace VDLaser.ViewModel
 {
@@ -17,11 +17,14 @@ namespace VDLaser.ViewModel
         private string _groupBoxSettingTitle = string.Empty;
         private ObservableCollection<SettingItem> _settingCollection = new ObservableCollection<SettingItem>();
         private List<SettingItem> _listSetting = new List<SettingItem>();
+
         #region RelayCommand & Messengers
         public RelayCommand RefreshSettingCommand { get; private set; }
+        public RelayCommand Test { get; set; }
         private void SettingRelayCommands()
         {
             RefreshSettingCommand = new RelayCommand(RefreshSetting, CanExecuteRefreshSettingCommand);
+            Test = new RelayCommand(GetTest, CanExecuteTest);
             logger.Info("SettingViewModel|SettingRelayCommands initialised");
 
         }
@@ -124,7 +127,7 @@ namespace VDLaser.ViewModel
         /// </summary>
         public void RefreshSetting()
         {
-            if(SettingCollection.Count>0)
+            if (SettingCollection.Count > 0)
             {
                 SettingCollection.Clear();
             }
@@ -140,18 +143,6 @@ namespace VDLaser.ViewModel
             return true;
         }
         /// <summary>
-        /// Get new value of MainViewModel setting collection change
-        /// </summary>
-        /// <param name="propertyDetails"></param>
-        private void SearchSettingCollectionMainViewModelChanged(PropertyChangedMessage<ObservableCollection<SettingItem>> propertyDetails)
-        {
-            if (propertyDetails.PropertyName == nameof(SettingCollection))
-            {
-                SettingCollection=propertyDetails.NewValue;
-                logger.Info("SettingViewModel|SearchMainViewModelChanged()");
-            }
-        }
-        /// <summary>
         /// Get new value of MainViewModel list setting change
         /// </summary>
         /// <param name="propertyDetails"></param>
@@ -160,8 +151,19 @@ namespace VDLaser.ViewModel
             if (propertyDetails.PropertyName == nameof(ListSetting))
             {
                 ListSetting = propertyDetails.NewValue;
-                logger.Info("SettingViewModel|SearchMainViewModelChanged()1");
+                logger.Info("SettingViewModel|SearchMainViewModelListSettingChanged()");
             }
+        }
+        /// <summary>
+        /// For dvpt only
+        /// </summary>
+        private void GetTest()
+        {
+            
+        }
+        private static bool CanExecuteTest()
+        {
+            return true;
         }
         #endregion
     }

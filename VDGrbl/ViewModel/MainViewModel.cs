@@ -4,21 +4,20 @@ using GalaSoft.MvvmLight.Messaging;
 using Microsoft.Win32;
 using NLog;
 using System;
+using System.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.IO.Ports;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using VDLaser.Model;
-using VDLaser.Tools;
 using VDLaser.Service;
-using System.Globalization;
-using System.Diagnostics;
+using VDLaser.Tools;
 
 namespace VDLaser.ViewModel
 {
@@ -40,6 +39,7 @@ namespace VDLaser.ViewModel
 
         private string _selectedPortName = string.Empty;
         private string _versionGrbl = "-", _buildInfoGrbl = "-";
+        private string _versionVD;
         private string _mposX = "0.000", _mposY = "0.000";
         private string _wposX = "0.000", _wposY = "0.000";
         private string _feed = "0", _speed = "0";
@@ -173,15 +173,17 @@ namespace VDLaser.ViewModel
         public RelayCommand SendFileCommand { get; private set; }
         public RelayCommand PauseFileCommand { get; private set; }
         public RelayCommand StopFileCommand { get; private set; }
+        public RelayCommand AboutCommand { get; private set; }
         public RelayCommand<bool> DecreaseLaserPowerCommand { get; private set; }
         public RelayCommand<bool> IncreaseLaserPowerCommand { get; private set; }
+
         #endregion
 
         #region subregion setting
         /// <summary>
-        /// Get the ListGrblSettings property. ListGrblSettings is populated w/ Grbl settings data ('$$' command)
+        /// Get the ListGrblSettings property. ListGrblSettings is populated w/ Grbl settings data ('$$' command) 
+        /// Sent to observable collection in settingViewModel.
         /// Changes to that property's value raise the PropertyChanged event. 
-        /// First get ListGrblSettings then populate the settingCollection (observableCollection) for binding.
         /// </summary>
         public List<SettingItem> ListSetting
         {
@@ -1069,9 +1071,24 @@ namespace VDLaser.ViewModel
         }
         #endregion
 
-        #region subregion grbl info et control
+        #region subregion version
         /// <summary>
-        /// Get the Version property. This is the Grbl version get w/ '$I' command (0.9i or 1.1j)
+        /// Get the VersionVD property. This is the VDLaser version get from assembly
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string VersionVD
+        {
+            get
+            {
+                return _versionVD;
+            }
+            set
+            {
+                Set(ref _versionVD, value);
+            }
+        }
+        /// <summary>
+        /// Get the VersionGrbl property. This is the Grbl version get w/ '$I' command (0.9i or 1.1j)
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public string VersionGrbl
@@ -1102,9 +1119,9 @@ namespace VDLaser.ViewModel
             }
         }
         /// <summary>
-        /// If versionGrbl=1.1 =>LastVersion is true else false
+        /// Get the current Grbl version.
         /// </summary>
-        public bool LastVersion { get; set; } = true;
+        public bool CurrentVersionGrbl { get; set; } = true;
         #endregion
 
         #region subregion machine state
@@ -1518,6 +1535,7 @@ namespace VDLaser.ViewModel
             SendFileCommand = new RelayCommand(StartSendingFileAsync, CanExecuteStartAsyncTask);
             PauseFileCommand = new RelayCommand(PauseSendingFile, CanExecutePauseFile);
             StopFileCommand = new RelayCommand(StopSendingFileAsync, CanExecuteStopAsyncTask);
+            AboutCommand = new RelayCommand(ShowAbout, CanExecuteShowAbout);
             IncreaseLaserPowerCommand = new RelayCommand<bool>(IncreaseLaserPower, CanExecuteLaserPower);
             DecreaseLaserPowerCommand = new RelayCommand<bool>(DecreaseLaserPower, CanExecuteLaserPower);
             logger.Info("MainViewModel|All RelayCommands loaded");
@@ -1628,7 +1646,7 @@ namespace VDLaser.ViewModel
             {
                 GrblReset();
                 GrblBuildInfo();
-                CheckInfos();
+                CheckVersionGrbl();
                 if (!currentStatusTimer.IsEnabled)
                 {
                     InitializeDispatcherTimer();
@@ -1678,10 +1696,11 @@ namespace VDLaser.ViewModel
         /// <summary>
         /// Check grbl version 0.9 or 1.1.
         /// </summary>
-        public void CheckInfos()
+        public void CheckVersionGrbl()
         {
                 bool checkVersion = false;
                 logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Checking Grbl version");
+                int i = 0;
                 while (!checkVersion||VersionGrbl=="-")
                 {
                 Thread.Sleep(50);
@@ -1690,19 +1709,24 @@ namespace VDLaser.ViewModel
                     {
                     logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Grbl version {0}", VersionGrbl);
                     checkVersion = true;
-                    LastVersion = true;
+                    CurrentVersionGrbl = true;
                     }
                 else if (VersionGrbl.StartsWith("0"))//Does not work neither readline in GrblBuildInfo to check grbl version...
                 {
                     logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Grbl version {0}", VersionGrbl);
                     checkVersion = true;
-                    LastVersion = false;
+                    CurrentVersionGrbl = false;
                 }
                 else
                     {
                     logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Bad Grbl version {0}", VersionGrbl);
                     checkVersion = true;
+                    i++;
                     }
+                if(i>3)
+                {
+                    break;
+                }
                 }
         }
         /// <summary>
@@ -2457,12 +2481,13 @@ namespace VDLaser.ViewModel
         }
         #endregion
 
-        #region subregion other methods
+        #region subregion info and default
         /// <summary>
         /// Set default settings
         /// </summary>
         public void DefaultSettings()
         {
+            GetVersion();
             DefaultPortSetting();
             DefaultLaserSetting();
             DefaultGraphicSetting();
@@ -2508,7 +2533,7 @@ namespace VDLaser.ViewModel
                 StopLaser();
             }
             base.Cleanup();
-            logger.Info("MainViewModel|Clean...");
+            logger.Info("MainViewModel|Cleanup done");
         }
         /// <summary>
         /// Initializes DispatcherTimer to query Grbl report state at 4Hz (5Hz is max recommended).
@@ -2520,6 +2545,25 @@ namespace VDLaser.ViewModel
             currentStatusTimer.Start();
             logger.Info("MainViewModel|Initialize Dispatcher Timer");
         }
+        private void GetVersion()
+        {
+            _versionVD = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            logger.Info("GrblTool|Get version {0}", _versionVD);
+        }
+        private void ShowAbout()
+        {
+            string mes = "Copyright @ 2019 VDGravure"+Environment.NewLine+ "Version: "+VersionVD + Environment.NewLine + "Grbl v0.9 and v1.1";
+            string tit = "About VDLaser";
+            MessageBoxButton mbb = MessageBoxButton.OK;
+            MessageBox.Show(mes,tit,mbb);
+        }
+        private bool CanExecuteShowAbout()
+        {
+            return true;
+        }
+        #endregion
+
+        #region subregion File
         /// <summary>
         /// Selects the G-code file to send to the Arduino.
         /// </summary>
@@ -2787,7 +2831,8 @@ namespace VDLaser.ViewModel
             });
         }
         #endregion
-        
+
+        #region subregion setting
         /// <summary>
         /// Write a notification message to serial port
         /// This is a test command bind to TEST button in SettingViewModel for development purpose only.
@@ -2799,6 +2844,7 @@ namespace VDLaser.ViewModel
             logger.Info("Notification {0} received", notify);
             GrblRefreshSettingAsync();
         }
+        #endregion
         #endregion
 
         #region Event
@@ -2820,7 +2866,7 @@ namespace VDLaser.ViewModel
                 { 
                     ListConsoleData.Add(Console);
                 }
-                grbltool.DataGrblSorter(line,LastVersion);
+                grbltool.DataGrblSorter(line,CurrentVersionGrbl);
                 ResponseStatus = (RespStatus)grbltool.ResponseStatus;
             try
             {

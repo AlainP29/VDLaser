@@ -115,7 +115,7 @@
                             Command="{Binding Main.GrblSetHome2Command, Mode=OneWay}"/>
                                 <Button Content="" HorizontalAlignment="Center" Margin="10, 10, 0, 10" 
                             VerticalAlignment="Center" Width="30" Style="{DynamicResource ControlStyleVD}" 
-                            Command="{Binding Setting.RefreshSettingCommand, Mode=OneWay}" IsEnabled="True"/>
+                            Command="{Binding Setting.Test, Mode=OneWay}" Visibility="Hidden"/>
                             </StackPanel>
                         </Grid>
                     </Border>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Media;
+using System.Resources;
 
 namespace VDLaser.Tools
 {
@@ -125,7 +126,8 @@ namespace VDLaser.Tools
         /// Default constructor for methods like TrimGcode...
         /// </summary>
         public GCodeTool()
-        { }
+        { 
+        }
 
         /// <summary>
         /// Initialize a new instance of GCodeTool with a G-Code line as parameter which is parsed.
@@ -295,7 +297,9 @@ namespace VDLaser.Tools
         /// </summary>
         public void ParseGCode(string line)
         {
-            var arr = line.ToUpper(CultureInfo.CurrentCulture).Split(' ');
+            if (!string.IsNullOrEmpty(line))
+            {
+                var arr = line.ToUpper(CultureInfo.CurrentCulture).Split(' ');
                 for (int i = 0; i < arr.Length; i++)
                 {
                     //logger.Info("GCodeTool|ParseGCode2" + arr[i].ToString());
@@ -338,6 +342,7 @@ namespace VDLaser.Tools
                         arr[i] = string.Empty;
                     }
                 }
+            }
         }
 
         /// <summary>
@@ -366,50 +371,53 @@ namespace VDLaser.Tools
         /// <param name="gcode"></param>
         public void ProcessGCode(string gcode)
         {
-            switch (gcode)
+            if (!string.IsNullOrEmpty(gcode))
             {
-                case "0":
-                    MMode = GcodeMMode.R;
-                    break;
-                case "00":
-                    MMode = GcodeMMode.R;
-                    break;
-                case "1":
-                    MMode = GcodeMMode.L;
-                    break;
-                case "01":
-                    MMode = GcodeMMode.L;
-                    break;
-                case "2":
-                    MMode = GcodeMMode.CW;
-                    break;
-                case "02":
-                    MMode = GcodeMMode.CW;
-                    break;
-                case "3":
-                    MMode = GcodeMMode.CCW;
-                    break;
-                case "03":
-                    MMode = GcodeMMode.CCW;
-                    break;
-                case "90":
-                    DMode = GcodeDMode.A;
-                    break;
-                case "91":
-                    DMode = GcodeDMode.R;
-                    break;
-                case "21":
-                    IsMetric = true;
-                    IsImperial = false;
-                    break;
-                case "20":
-                    IsImperial = true;
-                    IsMetric = false;
-                    break;
-                default:
-                    DMode = GcodeDMode.A;
-                    MMode = GcodeMMode.R;
-                    break;
+                switch (gcode)
+                {
+                    case "0":
+                        MMode = GcodeMMode.R;
+                        break;
+                    case "00":
+                        MMode = GcodeMMode.R;
+                        break;
+                    case "1":
+                        MMode = GcodeMMode.L;
+                        break;
+                    case "01":
+                        MMode = GcodeMMode.L;
+                        break;
+                    case "2":
+                        MMode = GcodeMMode.CW;
+                        break;
+                    case "02":
+                        MMode = GcodeMMode.CW;
+                        break;
+                    case "3":
+                        MMode = GcodeMMode.CCW;
+                        break;
+                    case "03":
+                        MMode = GcodeMMode.CCW;
+                        break;
+                    case "90":
+                        DMode = GcodeDMode.A;
+                        break;
+                    case "91":
+                        DMode = GcodeDMode.R;
+                        break;
+                    case "21":
+                        IsMetric = true;
+                        IsImperial = false;
+                        break;
+                    case "20":
+                        IsImperial = true;
+                        IsMetric = false;
+                        break;
+                    default:
+                        DMode = GcodeDMode.A;
+                        MMode = GcodeMMode.R;
+                        break;
+                }
             }
         }
 
@@ -422,7 +430,6 @@ namespace VDLaser.Tools
         {
             double time = 0;
             double x0 = 0, y0 = 0;
-       
                 for (int i = 0; i < FileList.Count; i++)
                 {
                     if (FileList[i].Contains('.'))
@@ -539,16 +546,16 @@ namespace VDLaser.Tools
                     {
                         if (DMode == GcodeDMode.R)//Relatif mode
                         {
-                            xe = Convert.ToDouble(X) + xs;
-                            ye = Convert.ToDouble(Y) + ys;
+                            xe = Convert.ToDouble(X, CultureInfo.CurrentCulture) + xs;
+                            ye = Convert.ToDouble(Y, CultureInfo.CurrentCulture) + ys;
                             points.Add(new System.Windows.Point(xe, ye));
                             xs = xe;
                             ys = ye;
                         }
                         else//Absolute mode
                         {
-                            xe = Convert.ToDouble(X);
-                            ye = Convert.ToDouble(Y);
+                            xe = Convert.ToDouble(X, CultureInfo.CurrentCulture);
+                            ye = Convert.ToDouble(Y, CultureInfo.CurrentCulture);
                             points.Add(new System.Windows.Point(xe, ye));
                         }
                     }
@@ -578,16 +585,16 @@ namespace VDLaser.Tools
                     {
                         if (DMode == GcodeDMode.R)//Relatif mode
                         {
-                            xe = Convert.ToDouble(X) + xs;
-                            ye = Convert.ToDouble(Y) + ys;
+                            xe = Convert.ToDouble(X, CultureInfo.CurrentCulture) + xs;
+                            ye = Convert.ToDouble(Y, CultureInfo.CurrentCulture) + ys;
                             points.Add(new System.Windows.Point(xe, ye));
                             xs = xe;
                             ys = ye;
                         }
                         else//Absolute mode
                         {
-                            xe = Convert.ToDouble(X);
-                            ye = Convert.ToDouble(Y);
+                            xe = Convert.ToDouble(X, CultureInfo.CurrentCulture);
+                            ye = Convert.ToDouble(Y, CultureInfo.CurrentCulture);
                             points.Add(new System.Windows.Point(xe + offsetAxisX, ye + offsetAxisX));
                         }
                     }
@@ -614,16 +621,16 @@ namespace VDLaser.Tools
                         {
                             if (DMode == GcodeDMode.R)//Relatif mode
                             {
-                                xe = Convert.ToDouble(X)*scale + xs;
-                                ye = Convert.ToDouble(Y)*scale + ys;
+                                xe = Convert.ToDouble(X, CultureInfo.CurrentCulture) *scale + xs;
+                                ye = Convert.ToDouble(Y, CultureInfo.CurrentCulture) *scale + ys;
                                 points.Add(new System.Windows.Point(xe, ye));
                                 xs = xe;
                                 ys = ye;
                             }
                             else//Absolute mode
                             {
-                                xe = Convert.ToDouble(X)*scale;
-                                ye = Convert.ToDouble(Y)*scale;
+                                xe = Convert.ToDouble(X, CultureInfo.CurrentCulture) *scale;
+                                ye = Convert.ToDouble(Y, CultureInfo.CurrentCulture) *scale;
                                 points.Add(new System.Windows.Point(xe + offsetAxisX, ye + offsetAxisX));
                             }
                         }

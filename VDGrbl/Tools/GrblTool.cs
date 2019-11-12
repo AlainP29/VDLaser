@@ -117,6 +117,7 @@ namespace VDLaser.Tools
                 }
             }
         }
+
         /// <summary>
         /// Get Grbl reset response
         /// </summary>
@@ -125,6 +126,7 @@ namespace VDLaser.Tools
         {
             logger.Info(CultureInfo.CurrentCulture,"GrblTool|ProcessResetResponse: {0}", data);
         }
+
         /// <summary>
         /// Process Grbl build informations.
         /// </summary>
@@ -255,7 +257,7 @@ namespace VDLaser.Tools
                     }
                 }
             }
-            catch(Exception ex)
+            catch(FormatException ex)
             {
                 logger.Error(CultureInfo.CurrentCulture,"GrblTool|ProcessAlarmResponse {0}",ex.ToString());
             }
@@ -473,12 +475,15 @@ namespace VDLaser.Tools
                 }
             }
         }
+
         /// <summary>
         /// Get Grbl startup block message
         /// </summary>
         /// <param name="data"></param>
-        public static void ProcessStartupBlockResponse(string data)
+        public void ProcessStartupBlockResponse(string data)
         {
+            ResponseStatus = RespStatus.Ok;
+            InfoMessage = "View startup blocks";
             logger.Info(CultureInfo.CurrentCulture, "GrblTool|ProcessStartupBlockResponse|Data:{0}", data);
         }
         #endregion
