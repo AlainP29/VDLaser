@@ -1,0 +1,133 @@
+﻿<UserControl x:Class="VDLaser.View.GCodeFileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDLaser.Converter"
+             mc:Ignorable="d" 
+             d:DesignHeight="290" d:DesignWidth="500">
+    <UserControl.Resources>
+        <local:DoubleConverter x:Key="ConvertDouble"/>
+    </UserControl.Resources>
+    <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <!--G-Code file area-->
+        <GroupBox Header="G-Code file" Style="{DynamicResource GroupBoxStyleVD}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1.5*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <!--G-Code file complete path w/ file name-->
+                <StackPanel Grid.Column="1" Grid.Row="0" Grid.RowSpan="6">
+                    <TextBox Grid.Column="1" Grid.Row="0" Margin="0 5 0 5" Text="{Binding MainViewModel.FileName}" Height="25"/>
+                    <!--Show G-code text-->
+                    <DataGrid AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True"
+                          IsReadOnly="True"
+                          ItemsSource="{Binding MainViewModel.GCodeData}" Margin="0,0,0,0" Height="230" 
+                              VerticalAlignment="Top">
+                        <DataGrid.HorizontalGridLinesBrush>
+                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>
+                        </DataGrid.HorizontalGridLinesBrush>
+                        <DataGrid.VerticalGridLinesBrush>
+                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}"/>
+                        </DataGrid.VerticalGridLinesBrush>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="N" Binding="{Binding N}" MaxWidth="30" Foreground="Gray" />
+                            <DataGridTextColumn Header="G-Code" Binding="{Binding GCodeLine}" MinWidth="160"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+                <!--Buttons: load, start and stop sending file-->
+                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <Button VerticalAlignment="Center" Height="30" Width="30" ToolTip="Load Gcode file"
+                            Margin="5" Style="{DynamicResource ControleStyleVD}"
+                            Command="{Binding MainViewModel.LoadFileCommand, Mode=OneWay}">
+                        <StackPanel Height="20" Width="20">
+                            <Image Source="/VDLaser;component/Skin/Image/iconOpenFile40.png"/>
+                        </StackPanel>
+                    </Button>
+                    <Button VerticalAlignment="Center" ToolTip="Start/resume sending file"
+                            Margin="5" Style="{DynamicResource ControleStyleVD}" 
+                            Command="{Binding MainViewModel.SendFileCommand, Mode=OneWay}"
+                            Height="30" Width="30">
+                        <StackPanel Height="20" Width="20">
+                            <Image Source="/VDLaser;component/Skin/Image/iconPlay40.png"/>
+                        </StackPanel>
+                    </Button>
+                    <Button VerticalAlignment="Center" ToolTip="Pause sending file"
+                            Margin="5" Style="{DynamicResource ControleStyleVD}" 
+                            Command="{Binding MainViewModel.PauseFileCommand, Mode=OneWay}"
+                            Height="30" Width="30">
+                        <StackPanel Height="20" Width="20">
+                            <Image Source="/VDLaser;component/Skin/Image/iconPause40.png"/>
+                        </StackPanel>
+                    </Button>
+                    <Button VerticalAlignment="Center" ToolTip="Stop sending file"
+                            Margin="5" Style="{DynamicResource ControleStyleVD}" 
+                            Command="{Binding MainViewModel.StopFileCommand, Mode=OneWay}"
+                            Height="30" Width="30">
+                        <StackPanel Height="20" Width="20">
+                            <Image Source="/VDLaser;component/Skin/Image/iconStopFile40.png"/>
+                        </StackPanel>
+                    </Button>
+
+
+                </StackPanel>
+                <!--Transfer delay between two lines-->
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <Label Content="Transfer :" Margin="5, 0, 0, 0" VerticalContentAlignment="Center"/>
+                    <ComboBox Height="22.4" Width="Auto" ItemsSource="{Binding MainViewModel.ListTransferDelay}" 
+                              SelectedValue="{Binding MainViewModel.SelectedTransferDelay}" 
+                              SelectedIndex="1" HorizontalContentAlignment="Left" 
+                              VerticalContentAlignment="Center" Margin="0" 
+                              IsEnabled="{Binding MainViewModel.IsManualSending}"/>
+                </StackPanel>
+                <!--Total of lines sent + number of motion command queued-->
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Label Content="Total lines:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                    <TextBox Text="{Binding MainViewModel.NLine}" Margin="7,5,0,5" IsReadOnly="True" VerticalContentAlignment="Center" 
+                             Width="40" HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                    <Label Content="RX:" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                    <TextBox Text="{Binding MainViewModel.RX}" Margin="5,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" 
+                             VerticalContentAlignment="Center" Width="30" Height="23"/>
+                </StackPanel>
+                <!--Number of lines left + buffer size-->
+                <StackPanel Grid.Row="3" Orientation="Horizontal">
+                    <Label Content="Remaining:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                    <TextBox Text="{Binding MainViewModel.RLine}" Margin="0 5 0 5" IsReadOnly="True" VerticalContentAlignment="Center" 
+                             Width="40" 
+                             HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                    <Label Content="Buf:" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                    <TextBox Text="{Binding MainViewModel.Buf, Mode=OneWay}" Margin="0,0,0,0"  IsEnabled="False" HorizontalContentAlignment="Center" 
+                             VerticalContentAlignment="Center" Width="30" Height="23"/>
+                </StackPanel>
+                <!--Total job time (estimation)-->
+                <StackPanel Grid.Row="4" Orientation="Horizontal">
+                    <Label Content="Time:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                    <TextBox Text="{Binding MainViewModel.EstimateJobTime}" Margin="5" IsReadOnly="True" 
+                             VerticalContentAlignment="Center" Width="70" 
+                             HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                </StackPanel>
+                <!--Percentage of lines sent (not total job time)-->
+                <StackPanel Grid.Row="5" Orientation="Horizontal">
+                    <Grid Margin="20,0,0,0">
+                        <ProgressBar Maximum="1" Value="{Binding MainViewModel.PercentLine}" Height="20" 
+                                 HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                                 HorizontalContentAlignment="Center" Width="200" Foreground="#FF78DD8A"/>
+                        <TextBlock Text="{Binding MainViewModel.PercentLine, Converter={StaticResource ConvertDouble}, 
+                            StringFormat=\{0:P0\}}"
+                               Width="150" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

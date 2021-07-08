@@ -1,0 +1,310 @@
+﻿<UserControl x:Name="userControl" x:Class="VDLaser.View.JoggingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDLaser.Converter"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="550"
+             DataContext="{Binding Source={StaticResource Locator}}">
+    <UserControl.InputBindings>
+        <KeyBinding Key="NumPad1" Command="{Binding MainViewModel.JogSWCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad2" Command="{Binding MainViewModel.JogSCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad3" Command="{Binding MainViewModel.JogSECommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad4" Command="{Binding MainViewModel.JogWCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad5" Command="{Binding MainViewModel.JogHCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad6" Command="{Binding MainViewModel.JogECommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad7" Command="{Binding MainViewModel.JogNWCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad8" Command="{Binding MainViewModel.JogNCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="NumPad9" Command="{Binding MainViewModel.JogNECommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}"/>
+        <KeyBinding Key="Down" Command="{Binding MainViewModel.DecreaseFeedRateCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}" Modifiers="Ctrl"/>
+        <KeyBinding Key="Up" Command="{Binding MainViewModel.IncreaseFeedRateCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}" Modifiers="Ctrl"/>
+    <!--When keyboard is selected, use up/down+alt key to increase and decrease laser power-->
+        <KeyBinding Key="Down" Command="{Binding MainViewModel.DecreaseLaserPowerCommand, Mode=OneWay}" CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}" Modifiers="Alt"/>
+        <KeyBinding Key="Up" Command="{Binding MainViewModel.IncreaseLaserPowerCommand, Mode=OneWay}" CommandParameter="{Binding MainViewModel.IsSelectedKeyboard}" Modifiers="Alt"/>
+    </UserControl.InputBindings>
+    <UserControl.Resources>
+        <local:InverseBooleanConverter x:Key="ConvertBool"/>
+        <local:PercentageConverter x:Key="ConvertPercentage"/>
+    </UserControl.Resources>
+    <Grid >
+            <Grid>
+            <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <!--Show all the data sent manually/Jog/buttons to the Arduino. no stack, new data erase old data -->
+                <Grid IsEnabled="{Binding MainViewModel.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" Grid.Column="0">
+                    <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="4*"/>
+                </Grid.RowDefinitions>
+                
+                    <StackPanel Orientation="Horizontal">
+                    
+                    <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                             VerticalContentAlignment="Center" 
+                             Text="{Binding MainViewModel.TXLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             Width="120">
+                        <TextBox.InputBindings>
+                            <KeyBinding Command="{Binding MainViewModel.SendManualCommand}" Key="Return"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button  Content="Send" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" 
+                             Width="75" ToolTip="Send line manually"
+                             Command="{Binding MainViewModel.SendManualCommand, Mode=OneWay}"/>
+                    <TextBox  Text="{Binding MainViewModel.ResponseStatus, Mode=OneWay}" Margin="5" 
+                              VerticalContentAlignment="Center" 
+                              HorizontalContentAlignment="Center" Width="30" VerticalAlignment="Center" 
+                              IsReadOnly="True" 
+                              IsEnabled="False"/>
+                </StackPanel>
+                <!--Macro area: lines of G-code-->
+                <StackPanel Grid.Row="1" >
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M1" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
+                             Command="{Binding MainViewModel.SendM1Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                             VerticalContentAlignment="Center" 
+                             Text="{Binding MainViewModel.Macro1}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M2" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
+                             Command="{Binding MainViewModel.SendM2Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding MainViewModel.Macro2}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M3" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
+                             Command="{Binding MainViewModel.SendM3Command, Mode=OneTime}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding MainViewModel.Macro3}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M4" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" Width="40" 
+                             Command="{Binding MainViewModel.SendM4Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding MainViewModel.Macro4}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+        <GroupBox Header="Laser" Style="{DynamicResource GroupBoxStyleVD}" Margin="0 10 0 0">
+                            <Grid Margin="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <!--Power on/off laser + indicator-->
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <RadioButton x:Name="ToggleBoutonLaserON" Content="ON" Margin="20,0,0,0" Background="LightGray" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" Command="{Binding MainViewModel.StartLaserCommand, Mode=OneWay}" 
+                                 Height="30" Width="30"/>
+                                    <RadioButton x:Name="ToggleBoutonLaserOFF" Content="OFF" Margin="20,0,0,0" Height="30" Width="30" 
+                                 Background="LightGray" Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" 
+                                 Command="{Binding MainViewModel.StopLaserCommand, Mode=OneWay}"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding MainViewModel.ListLaser}" SelectedValue="{Binding MainViewModel.SelectedLaser}" 
+                              HorizontalAlignment="Center" Width="75" VerticalContentAlignment="Center" Margin="90 0 0 0" 
+                              VerticalAlignment="Center" IsEnabled="{Binding MainViewModel.IsLaserEnabled}"/>
+                                </StackPanel>
+                                <!--laser power-->
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" IsEnabled="{Binding MainViewModel.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" >
+                                    <Label Content="Power:" VerticalContentAlignment="Center"/>
+                                    <Slider x:Name="SliderPLaser" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center" 
+                            Width="150" TickPlacement="TopLeft" Maximum="{Binding MainViewModel.MaxLaserPower, Mode=OneWay}" 
+                            IsSnapToTickEnabled="True" 
+                            LargeChange="100" 
+                            Height="30" BorderThickness="1" Cursor="Hand" SmallChange="1" SelectionEnd="100" 
+                            Value="{Binding MainViewModel.LaserPower}"/>
+                                    <TextBox HorizontalAlignment="Left" Height="30" Margin="0,0,0,0" TextWrapping="Wrap" 
+                             Text="{Binding Value, ConverterParameter=25, Converter={StaticResource ConvertPercentage}, ElementName=SliderPLaser, Mode=TwoWay, StringFormat=\{0:P\}, UpdateSourceTrigger=PropertyChanged}" 
+                             VerticalAlignment="Center" Width="60" VerticalContentAlignment="Center" IsEnabled="False" 
+                             HorizontalContentAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </GroupBox>
+                    </StackPanel>
+            </Grid>
+        <!--Use to move the machine with buttons or keyboard-->
+                <GroupBox Header="Jog" Margin="5,5,5,5" Style="{DynamicResource GroupBoxStyleVD}" 
+                  IsEnabled="{Binding MainViewModel.IsManualSending}" Grid.Column="1">
+                <StackPanel>
+                <!--Buttons move all directions X, Y, Z-->
+                <Grid Margin="0" Width="160" Height="150" 
+                      IsEnabled="{Binding MainViewModel.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <!--Button Home -->
+                    <Button Grid.Row="1" Grid.Column="1" Style="{DynamicResource ControlStyleVDTrigger}"
+                            Content="O" HorizontalAlignment="Center" Margin="0" Background="LightGray"
+                            VerticalAlignment="Center" Width="30" Height="30" FontWeight="Bold"
+                            Command="{Binding MainViewModel.JogHCommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}"/>
+                    <!--Button West -->
+                    <Button Grid.Row="1" Grid.Column="0" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" VerticalAlignment="Center"
+                            Width="30" Height="30" 
+                            Command="{Binding MainViewModel.JogWCommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}">
+                        <Path Stroke="Black" Fill="Black" Data="M 10 0 L 5 5 L 10 10 Z"/>
+                    </Button>
+                    <!--Button East -->
+                    <Button Grid.Row="1" Grid.Column="2" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding MainViewModel.JogECommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}">
+                        <Path Stroke="Black" Fill="Black" Data="M 0 0 L 5 5 L 0 10 Z"/>
+                    </Button>
+                    <!--Button North -->
+                    <Button Grid.Row="0" Grid.Column="1" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding MainViewModel.JogNCommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}">
+                        <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z"/>
+                    </Button>
+                    <!--Button South -->
+                    <Button Grid.Column="1" Grid.Row="2" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding MainViewModel.JogSCommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}">
+                        <Path Stroke="Black" Fill="Black" Data="M 0 0 L 5 5 L 10 0 Z"/>
+                    </Button>
+                    <!--Button NW -->
+                    <Button Grid.Row="0" Grid.Column="0" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding MainViewModel.JogNWCommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}">
+                        <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z" RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform Angle="-45"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Button>
+                    <!--Button NE -->
+                    <Button Grid.Row="0" Grid.Column="2" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding MainViewModel.JogNECommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}">
+                        <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z" RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform Angle="45"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Button>
+                    <!-- Button SW -->
+                    <Button Grid.Row="2" Grid.Column="0" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding MainViewModel.JogSWCommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}">
+                        <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z" RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform Angle="-135"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Button>
+                    <!-- Button SE -->
+                    <Button Grid.Row="2" Grid.Column="2" 
+                            Style="{DynamicResource ControlStyleVDTrigger}" 
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding MainViewModel.JogSECommand}" CommandParameter="{Binding MainViewModel.IsJogEnabled}">
+                        <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z" RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform Angle="135"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Button>
+                    <!--Button ZUp-->
+                    <!--Button ZDown-->
+                </Grid>
+                <!--Slider adjust Feed rate-->
+                <StackPanel Orientation="Horizontal" 
+                            IsEnabled="{Binding MainViewModel.IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" >
+                    <Label Content="Feed:" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
+                           Margin="5 5 0 5"/>
+                    <Slider Name="FeedSlider" Maximum="{Binding MainViewModel.MaxFeedRate, Mode=OneWay}" Width="145" 
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0" Margin="5 0 0 0"
+                            Value="{Binding MainViewModel.FeedRate, Mode=TwoWay}" LargeChange="10" SmallChange="1" BorderThickness="1" 
+                            Cursor="Hand" TickPlacement="TopLeft" />
+                    <TextBox Text="{Binding Value, ElementName=FeedSlider, Mode=TwoWay, StringFormat=\{0:F0\}, UpdateSourceTrigger=PropertyChanged}" 
+                             Width="40" Height="30" Margin="5 0 0 0" VerticalContentAlignment="Center" 
+                             HorizontalContentAlignment="Center"/>
+                </StackPanel>
+                <!--Toggle buttons select Step for X, Y and Z-->
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Step:" Margin="5" VerticalContentAlignment="Center" 
+                           HorizontalContentAlignment="Center"/>
+                    <RadioButton x:Name="radioButton" Content="0.1" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 Command="{Binding MainViewModel.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton}"/>
+                    <RadioButton x:Name="radioButton1" Content="0.5" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 Command="{Binding MainViewModel.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton1}"/>
+                    <RadioButton x:Name="radioButton2" Content="1" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" IsChecked="True" 
+                                 Command="{Binding MainViewModel.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton2}"/>
+                    <RadioButton x:Name="radioButton3" Content="5" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 Command="{Binding MainViewModel.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton3}"/>
+                    <RadioButton x:Name="radioButton4" Content="10" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 Command="{Binding MainViewModel.StepCommand, Mode=OneWay}" 
+                                 CommandParameter="{Binding Content, ElementName=radioButton4}"/>
+                </StackPanel>
+                <!--Keyboard is enabled / mouth disable + metric/imperial-->
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Margin="5" VerticalContentAlignment="Center" Content="Keyboard" 
+                              IsChecked="{Binding MainViewModel.IsSelectedKeyboard}"/>
+                    <CheckBox Margin="5" VerticalContentAlignment="Center" Content="Metric" 
+                              IsChecked="{Binding MainViewModel.IsSelectedMetric}"/>
+                </StackPanel>
+            </StackPanel>
+                </GroupBox>
+            </Grid>
+    </Grid>
+</UserControl>

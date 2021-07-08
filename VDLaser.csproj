@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Version>0.4.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.json" />
+    <None Remove="Nlog.config" />
+    <None Remove="Skin\Image\Favicon-VD.png" />
+    <None Remove="Skin\Image\iconOpenFile40.png" />
+    <None Remove="Skin\Image\iconPause40.png" />
+    <None Remove="Skin\Image\iconPlay40.png" />
+    <None Remove="Skin\Image\iconRefresh40.png" />
+    <None Remove="Skin\Image\iconStop40.png" />
+    <None Remove="Skin\Image\iconStopFile40.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nlog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Skin\Image\iconPause40.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.16" />
+    <PackageReference Include="MvvmLightLibs" Version="5.4.1.1" />
+    <PackageReference Include="NLog" Version="4.7.10" />
+    <PackageReference Include="NLog.Schema" Version="4.7.10" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.12.0" />
+    <PackageReference Include="System.IO.Ports" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Skin\Image\Favicon-VD.png" />
+    <Resource Include="Skin\Image\iconOpenFile40.png" />
+    <Resource Include="Skin\Image\iconPlay40.png" />
+    <Resource Include="Skin\Image\iconRefresh40.png" />
+    <Resource Include="Skin\Image\iconStop40.png" />
+    <Resource Include="Skin\Image\iconStopFile40.png" />
+  </ItemGroup>
+
+</Project>

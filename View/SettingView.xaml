@@ -1,0 +1,152 @@
+﻿<UserControl x:Class="VDLaser.View.SettingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:VDLaser.Converter"
+             mc:Ignorable="d" Height="280" Width="600">
+    <UserControl.Resources>
+        <local:InverseBooleanConverter x:Key="ConvertBool"/>
+    </UserControl.Resources>
+    <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <!--Grbl command and setting informations (command '$$'). 
+        It populates the grid with ID, value and description from Codes folder-->
+        <GroupBox Margin="5" 
+                  Style="{DynamicResource GroupBoxStyleVD}" IsEnabled="{Binding MainViewModel.IsManualSending}">
+            <Grid Margin="0,10,-0.4,-0.6" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="1.3*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="200"/>
+                </Grid.RowDefinitions>
+                <!--Display build informations: Grbl version and build date-->
+                <StackPanel>
+                    <Border BorderThickness="1" BorderBrush="LightBlue" Margin="10">
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="0.5*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1.5*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Version:" 
+                                   HorizontalAlignment="Left" Margin="0 5 0 5" 
+                       VerticalAlignment="Top" VerticalContentAlignment="Center" 
+                                   HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="2" Content="Build:" 
+                                   HorizontalAlignment="Left" Margin="0 5 0 5" 
+                       VerticalAlignment="Top" VerticalContentAlignment="Center" 
+                                   HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="1" Content="{Binding MainViewModel.VersionGrbl}" 
+                                   HorizontalAlignment="Left" 
+                       Margin="5" VerticalAlignment="Top" VerticalContentAlignment="Center" 
+                       HorizontalContentAlignment="Center"/>
+                            <Label Grid.Column="3" Grid.Row="1" Content="{Binding MainViewModel.BuildInfoGrbl}" 
+                       HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" 
+                       VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Margin="10">
+                    <Border BorderThickness="1" BorderBrush="LightBlue" Margin="0">
+                        <Grid Grid.Row="1" Margin="5" IsEnabled="{Binding MainViewModel.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                                <Button Content="?" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                        Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblCurrentStatusCommand, Mode=OneWay}" 
+                        ToolTip="Status Report Query"/>
+                                <Button Content="$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                        Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblHelpCommand, Mode=OneWay}" 
+                        ToolTip="Grbl print a help message"/>
+                                <Button Content="$#" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblParametersCommand, Mode=OneWay}" 
+                            ToolTip="View gcode parameters"/>
+
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                                <Button Content="$N" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblStartupBlocksCommand, Mode=OneWay}" 
+                            ToolTip="View startup blocks"/>
+                                <Button Content="$I" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblBuildInfoCommand, Mode=OneWay}" 
+                            ToolTip="View build info"/>
+                                <Button Content="$C" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblCheckCommand, Mode=OneWay}" 
+                            ToolTip="Check gcode mode"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="2">
+
+                                <Button Content="$X" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblKillAlarmCommand, Mode=OneWay}" ToolTip="Kill alarm lock"/>
+                                <Button Content="$G" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblParserStateCommand, Mode=OneWay}" 
+                            ToolTip="View gcode parser state"/>
+                                <Button Content="$SLP" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
+                            Style="{DynamicResource ControleStyleVD}" Command="{Binding MainViewModel.GrblSleepCommand, Mode=OneWay}" 
+                            ToolTip="Enable Sleep Mode" IsEnabled="False"/>
+
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="3">
+                                <Button Content="ResetX" Margin="5" VerticalAlignment="Center" Width="Auto" 
+                            Style="{DynamicResource ControleStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding MainViewModel.ResetAxisXCommand, Mode=OneWay}"/>
+                                <Button Content="ResetY" Margin="5" VerticalAlignment="Center" Width="Auto" 
+                            Style="{DynamicResource ControleStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding MainViewModel.ResetAxisYCommand, Mode=OneWay}"/>
+                                <Button Content="$RST=$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="Auto" 
+                            Style="{DynamicResource ControleStyleVD}" ToolTip="Restore Grbl settings and data to defaults" 
+                            IsEnabled="False"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="4">
+                                <Button Content="G28.1" Margin="5" VerticalAlignment="Center" Width="50" 
+                            Style="{DynamicResource ControleStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding MainViewModel.GrblSetHome1Command, Mode=OneWay}"/>
+                                <Button Content="G30.1" Margin="5" VerticalAlignment="Center" Width="50" 
+                            Style="{DynamicResource ControleStyleVD}" HorizontalAlignment="Left" 
+                            Command="{Binding MainViewModel.GrblSetHome2Command, Mode=OneWay}"/>
+                                <Button Content="" HorizontalAlignment="Center" Margin="10, 10, 0, 10" 
+                            VerticalAlignment="Center" Width="30" Style="{DynamicResource ControleStyleVD}" 
+                            Command="{Binding SettingViewModel.Test, Mode=OneWay}" Visibility="Hidden"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+                <!--Grbl setting informations (command '$$'): get ID, value and description from SettingCodes-->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Command="{Binding SettingViewModel.RefreshSettingCommand, FallbackValue=true, Mode=OneWay}" 
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Margin="260 0 10 0"
+                        Style="{DynamicResource ControleStyleVD}" ToolTip="Refresh Grbl settings">
+                        <StackPanel Height="20" Width="20">
+                            <Image Source="/VDLaser;component/Skin/Image/iconRefresh40.png"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <DataGrid Grid.Row="1" Grid.Column="1" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
+                          IsReadOnly="True" Width="300"
+                          ItemsSource="{Binding SettingViewModel.SettingCollection}" Margin="5.4,0,3.4,0" Height="200" 
+                          VerticalAlignment="Top">
+                    <DataGrid.HorizontalGridLinesBrush>
+                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>
+                    </DataGrid.HorizontalGridLinesBrush>
+                    <DataGrid.VerticalGridLinesBrush>
+                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ScrollBarColorKey}}"/>
+                    </DataGrid.VerticalGridLinesBrush>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding SettingCode, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Value" Binding="{Binding SettingValue}"/>
+                        <DataGridTextColumn Header="Settings Description, Units" Binding="{Binding SettingDescription}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

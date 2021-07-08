@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="VDLaser.View.ConsoleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDLaser.Converter"
+             mc:Ignorable="d" d:DesignWidth="600" Height="200">
+    <UserControl.Resources>
+        <local:InverseBooleanConverter x:Key="ConvertBool"/>
+    </UserControl.Resources>
+    <!--Show data sent + response-->
+    <Grid DataContext="{Binding Source={StaticResource Locator}}">
+        <GroupBox Header="Console" Style="{DynamicResource GroupBoxStyleVD}"
+                  IsEnabled="{Binding MainViewModel.IsSelectedKeyboard, Converter={StaticResource ConvertBool}}" 
+                  Margin="0,0,0,5">
+            <Grid Margin="5 0 5 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="0.2*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <DataGrid Grid.Row="0" Grid.Column="0" AutoGenerateColumns="False" IsSynchronizedWithCurrentItem="True" 
+                          IsReadOnly="True" Width="Auto" Height="146" SelectedIndex="1"
+                          ItemsSource="{Binding MainViewModel.ConsoleData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0,0,0.4,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" 
+                          ScrollViewer.CanContentScroll="True"
+                          HorizontalScrollBarVisibility="Hidden">
+                    <DataGrid.VerticalGridLinesBrush>
+                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientActiveCaptionColorKey}}"/>
+                    </DataGrid.VerticalGridLinesBrush>
+                    <DataGrid.HorizontalGridLinesBrush>
+                        <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionColorKey}}"/>
+                    </DataGrid.HorizontalGridLinesBrush>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Line sent" Binding="{Binding TXData, Mode=OneWay}"
+                                            Width="300" MinWidth="70" MaxWidth="380"/>
+                        <DataGridTextColumn Header="Response" Binding="{Binding RXData, Mode=OneWay}"
+                                            Width="300" MinWidth="60" MaxWidth="380" CanUserResize="True" 
+                                            CanUserSort="True"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <!--Clear (datagrid, textbox) + verbose (machine state)-->
+                <StackPanel Grid.Row="0" Grid.Column="1">
+                    <Button Content="Clear" Margin="0 25 0 5" Width="50" 
+                            Command="{Binding MainViewModel.ClearCommand, Mode=OneWay}" 
+                        Style="{DynamicResource ControleStyleVD}" ToolTip="Clear data Console, Gcode and Graphic"/>
+                    <CheckBox Content="Verbose" Margin="10,30,5,0" 
+                              VerticalContentAlignment="Center" 
+                              IsChecked="{Binding MainViewModel.IsVerbose, Mode=TwoWay}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+                    <Label Content="Message : "/>
+                    <TextBlock  Text="{Binding MainViewModel.AlarmMessage}"
+                               Style="{StaticResource AlarmStyleVD}" 
+                               ScrollViewer.VerticalScrollBarVisibility="Disabled" 
+                               VerticalAlignment="Center" TextWrapping="WrapWithOverflow" 
+                                ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>
