@@ -7,6 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="290" d:DesignWidth="500">
     <UserControl.Resources>
+        <local:IntToTimeConverter x:Key="IntToTimeConverter"/>
         <local:DoubleConverter x:Key="ConvertDouble"/>
     </UserControl.Resources>
     <Grid DataContext="{Binding Source={StaticResource Locator}}">
@@ -111,10 +112,17 @@
                 </StackPanel>
                 <!--Total job time (estimation)-->
                 <StackPanel Grid.Row="4" Orientation="Horizontal">
-                    <Label Content="Time:" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
-                    <TextBox Text="{Binding MainViewModel.EstimateJobTime}" Margin="5" IsReadOnly="True" 
+                    <Label Content="Time :" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                    <TextBox Text="{Binding MainViewModel.RealJobTime}" Margin="5" IsReadOnly="True" 
                              VerticalContentAlignment="Center" Width="70" 
                              HorizontalContentAlignment="Center" Height="23" IsEnabled="False"/>
+                    <Label Content="(" Margin="0 5 0 5"
+                             VerticalContentAlignment="Center" Width="15"/>
+                    <Label Content="{Binding MainViewModel.EstimateJobTime}" 
+                             VerticalContentAlignment="Center" Width="60" 
+                             HorizontalContentAlignment="Center" Height="28"/>
+                    <Label Content=")" 
+                             VerticalContentAlignment="Center" Width="15"/>
                 </StackPanel>
                 <!--Percentage of lines sent (not total job time)-->
                 <StackPanel Grid.Row="5" Orientation="Horizontal">

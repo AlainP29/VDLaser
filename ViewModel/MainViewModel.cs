@@ -14,12 +14,14 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using System.Threading;
 using VDLaser.Tool;
+using VDLaser.Converter;
 using GalaSoft.MvvmLight.Messaging;
 using GalaSoft.MvvmLight.CommandWpf;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Reflection;
 using Microsoft.Win32;
+using System.Timers;
 
 namespace VDLaser.ViewModel
 {
@@ -27,7 +29,7 @@ namespace VDLaser.ViewModel
     {
         private int _selectedBaudRate = 115200;
         private string _selectedPortName = string.Empty;
-        private int transferDelay;
+        private int _transferDelay=750;
         private int _selectedLaser;
         private int _converterParameterLaser;
 
@@ -43,6 +45,8 @@ namespace VDLaser.ViewModel
         private string _infoMessage = string.Empty;
         private string _fileName = string.Empty;
         private string _estimateJobTime = "00:00:00";
+        private int chrono = 0;
+        private string _realJobTime = "00:00:00";
         private string _selectedTransferDelay = string.Empty;
         private string _txLine = string.Empty;
         private string _rxLine = string.Empty;
@@ -95,6 +99,7 @@ namespace VDLaser.ViewModel
         private readonly GrblTool grbltool = new GrblTool();
         private GCodeTool gcodeTool;
         private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);//Use to monitor file sending
+        private System.Timers.Timer aTimer;
 
         private readonly AppSettings settings;
         #region subregion enum
@@ -413,6 +418,18 @@ namespace VDLaser.ViewModel
             set
             {
                 Set(ref _gcodeModel, value);
+            }
+        }
+        public int TransferDelay
+        {
+            get
+            {
+                return _transferDelay;
+            }
+            set
+            {
+                Set(ref _transferDelay, value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Manual Transfer delay value : {0}", value);
             }
         }
 
@@ -809,15 +826,32 @@ namespace VDLaser.ViewModel
             set
             {
                 Set(ref _estimateJobTime, value);
-                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Job time : {0}", value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Estimate Job time : {0}", value);
+            }
+        }
+        /// <summary>
+        /// Get the RealJobTime property. It is the total running time.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string RealJobTime
+        {
+            get
+            {
+                return _realJobTime;
+            }
+            set
+            {
+                Set(ref _realJobTime, value);
+                logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Real Job time : {0}", value);
+
             }
         }
 
-        /// <summary>
-        /// Get the FileQueue property. FileQueue is populated w/ lines of G-code file trimed.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public Queue<string> FileQueue
+/// <summary>
+/// Get the FileQueue property. FileQueue is populated w/ lines of G-code file trimed.
+/// Changes to that property's value raise the PropertyChanged event. 
+/// </summary>
+public Queue<string> FileQueue
         {
             get
             {
@@ -1841,6 +1875,12 @@ namespace VDLaser.ViewModel
             RLine = 0;
             EstimateJobTime = "00:00:00";
             logger.Info("MainViewModel|Clear Percentage and JobTime");
+            if (aTimer != null)
+            { 
+            aTimer.Stop();
+            aTimer.Dispose();
+            logger.Info("MainViewModel|Stop timer");
+        }
         }
         /// <summary>
         /// Allow/Disallow the cleardata method to be executed
@@ -2451,10 +2491,17 @@ namespace VDLaser.ViewModel
             if (currentStatusTimer.IsEnabled)
             {
                 currentStatusTimer.Stop();
+                logger.Info("MainViewModel|Stop dispatcher timer");
             }
             if (IsLaserPower)
             {
                 StopLaser();
+            }
+            if (aTimer != null)
+            {
+                aTimer.Stop();
+                aTimer.Dispose();
+                logger.Info("MainViewModel|Stop timer");
             }
             base.Cleanup();
             logger.Info("MainViewModel|Cleanup done");
@@ -2555,10 +2602,19 @@ namespace VDLaser.ViewModel
             logger.Info("MainViewModel|Get number of GCode lines");
             gcodeTool = new GCodeTool(FileList);
             logger.Info("MainViewModel|Get GCodeTool FileList");
+            _transferDelay = SelectedTransferDelay switch
+            {
+                "Slow" => 2000,
+                "Normal" => 750,
+                "Fast" => 250,
+                "UltraFast" => 100,
+                _ => 750,
+            };
             //GCodePoints = gcodeTool.GetGCodePointCollection(50,50);
             GCodePoints = gcodeTool.GetGCodePointCollection(10, 10, 0.5);
             logger.Info("MainViewModel|Get GCodeTool PointCollection");
-            TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
+            //TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
+            TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(TransferDelay)));
             EstimateJobTime = time.ToString(@"hh\:mm\:ss");
             logger.Info("MainViewModel|Get Job time");
             //GCodeDrawing(GCodePoints);
@@ -2568,6 +2624,8 @@ namespace VDLaser.ViewModel
         /// </summary>
         private async void StartSendingFileAsync()
         {
+            SetTimer();
+            logger.Info("MainViewModel|Starting timer...");
             if (MachineStatus == MachStatus.Hold)
             {
                 GrblStartCycle();
@@ -2596,7 +2654,7 @@ namespace VDLaser.ViewModel
                         }
                         manualResetEvent.WaitOne();//Wait for the signal ok to continue task...
                         //logger.Info("MainViewModel|mre waitone");
-                        Thread.Sleep(transferDelay);
+                        Thread.Sleep(TransferDelay);
                         if (!IsSending)
                         {
                             cts.Cancel();
@@ -2610,7 +2668,7 @@ namespace VDLaser.ViewModel
                     }
                 }, token);
 
-                transferDelay = SelectedTransferDelay switch
+                _transferDelay = SelectedTransferDelay switch
                 {
                     "Slow" => 2000,
                     "Normal" => 750,
@@ -2633,6 +2691,9 @@ namespace VDLaser.ViewModel
                 {
                     cts.Dispose();
                     logger.Info("MainViewModel|Task sending file cleared");
+                    aTimer.Stop();
+                    aTimer.Dispose();
+                    logger.Info("MainViewModel|Stop timer");
                 }
             }
         }
@@ -2652,6 +2713,12 @@ namespace VDLaser.ViewModel
                 catch (ObjectDisposedException ex)
                 {
                     logger.Error("MainViewmodel|StopSendingFileAsync " + ex.ToString());
+                }
+                finally
+                {
+                    aTimer.Stop();
+                    aTimer.Dispose();
+                    logger.Info("MainViewModel|Stop timer");
                 }
             }
             GrblFeedHold();
@@ -2737,6 +2804,16 @@ namespace VDLaser.ViewModel
                 IsManualSending = true;
                 IsSending = false;
             }
+        }
+        private void SetTimer()
+        {
+            chrono = 0;
+            // Create a timer with a two second interval.
+            aTimer = new System.Timers.Timer(1000);
+            // Hook up the Elapsed event for the timer. 
+            aTimer.Elapsed += OnTimedEvent;
+            aTimer.AutoReset = true;
+            aTimer.Enabled = true;
         }
         #endregion
 
@@ -2851,6 +2928,12 @@ namespace VDLaser.ViewModel
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
             GrblCurrentStatus();
+        }
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            chrono++;
+            RealJobTime = new TimeSpan(chrono*10000000).ToString();
+            logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Real Job time : {0}",chrono);
         }
         #endregion
 

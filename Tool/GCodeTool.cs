@@ -420,18 +420,32 @@ namespace VDLaser.Tool
                 }
             }
         }
+        /// <summary>
+        /// Estimate job time in second only in number of lines and transfer delay.
+        /// </summary>
+        /// <param name="transferDelay"></param>
+        /// <returns></returns>
+        public double CalculateJobTime(int transferDelay)
+        {
+            double time = FileList.Count * transferDelay;
+            logger.Info("GCodeTool|CalculateJobTime {0}",time);
+
+            return Math.Round(time / 1000);
+        }
 
         /// <summary>
-        /// Estimate the total time in ms
+        /// Estimate the total time in second including transfer delay and max speed
         /// </summary>
+        /// <param name="transferDelay"></param>
         /// <param name="maxFeedRate"></param>
         /// <returns></returns>
-        public double CalculateJobTime(double maxFeedRate)
+        public double CalculateJobTime(int transferDelay,double maxFeedRate)
         {
             double time = 0;
             double x0 = 0, y0 = 0;
                 for (int i = 0; i < FileList.Count; i++)
                 {
+                time += transferDelay/1000;
                     if (FileList[i].Contains('.'))
                     {
                         GCodeLine = FileList[i].Replace('.', ',');
@@ -525,7 +539,8 @@ namespace VDLaser.Tool
                         logger.Info("GCodeTool|CalculateJobTime DMode inconnu:" + DMode);
                     }
                 }
-            return Math.Round(time * 60);
+            //return Math.Round(time * 60);
+            return Math.Round(time);
         }
 
         /// <summary>
