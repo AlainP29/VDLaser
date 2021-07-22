@@ -67,6 +67,7 @@ namespace VDLaser.ViewModel
         private bool _isBaudEnabled = true;
         private bool _isLaserEnabled = false;
         private bool _isRefresh = false;
+        private bool _continueCom = true;
 
         private Collection<string> _collectionPortName;
         private readonly IDataService _dataService;
@@ -109,6 +110,7 @@ namespace VDLaser.ViewModel
         /// </summary>
         public enum MachStatus { Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep };
         #endregion
+
         #region Constructor
         /// <summary>
         /// Initialize a new instance of the MainViewModel class.
@@ -131,7 +133,7 @@ namespace VDLaser.ViewModel
                         }
                         logger.Info("MainViewModel|Load serial port window");
                         _serialPort = new SerialPort();
-                        GetSerialPortSettings();
+                        GetSerialPortNames();
                     });
                 _dataService.GetGCode(
                         (item, error) =>
@@ -1442,18 +1444,17 @@ namespace VDLaser.ViewModel
 
         #region subregion serial port method
         /// <summary>
-        /// Gets serial port settings from SerialPortSettingsModel class
+        /// Get collection of serial port names
         /// </summary>
-        /// <param name="settingsInit"></param>
-        public void GetSerialPortSettings()
+        public void GetSerialPortNames()
         {
             _collectionPortName = new Collection<string>(SerialPort.GetPortNames());
             logger.Info("MainViewModel|Get serial port names");
         }
         /// <summary>
-        /// Set default settings for serial port
+        /// Set default serial port settings: baudrate and port name
         /// </summary>
-        public void DefaultPortSetting()
+        public void DefaultPortSettings()
         {
             SelectedBaudRate = 115200;
             IsBaudEnabled = true;
@@ -1474,8 +1475,8 @@ namespace VDLaser.ViewModel
         public void RefreshSerialPort()
         {
             logger.Info("MainViewModel|Refresh serial port");
-            GetSerialPortSettings();
-            DefaultPortSetting();
+            GetSerialPortNames();
+            DefaultPortSettings();
         }
         /// <summary>
         /// Allows/Disallows RefreshSerialPort method to be executed.
@@ -1500,11 +1501,14 @@ namespace VDLaser.ViewModel
                 _serialPort.Handshake = Handshake.None;
                 _serialPort.ReadBufferSize = 100;
                 _serialPort.WriteBufferSize = 100;
+                _serialPort.WriteTimeout = 100;
                 _serialPort.ReceivedBytesThreshold = 10;
                 _serialPort.DiscardNull = false;
                 _serialPort.DataReceived += SerialPort_DataReceived;
+                _continueCom = true;
+                logger.Info("MainViewModel|Port COM settings loaded");
                 _serialPort.Open();
-                logger.Info("MainViewModel|Port COM open");
+                logger.Info("MainViewModel|Opening COM port...");
                 IsBaudEnabled = false;
                 IsPortEnabled = false;
                 StartCommunication();
@@ -1513,6 +1517,10 @@ namespace VDLaser.ViewModel
             catch (IOException ex)
             {
                 logger.Error("MainViewModel|Exception OpenSerialPort raised: " + ex.ToString());
+                MessageBox.Show("Wrong COM Port");
+                Cleanup();
+                CloseSerialPort();
+                logger.Info("MainViewModel|Wrong COM port", VersionGrbl);
             }
         }
         /// <summary>
@@ -1528,14 +1536,20 @@ namespace VDLaser.ViewModel
         /// </summary>
         public void StartCommunication()
         {
+            logger.Info("MainViewModel|Starting Communication...");
+            logger.Info("MainViewModel|Serial port open? :{0}", _serialPort.IsOpen);
             if (_serialPort.IsOpen)
             {
                 GrblReset();
-                GrblBuildInfo();
-                CheckVersionGrbl();
-                if (!currentStatusTimer.IsEnabled)
+                if (_continueCom)
                 {
-                    InitializeDispatcherTimer();
+                    GrblBuildInfo();
+                    CheckVersionGrbl();
+                    if (!currentStatusTimer.IsEnabled)
+                    {
+                        InitializeDispatcherTimer();
+                    }
+                    logger.Info("MainViewModel|Communication is started");
                 }
             }
             else
@@ -1552,12 +1566,15 @@ namespace VDLaser.ViewModel
         {
             try
             {
+                _continueCom = false;
                 _serialPort.DataReceived -= SerialPort_DataReceived;
                 _serialPort.Dispose();
                 _serialPort.Close();
                 IsBaudEnabled = true;//In cleanup?
                 IsPortEnabled = true;
                 MessengerInstance.Unregister<NotificationMessage>(this, GetGrblSetting);
+                Thread.Sleep(100);
+                logger.Info("MainViewModel|Port COM closed");
             }
             catch (InvalidOperationException ex)
             {
@@ -1568,7 +1585,7 @@ namespace VDLaser.ViewModel
             finally
             {
                 Cleanup();
-                logger.Info("MainViewModel|Port COM closed");
+                logger.Info("MainViewModel|Port COM cleaned");
             }
         }
         /// <summary>
@@ -1729,12 +1746,28 @@ namespace VDLaser.ViewModel
         {
             if (_serialPort.IsOpen)
             {
-                _serialPort.Write(new byte[1] { b }, 0, 1);
+                try
+                {
+                    _serialPort.Write(new byte[1] { b }, 0, 1);
+
                 if (b != 63)//Skips current status logger with DispatcherTimer
                 {
-                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Method WriteByte: {0}", b);
+                    logger.Info(CultureInfo.CurrentCulture, "MainViewModel|Method Write byte: {0}", b);
                 }
             }
+                catch (TimeoutException ex)
+                {
+                    logger.Error(ex.GetType().FullName);
+                    logger.Error(ex.Message);
+                    logger.Error("MainViewModel|Exception Write byte raised: " + ex.ToString());
+                    CloseSerialPort();
+                }
+            }
+            else
+            { 
+                logger.Error("MainViewModel|Cannot Write byte :{0} ",b); 
+            }
+        
         }
         /// <summary>
         /// Writes bytes to serial port.
@@ -1767,7 +1800,7 @@ namespace VDLaser.ViewModel
         /// </summary>
         public void ClearData()
         {
-            logger.Info("MainViewModel|Clear data");
+            logger.Info("MainViewModel|Clearing data...");
             if (_serialPort.IsOpen)
             {
                 GrblReset();
@@ -1775,34 +1808,39 @@ namespace VDLaser.ViewModel
                 _serialPort.DiscardOutBuffer();
                 ListConsoleData.Clear();
                 ListSetting.Clear();
-                logger.Info("MainViewModel|TXLine/RXLine and buffers erased");
+                logger.Info("MainViewModel|Console list cleared and buffers erased");
             }
             Thread.Sleep(50);
 
             if (FileQueue.Count > 0)
             {
                 FileQueue.Clear();
-
+                logger.Info("MainViewModel|Clear file queue");
             }
             if (GCodeData != null)
             {
                 GCodeData.Clear();
+                logger.Info("MainViewModel|Clear gcode data");
             }
             if (GcodePaths != null)
             {
                 GcodePaths.Clear();
+                logger.Info("MainViewModel|Clear gcode path");
             }
             FileName = string.Empty;
             RXLine = string.Empty;
             TXLine = string.Empty;
             GCodeLine = string.Empty;
+            logger.Info("MainViewModel|Clear gcode data RXLine/TXLine/GCodeLine");
             ErrorMessage = string.Empty;
             AlarmMessage = string.Empty;
             InfoMessage = string.Empty;
+            logger.Info("MainViewModel|Clear Error/Alarm/Info message");
             NLine = 0;
             PercentLine = 0;
             RLine = 0;
             EstimateJobTime = "00:00:00";
+            logger.Info("MainViewModel|Clear Percentage and JobTime");
         }
         /// <summary>
         /// Allow/Disallow the cleardata method to be executed
@@ -1828,7 +1866,7 @@ namespace VDLaser.ViewModel
         public void GrblReset()
         {
             WriteByte(24);
-            logger.Info("MainViewModel|Soft reset");
+            logger.Info("MainViewModel|Soft reset (24)");
         }
 
         /// <summary>
@@ -1947,7 +1985,7 @@ namespace VDLaser.ViewModel
         public void GrblBuildInfo()
         {
             WriteString("$I");
-            logger.Info("MainViewModel|Grbl infos");
+            logger.Info("MainViewModel|Grbl infos ($I)");
         }
 
         /// <summary>
@@ -2374,7 +2412,7 @@ namespace VDLaser.ViewModel
         public void DefaultSettings()
         {
             GetVersion();
-            DefaultPortSetting();
+            DefaultPortSettings();
             DefaultLaserSetting();
             DefaultGraphicSetting();
         }
@@ -2429,7 +2467,7 @@ namespace VDLaser.ViewModel
             currentStatusTimer.Tick += new EventHandler(DispatcherTimer_Tick);
             currentStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 250);
             currentStatusTimer.Start();
-            logger.Info("MainViewModel|Initialize Dispatcher Timer");
+            logger.Info("MainViewModel|Initialize Dispatcher Timer every 250ms");
         }
         private void GetVersion()
         {
@@ -2460,7 +2498,7 @@ namespace VDLaser.ViewModel
                 ClearData();
             }
             OpenFileDialog openFile = new OpenFileDialog();
-            logger.Info("MainViewModel|OpenFile");
+            logger.Info("MainViewModel|File Dialog box open");
             openFile.Title = "Fichier G-code";
             openFile.Filter = "G-Code files|*.txt;*.gcode;*.ngc;*.nc,*.cnc|Tous les fichiers|*.*";
             openFile.FilterIndex = 1;
@@ -2468,6 +2506,7 @@ namespace VDLaser.ViewModel
             if (openFile.ShowDialog().Value)
             {
                 FileName = openFile.FileName;
+                logger.Info("MainViewModel|File selected");
                 LoadFile(FileName);
             }
         }
@@ -2498,6 +2537,7 @@ namespace VDLaser.ViewModel
             FileQueue.Clear();
             FileList.Clear();
             GCodeData = new ObservableCollection<GCodeItems>();
+            logger.Info("MainViewModel|Loading data");
             using (StreamReader sr = new StreamReader(fileName))
             {
                 while ((line = sr.ReadLine()) != null)
@@ -2512,14 +2552,16 @@ namespace VDLaser.ViewModel
             }
             NLine = FileQueue.Count;
             RLine = NLine;
-            logger.Info("MainViewModel|Get GCode FileList");
+            logger.Info("MainViewModel|Get number of GCode lines");
             gcodeTool = new GCodeTool(FileList);
-            logger.Info("MainViewModel|Get GCode PointCollection");
+            logger.Info("MainViewModel|Get GCodeTool FileList");
             //GCodePoints = gcodeTool.GetGCodePointCollection(50,50);
             GCodePoints = gcodeTool.GetGCodePointCollection(10, 10, 0.5);
+            logger.Info("MainViewModel|Get GCodeTool PointCollection");
             TimeSpan time = TimeSpan.FromSeconds(Math.Round(gcodeTool.CalculateJobTime(MaxFeedRate)));
             EstimateJobTime = time.ToString(@"hh\:mm\:ss");
-            GCodeDrawing(GCodePoints);
+            logger.Info("MainViewModel|Get Job time");
+            //GCodeDrawing(GCodePoints);
         }
         /// <summary>
         /// Send the G-Code file in async mode.
