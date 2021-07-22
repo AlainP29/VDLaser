@@ -1517,7 +1517,7 @@ namespace VDLaser.ViewModel
             catch (IOException ex)
             {
                 logger.Error("MainViewModel|Exception OpenSerialPort raised: " + ex.ToString());
-                MessageBox.Show("Wrong COM Port");
+                MessageBox.Show("Please select another COM port","Info connexion",MessageBoxButton.OK,MessageBoxImage.Warning);
                 Cleanup();
                 CloseSerialPort();
                 logger.Info("MainViewModel|Wrong COM port", VersionGrbl);
