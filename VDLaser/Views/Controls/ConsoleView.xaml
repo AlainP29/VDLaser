@@ -1,0 +1,145 @@
+﻿<UserControl x:Class="VDLaser.Views.Controls.ConsoleView"
+             x:Name="ConsoleRoot"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:VDLaser.ViewModels.Controls;assembly=VDLaser.ViewModels"
+             xmlns:local="clr-namespace:VDLaser.Converters"
+             xmlns:behaviors="clr-namespace:VDLaser.Views.Behaviors"
+             mc:Ignorable="d"
+             Background="Transparent" d:MinHeight="85">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BoolToVis" />
+            <local:ConsoleTypeToBrushConverter x:Key="ConsoleTypeBrushConverter" />
+            <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <GroupBox Style="{StaticResource GroupBoxStyleVD}"
+              Background="{Binding Background, ElementName=ConsoleRoot}">
+        <GroupBox.Header>
+            <TextBlock Text="Console" 
+                        Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}"/>
+        </GroupBox.Header>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <DataGrid Grid.Row="0" Grid.Column="0"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  HeadersVisibility="None"
+                  FontFamily="Consolas"
+                  FontSize="12"
+                  Background="Transparent"
+                  Foreground="Black"
+                  RowBackground="Transparent"
+                  AlternatingRowBackground="#0AFFFFFF"
+                  AlternationCount="2"
+                      GridLinesVisibility="None"
+                  HorizontalScrollBarVisibility="Hidden"
+                  behaviors:DataGridAutoScrollBehavior.EnableAutoScroll="True"
+                  behaviors:DataGridAutoScrollBehavior.IsPaused="{Binding IsAutoScrollPaused}">
+                <DataGrid.Style>
+                    <Style TargetType="DataGrid">
+                        <Setter Property="ItemsSource" Value="{Binding Lines}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowControls, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
+                                <Setter Property="ItemsSource" Value="{Binding FilteredLines}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Style>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#22FFFFFF"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Time" Width="70">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Timestamp, StringFormat=HH:mm:ss}" 
+                           Foreground="Gray" FontFamily="Consolas" Margin="5,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Command" Width="300">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Command}" 
+                           FontWeight="SemiBold" FontFamily="Consolas"
+                           Foreground="{Binding Type, Converter={StaticResource ConsoleTypeBrushConverter}}" 
+                           Margin="5,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Response" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Response}" 
+                           FontFamily="Consolas"
+                           Foreground="{Binding Type, Converter={StaticResource ConsoleTypeBrushConverter}}"
+                           Margin="5,0">
+                                    <TextBlock.ToolTip>
+                                        <ToolTip Background="#222" Foreground="Yellow" BorderBrush="#444">
+                                            <StackPanel Margin="5">
+                                                <TextBlock Text="{Binding Command, StringFormat='Cmd: {0}'}" FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding Response, StringFormat='Res: {0}'}"/>
+                                                <TextBlock Text="{Binding Description}" 
+                                           Visibility="{Binding Description, Converter={StaticResource NullToVisibilityConverter}}"
+                                           FontStyle="Italic" Foreground="#FFDC00" Margin="0,5,0,0"
+                                           TextWrapping="Wrap" MaxWidth="250"/>
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel Grid.Row="1" Grid.Column="0" Background="#111" Orientation="Horizontal" 
+                        Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="Total errors: " Foreground="Gray"/>
+                <TextBlock Text="{Binding ErrorCount}" Foreground="Gray" Margin="0,0,20,0"/>
+                <TextBlock Text=" | " Foreground="Gray"/>
+                <TextBlock Text="{Binding LastResponse}" Foreground="#2ECC40"/>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column="1" Margin="5 0 5 0">
+                    <Button Content="Clear" Command="{Binding ClearConsoleCommand}" Margin="0,2"
+                            Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}"/>
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="5,0,5,0"
+                        Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}">
+                <CheckBox Content="Scroll" IsChecked="{Binding IsAutoScrollPaused}" Margin="0,2"/>
+                <CheckBox Content="Verbose" IsChecked="{Binding IsVerbose}" Margin="0,2"/>
+                <CheckBox Content="Hide OK" IsChecked="{Binding HideOkMessages}" IsEnabled="{Binding AreFiltersEnabled}" Margin="0,2"/>
+                <CheckBox Content="Hide &lt;&gt;" IsChecked="{Binding HideStatusReports}" IsEnabled="{Binding AreFiltersEnabled}" Margin="0,2"/>
+
+                <Separator Margin="0,2" Background="#444"/>
+
+                <Button Content="Export" Command="{Binding ExportConsoleCommand}" Margin="0,2"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0">
+                    <Label Content="Max:" Foreground="Gray" VerticalAlignment="Center"/>
+                    <TextBox Width="35" Text="{Binding MaxLines, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </GroupBox>
+</UserControl>

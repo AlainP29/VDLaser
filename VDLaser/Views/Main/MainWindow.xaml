@@ -1,0 +1,222 @@
+﻿<Window x:Class="VDLaser.Views.Main.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:local="clr-namespace:VDLaser.Views.Controls"
+        xmlns:conv="clr-namespace:VDLaser.Converters"
+        xmlns:main="clr-namespace:VDLaser.ViewModels.Main;assembly=VDLaser.ViewModels"
+        d:DataContext="{d:DesignInstance Type=main:MainWindowViewModel}"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Title="VDLaser - impression laser 2D" Height="700" Width="1100"
+        Icon="/Resources/Assets/Favicon-VD.png"
+        x:Name="Root">
+    <Grid x:Name="MainGrid"  Background="#FFE5E5E5" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0">
+            <UniformGrid DockPanel.Dock="Top" Columns="6" Height="50">
+                <ToggleButton Content="Home" Style="{StaticResource TabButtonStyleVD}"
+                        IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Home}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Home" />
+                <ToggleButton Content="Jogging" Style="{StaticResource TabButtonStyleVD}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Jogging}"
+                      Command="{Binding SelectTabCommand}" CommandParameter="Jogging" />
+                <ToggleButton Content="File" Style="{StaticResource TabButtonStyleVD}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=File}"
+                      Command="{Binding SelectTabCommand}" CommandParameter="File" />
+                <ToggleButton Content="Plotter" Style="{StaticResource TabButtonStyleVD}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Plotter}"
+                      Command="{Binding SelectTabCommand}" CommandParameter="Plotter" />
+                <ToggleButton Content="Console" Style="{StaticResource TabButtonStyleVD}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Console}"
+                    Command="{Binding SelectTabCommand}" CommandParameter="Console" />
+                <ToggleButton Content="Settings" Style="{StaticResource TabButtonStyleVD}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Settings}"
+                      Command="{Binding SelectTabCommand}" CommandParameter="Settings" />
+            </UniformGrid>
+            <Grid VerticalAlignment="Stretch" Background="#FFE5E5E5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Viewbox Visibility="{Binding DataContext.CurrentTab, 
+                    RelativeSource={RelativeSource AncestorType=Window}, 
+                    Converter={StaticResource TabToVisibilityConverter}, 
+                    ConverterParameter=Home}" 
+                    Grid.ColumnSpan="6"
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Center">
+                        <local:MachineStateView/>
+                </Viewbox>
+                <Viewbox Visibility="{Binding DataContext.CurrentTab, 
+                    RelativeSource={RelativeSource AncestorType=Window}, 
+                    Converter={StaticResource TabToVisibilityConverter}, 
+                    ConverterParameter=Jogging}" 
+                    Grid.ColumnSpan="6"
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Center">
+                    <local:JoggingView />
+                </Viewbox>
+                <Viewbox Visibility="{Binding DataContext.CurrentTab, 
+                    RelativeSource={RelativeSource AncestorType=Window}, 
+                    Converter={StaticResource TabToVisibilityConverter}, 
+                    ConverterParameter=File}" 
+                    Grid.ColumnSpan="6"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                    <local:GcodeFileView />
+                </Viewbox>
+                <Viewbox DataContext="{Binding PlotterVM}"
+                    Visibility="{Binding DataContext.CurrentTab, 
+                    RelativeSource={RelativeSource AncestorType=Window}, 
+                    Converter={StaticResource TabToVisibilityConverter}, 
+                    ConverterParameter=Plotter}" 
+                    Grid.ColumnSpan="6">
+                    <local:PlotterView/>
+                </Viewbox>
+                <Viewbox Visibility="{Binding DataContext.CurrentTab, 
+                        RelativeSource={RelativeSource AncestorType=Window}, 
+                        Converter={StaticResource TabToVisibilityConverter}, 
+                        ConverterParameter=Console}" Grid.ColumnSpan="6"
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center">
+                        <local:ConsoleView Background="LightGray"/>
+                </Viewbox>
+                <Viewbox Grid.ColumnSpan="6"
+                         Visibility="{Binding CurrentTab, Converter={StaticResource TabToVisibilityConverter}, 
+                         ConverterParameter=Settings}">
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Vertical">
+                        <local:SerialPortSettingView/>
+                            <local:ControleView/>
+                            <local:LoggingSettingsView/>
+                            <local:GcodeSettingsView/>
+                        </StackPanel>
+                        <local:SettingView/>
+                    </StackPanel>
+                </Viewbox>
+            </Grid>
+        </DockPanel>
+        
+        <!--Emergency, Controle & Console-->
+        <Grid Grid.Row="1" Background="#FFDCDCDC">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <local:ConsoleView Grid.Column="0" 
+                               VerticalAlignment="Center" 
+                               HorizontalAlignment="Stretch" 
+                               ShowControls="False" 
+                               MaxHeight="85"
+                               MinHeight="60"
+                               Background="Transparent"/>
+            
+            <Separator Grid.Column="1" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="5"/>
+
+            <local:ControleView Grid.Column="2" ShowControls="False" VerticalAlignment="Center" Height="85"/>
+            
+            <Button Grid.Column="3" 
+            Content="E-STOP" 
+            FontSize="18"
+            Style="{StaticResource EmergencyButtonStyleVD}"
+            Command="{Binding EmergencyStopCommand}"
+            Width="80" Height="80" 
+            Margin="10" 
+            VerticalAlignment="Center"/>
+        </Grid>
+
+        <!--Connexion (Port & Baudrate), Machine state, WCS (X,Y & Z), Cutting parameter (Feed & Power) and profile (Normal, CNC & support)-->
+        <StatusBar Grid.Row="2" >
+            <StatusBarItem>
+                <Viewbox MaxHeight="20">
+                <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="État logiciel: " FontWeight="Bold"/>
+                    <TextBlock Text="{Binding UiState, Converter={StaticResource MachineStateToTextConverter}, 
+                               TargetNullValue='Not Connected',
+                               FallbackValue='Not Connected'}" />
+                </StackPanel>
+                </Viewbox>
+            </StatusBarItem>
+
+            <StatusBarItem>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5,0">
+                    <ProgressBar IsIndeterminate="True" 
+                                 MinWidth="60"
+                                 Height="10"
+                                Visibility="{Binding IsLoadingGlobal, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                </StackPanel>
+            </StatusBarItem>
+
+            <Separator Foreground="White" Margin="5,0"/>
+
+            <StatusBarItem>
+                <Viewbox MaxHeight="20">
+                    <Border Style="{StaticResource GrblStatusBadgeStyle}">
+                        <TextBlock Text="{Binding MachineStateVM.MachineState, 
+                        FallbackValue='Undefined'}" 
+                       Style="{StaticResource GrblStatusTextStyle}"/>
+                    </Border>
+                </Viewbox>
+            </StatusBarItem>
+
+            <Separator Foreground="White" Margin="5,0"/>
+
+            <StatusBarItem>
+                <Viewbox MaxHeight="20">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock>
+                        <Run Text="Port: " FontWeight="Bold"/>
+                        <Run Text="{Binding SerialPortSettingVM.PortName, TargetNullValue='COM',
+                             FallbackValue='COM', Mode=OneWay}" />
+                        <Run Text=" @ "/>
+                        <Run Text="{Binding SerialPortSettingVM.BaudRate, TargetNullValue='0',
+                            FallbackValue='0', Mode=OneWay}" 
+                             FontWeight="Bold"
+                             Style="{StaticResource BaudrateActivityStyle}"/>
+                        <Run Text=" bps"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Viewbox>
+            </StatusBarItem>
+
+            <Separator Foreground="White" Margin="5,0"/>
+            
+            <StatusBarItem>
+                <Viewbox MaxHeight="20">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="WCS: " FontWeight="Bold"/>
+                        <TextBlock Text="{Binding MachineStateVM.WorkX, StringFormat='X: {0:F2} mm'}" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding MachineStateVM.WorkY, StringFormat='Y: {0:F2} mm'}" Margin="0,0,10,0"/>
+                        <TextBlock Text="Feed : " FontWeight="Bold"/>
+                        <TextBlock Text="{Binding MachineStateVM.FeedRate, StringFormat='X: {0:F2} rpm'}" Margin="0,0,10,0"/>
+                        <TextBlock Text="Power : " FontWeight="Bold"/>
+                        <TextBlock Text="{Binding MachineStateVM.LaserPower, StringFormat='Y: {0:F2} mW'}" Margin="0,0,10,0"/>
+                    </StackPanel>
+                </Viewbox>
+            </StatusBarItem>
+            
+            <Separator Foreground="White" Margin="5,0"/>
+            
+            <StatusBarItem HorizontalAlignment="Right">
+                <Viewbox MaxHeight="20">
+                    <TextBlock DataContext="{Binding LoggingSettingsVM}" 
+               Text="{Binding CurrentProfileDisplay}" 
+               Style="{StaticResource ProfileStatusTextStyle}"/>
+                </Viewbox>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

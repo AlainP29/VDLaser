@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="VDLaser.Views.Controls.LoggingSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDLaser.Core.Interfaces;assembly=VDLaser.Core"
+             mc:Ignorable="d">
+    <GroupBox Header="Diagnostic and profile">
+        <StackPanel>
+            <TextBlock Text="Niveau de Diagnostic (Logs)" Margin="0,0,0,5"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox Grid.Column="1" 
+                          SelectedItem="{Binding SelectedProfile}"
+                          ItemsSource="{Binding LogProfileValues}"/>
+            </Grid>
+        </StackPanel>
+    </GroupBox>
+</UserControl>

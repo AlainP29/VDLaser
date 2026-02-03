@@ -1,0 +1,270 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:conv="clr-namespace:VDLaser.Converters">
+    <conv:StatusToColorConverter x:Key="StatusToColorConverter"/>
+    <conv:MachineStateToTextConverter x:Key="MachineStateToTextConverter"/>
+    
+    <!-- Style de base pour les contrôles -->
+    <Style x:Key="ControlStyleVD" TargetType="Control">
+        <Setter Property="FontFamily" Value="Segoe UI Light"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <!-- Style pour GroupBox, basé sur le style de base -->
+    <Style x:Key="GroupBoxStyleVD" TargetType="GroupBox" BasedOn="{StaticResource ControlStyleVD}">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="BorderBrush" Value="LightBlue"/>
+    </Style>
+
+    <!-- Style avec triggers pour hover -->
+    <Style x:Key="ControlStyleVDTrigger" TargetType="Control" BasedOn="{StaticResource ControlStyleVD}">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="true">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="Foreground" Value="BlueViolet"/>
+                <Setter Property="Cursor" Value="Hand"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    
+    <!-- Style pour erreurs de validation -->
+    <Style x:Key="ControlStyleVDError" TargetType="Control">
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="true">
+                <Setter Property="Background" Value="Red"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Style pour textes d'alarme -->
+    <Style x:Key="AlarmStyleVD" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI Light"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontStyle" Value="Italic"/>
+        <Setter Property="Foreground" Value="IndianRed"/>
+    </Style>
+
+    <!-- Style pour boutons d'onglets -->
+    <Style x:Key="TabButtonStyleVD" TargetType="ToggleButton">
+        <Setter Property="Background" Value="#F0F0F0"/>
+        <Setter Property="Foreground" Value="#333333"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5,5,0,0" Margin="2,0">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#E5E5E5"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#FFE5E5E5"/>
+                            <Setter Property="Foreground" Value="#007ACC"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="#007ACC"/>
+                            <Setter TargetName="border" Property="BorderThickness" Value="1,2,1,0"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Style pour état machine -->
+    <Style x:Key="GrblStatusBadgeStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Padding" Value="8,2"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+
+        <Setter Property="Background">
+            <Setter.Value>
+                <Binding Path="DataContext.MachineStateVM.MachineState" 
+                     RelativeSource="{RelativeSource AncestorType=StatusBar}" 
+                     Converter="{StaticResource StatusToColorConverter}">
+                    <Binding.TargetNullValue>
+                        <SolidColorBrush Color="Gray"/>
+                    </Binding.TargetNullValue>
+                </Binding>
+            </Setter.Value>
+        </Setter>
+
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding DataContext.MachineStateVM.MachineState, RelativeSource={RelativeSource AncestorType=StatusBar}}" Value="Idle"/>
+                    <Condition Binding="{Binding DataContext.SettingVM.LoggingSettingsVM.SelectedProfile, RelativeSource={RelativeSource AncestorType=StatusBar}}" 
+                               Value="Cnc"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="DodgerBlue"/>
+            </MultiDataTrigger>
+
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding DataContext.MachineStateVM.MachineState, RelativeSource={RelativeSource AncestorType=StatusBar}}" Value="Idle"/>
+                    <Condition Binding="{Binding DataContext.SettingVM.LoggingSettingsVM.SelectedProfile, RelativeSource={RelativeSource AncestorType=StatusBar}}" 
+                               Value="Support"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="DarkRed"/>
+            </MultiDataTrigger>
+
+            <DataTrigger Binding="{Binding DataContext.MachineStateVM.MachineState, RelativeSource={RelativeSource AncestorType=StatusBar}}" Value="Alarm">
+                <Setter Property="Background" Value="Red"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="AlarmBlink">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="1.0" To="0.3" Duration="0:0:0.5"
+                                         AutoReverse="True" RepeatBehavior="Forever" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="AlarmBlink"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="GrblStatusTextStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding MachineState}" Value="Idle">
+                <Setter Property="Foreground" Value="Black"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding MachineState}" Value="Hold">
+                <Setter Property="Foreground" Value="Black"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Style pour état connexion -->
+    <Style x:Key="BaudrateActivityStyle" TargetType="Run">
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Foreground" Value="LightGray"/>
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding DataContext.MachineStateVM.MachineState, RelativeSource={RelativeSource AncestorType=StatusBar}}" Value="Run">
+                <Setter Property="FontWeight" Value="Bold"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="RunBlink">
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetProperty="(Run.Foreground).(SolidColorBrush.Color)"
+                                        From="DodgerBlue" To="Transparent" Duration="0:0:0.5"
+                                        AutoReverse="True" RepeatBehavior="Forever" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="RunBlink"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding DataContext.MachineStateVM.MachineState, RelativeSource={RelativeSource AncestorType=StatusBar}}" Value="Jog">
+                <Setter Property="FontWeight" Value="Bold"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="JogBlink">
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetProperty="(Run.Foreground).(SolidColorBrush.Color)"
+                                        From="SkyBlue" To="Transparent" Duration="0:0:0.2"
+                                        AutoReverse="True" RepeatBehavior="Forever" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="JogBlink"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <!-- Style pour profile -->
+    <Style x:Key="ProfileStatusTextStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="Gray"/>
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding SelectedProfile}" Value="Cnc">
+                <Setter Property="Foreground" Value="DodgerBlue"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding SelectedProfile}" Value="Support">
+                <Setter Property="Foreground" Value="DarkRed"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <!--Style bouton pause-->
+    <Style x:Key="PauseButtonStyleVD" TargetType="Button" BasedOn="{StaticResource ControlStyleVD}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                <Setter Property="Background" Value="#FFF39C12"/>
+                <Setter Property="Foreground" Value="White"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="PauseBlink">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="1.0" To="0.4" 
+                                         Duration="0:0:0.6" 
+                                         AutoReverse="True" 
+                                         RepeatBehavior="Forever" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="PauseBlink"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <!-- Style pour bouton urgence-->
+    <Style x:Key="EmergencyButtonStyleVD" TargetType="Button">
+        <Setter Property="Background" Value="#C0392B"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="BorderThickness" Value="4"/>
+        <Setter Property="BorderBrush" Value="#922B21"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Ellipse Fill="{TemplateBinding Background}" 
+                             Stroke="{TemplateBinding BorderBrush}" 
+                             StrokeThickness="{TemplateBinding BorderThickness}"/>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#E74C3C"/>
+                <Setter Property="Cursor" Value="Hand"/>
+            </Trigger>
+
+            <DataTrigger Binding="{Binding MachineStateVM.MachineState}" Value="Alarm">
+                <Setter Property="Background" Value="Red"/>
+                <Setter Property="BorderBrush" Value="Yellow"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="AlarmBlink">
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)"
+                                        From="Red" To="#4D0000" 
+                                        Duration="0:0:0.4" 
+                                        AutoReverse="True" 
+                                        RepeatBehavior="Forever" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="AlarmBlink"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+   
+</ResourceDictionary>

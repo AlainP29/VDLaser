@@ -1,0 +1,174 @@
+﻿<UserControl x:Class="VDLaser.Views.Controls.GcodeFileView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:VDLaser.ViewModels.Controls;assembly=VDLaser.ViewModels"
+             xmlns:local="clr-namespace:VDLaser.Converters"
+             mc:Ignorable="d">
+    <GroupBox Header="G-Code file">
+        <Grid Background="#FFE5E5E5" Margin="5">
+            <!-- Ajout d'un margin global pour l'espacement -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <!-- Colonne gauche pour stats et contrôles -->
+                <ColumnDefinition Width="*"/>
+                <!-- Colonne droite pour file name et DataGrid -->
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <!-- Boutons -->
+                <RowDefinition Height="40"/>
+                <!-- Total lines -->
+                <RowDefinition Height="40"/>
+                <!-- Total lines, RX, Buffer -->
+                <RowDefinition Height="30"/>
+                <!-- Dimensions (Zone de gravure) -->
+                <RowDefinition Height="30"/>
+                <!-- Dimensions X/Y -->
+                <RowDefinition Height="40"/>
+                <!-- Temps restant -->
+                <RowDefinition Height="30"/>
+                <!-- ProgressBar -->
+                <RowDefinition Height="*"/>
+                <!-- Espace flexible si needed -->
+            </Grid.RowDefinitions>
+            <!-- Colonne droite : File name et DataGrid (span sur toutes les rows) -->
+            <StackPanel Grid.Column="1" Margin="10,0,0,10" Grid.RowSpan="8">
+                <TextBox Text="{Binding FileName}" Height="25" IsReadOnly="True" Margin="0,0,0,5"/>
+                <DataGrid ItemsSource="{Binding GcodeLines}" AutoGenerateColumns="False" IsReadOnly="True"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling" MaxHeight="300" MaxWidth="500">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="N°" Binding="{Binding LineNumber}" Width="50"/>
+                        <DataGridTextColumn Header="G-Code" Binding="{Binding RawLine}" Width="*"/>
+                    </DataGrid.Columns>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSent}" Value="True">
+                                    <Setter Property="Background" Value="#3300FF00"/>
+                                    <!-- Vert clair pour lignes envoyées -->
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                </DataGrid>
+            </StackPanel>
+            <!-- Boutons (Row 0) -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,5">
+                <Button Height="30" Width="30" ToolTip="Charger un fichier G-Code" 
+                        Command="{Binding OpenFileCommand}" Margin="5">
+                    <Image Source="/resources/Assets/iconOpenFile40.png" Height="20" Width="20"/>
+                </Button>
+                <Button Height="30" Width="30" ToolTip="Parcourir les limites du projet sans graver" 
+                        Command="{Binding RunFrameCommand}" Margin="5">
+                    <Image Source="/resources/Assets/iconFrame40.png" Height="20" Width="20"/>
+                </Button>
+                <Button Height="30" Width="30" ToolTip="Démarrer ou reprendre l'envoi du fichier" Command="{Binding StartJobCommand}" Margin="5"
+                    >
+                    <!-- Désactiver si non connecté -->
+                    <Image Source="/resources/Assets/iconPlay40.png" Height="20" Width="20"/>
+                </Button>
+                <Button Height="30" Width="30" ToolTip="Mettre en pause l'envoi du fichier" 
+                        Command="{Binding PauseJobCommand}" 
+                        Margin="5">
+
+                    <!-- Ajout de Command ; désactiver si pas en cours -->
+                    <Image Source="/resources/Assets/iconPause40.png" Height="20" Width="20"/>
+                </Button>
+                <Button Height="30" Width="30" ToolTip="Arrêter l'envoi du fichier" Command="{Binding StopJobCommand}" Margin="5"
+                    >
+                    <Image Source="/resources/Assets/iconStopFile40.png" Height="20" Width="20"/>
+                </Button>
+            </StackPanel>
+            <!-- Total lines, RX, Buffer (Row 1) -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5">
+                <Label Content="Total Lignes :" VerticalContentAlignment="Center"/>
+                <TextBox Text="{Binding TotalLines}" Width="30" 
+                         IsReadOnly="True" HorizontalContentAlignment="Center" 
+                         IsEnabled="False"
+                         Margin="0,5,0,5"/>
+                <Label Content="Exécutées :" />
+                <TextBox Text="{Binding LinesExecuted}" Width="30" 
+                         IsReadOnly="True" HorizontalContentAlignment="Center" 
+                         IsEnabled="False" Margin="0,5,0,5"/>
+            </StackPanel>
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,5">
+                <Label Content="RX :" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                <TextBox Text="{Binding RxBufferDisplay}" Width="50" 
+                         IsReadOnly="True" HorizontalContentAlignment="Center" 
+                         IsEnabled="False"
+                         Margin="0,5,0,5"/>
+                <!-- Binding ajouté -->
+                <Label Content="Buf :" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+                <TextBox Text="{Binding PlannerBuffer}" Width="50" 
+                         IsReadOnly="True" HorizontalContentAlignment="Center" 
+                         IsEnabled="False"
+                         Margin="0,5,0,5"/>
+                <!-- Binding ajouté -->
+            </StackPanel>
+            <!-- Zone de gravure (Row 3) -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,5">
+                <TextBlock Text="Zone de gravure :" Margin="0,0,5,0"/>
+                <TextBlock Text="{Binding WidthHeight}"/>
+            </StackPanel>
+            <!-- Dimensions X/Y (Row 4) -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,5">
+                <TextBlock Text="X :" Margin="0,0,5,0"/>
+                <TextBlock Text="{Binding DimensionsX}"/>
+                <TextBlock Text=" | Y :" Margin="10,0,5,0"/>
+                <TextBlock Text="{Binding DimensionsY}"/>
+            </StackPanel>
+            <!-- Temps restant (Row 5) -->
+            <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="0,5">
+                <Label Content="Temps restant :" VerticalContentAlignment="Center"/>
+                <TextBlock Text="{Binding EstimatedJobTime, StringFormat={}{0}, Mode=OneWay}" Width="70" HorizontalAlignment="Center"
+                       VerticalAlignment="Center" TextAlignment="Center" ToolTip="Estimation dynamique basée sur l'exécution GRBL"/>
+                <!-- Indicateur de pause (optionnel, visible en Hold) -->
+            </StackPanel>
+            <!-- ProgressBar (Row 6) -->
+            <Grid Grid.Row="6" Margin="0,5" Width="200" Height="20">
+                <ProgressBar Maximum="100" Minimum="0" Value="{Binding ProgressPercentage, Mode=OneWay}"
+                         Foreground="#FF78DD8A" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
+                    <!-- Animation pour transitions fluides -->
+                    <ProgressBar.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Value" Duration="0:0:0.5" />
+                                    <!-- Animation douce sur Value change -->
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </ProgressBar.Triggers>
+                    <!-- Trigger pour couleur en pause (jaune si état Hold) -->
+                    <ProgressBar.Style>
+                        <Style TargetType="ProgressBar">
+                            <Setter Property="Foreground" Value="Green"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.MachineState, 
+                                 RelativeSource={RelativeSource AncestorType=Window}}" 
+                         Value="Hold">
+                                    <Setter Property="Foreground" Value="Yellow"/>
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding DataContext.MachineState, 
+                                 RelativeSource={RelativeSource AncestorType=Window}}" 
+                         Value="Alarm">
+                                    <Setter Property="Foreground" Value="Red"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ProgressBar.Style>
+                </ProgressBar>
+                <TextBlock Text="{Binding ProgressPercentage, StringFormat={}{0:F0} %, Mode=OneWay}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Black" FontWeight="Bold"/>
+                <!-- Overlay % centré -->
+            </Grid>
+        </Grid>
+    </GroupBox>
+</UserControl>

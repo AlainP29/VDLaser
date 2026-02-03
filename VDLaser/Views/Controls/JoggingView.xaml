@@ -1,0 +1,430 @@
+﻿<UserControl x:Class="VDLaser.Views.Controls.JoggingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:VDLaser.ViewModels.Controls;assembly=VDLaser.ViewModels"
+             xmlns:local="clr-namespace:VDLaser.Converters"
+             mc:Ignorable="d" 
+             PreviewKeyDown="OnPreviewKeyDown" PreviewKeyUp="OnPreviewKeyUp">
+    <UserControl.InputBindings>
+        <KeyBinding Key="Up" Command="{Binding JogUpStartCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding IsSelectedKeyboard}"/>
+        <KeyBinding Key="Down" Command="{Binding JogDownStartCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding IsSelectedKeyboard}"/>
+        <KeyBinding Key="Left" Command="{Binding JogLeftStartCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding IsSelectedKeyboard}"/>
+        <KeyBinding Key="Right" Command="{Binding JogRightStartCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding IsSelectedKeyboard}"/>
+        <KeyBinding Key="Next" Command="{Binding DecreaseFeedRateCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding IsSelectedKeyboard}" />
+        <KeyBinding Key="PageUp" Command="{Binding IncreaseFeedRateCommand, Mode=OneWay}" 
+                    CommandParameter="{Binding IsSelectedKeyboard}" />
+    </UserControl.InputBindings>
+    <UserControl.Resources>
+        <local:InverseBooleanConverter x:Key="ConvertBool"/>
+        <local:PercentageConverter x:Key="ConvertPercentage"/>
+    </UserControl.Resources>
+    <Grid Background="#FFE5E5E5">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!--Show all the data sent manually/Jog/buttons to the Arduino. no stack, new data erase old data -->
+            <Grid IsEnabled="{Binding IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                             VerticalContentAlignment="Center" 
+                             Text="{Binding TXLine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             Width="120">
+                            <TextBox.InputBindings>
+                                <KeyBinding Command="{Binding SendManualCommand, Mode=OneWay}" Key="Return"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <Button  Content="Send" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" 
+                             Width="75" ToolTip="Send a line of commands manually"
+                             Command="{Binding SendManualCommand, Mode=OneWay}"/>
+                        <TextBox  Text="{Binding ResponseStatus, Mode=OneWay}" Margin="5" 
+                              VerticalContentAlignment="Center" 
+                              HorizontalContentAlignment="Center" Width="30" VerticalAlignment="Center" 
+                              IsReadOnly="True" 
+                              IsEnabled="False"/>
+                    </StackPanel>
+                    <!--Macro area: lines of G-code-->
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M1" HorizontalAlignment="Left" Margin="5" 
+                                 VerticalAlignment="Center" Width="40" 
+                                 ToolTip="Send predefined commands stored in Macro 1"
+                             Command="{Binding SendMacro1Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                             VerticalContentAlignment="Center" 
+                             Text="{Binding Macro1}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M2" HorizontalAlignment="Left" Margin="5" 
+                                 VerticalAlignment="Center" Width="40" 
+                                 ToolTip="Send predefined commands stored in Macro 2"
+                             Command="{Binding SendMacro2Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding Macro2}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M3" HorizontalAlignment="Left" Margin="5" 
+                                 VerticalAlignment="Center" Width="40" ToolTip="Send predefined commands stored in Macro 3"
+                             Command="{Binding SendMacro3Command, Mode=OneTime}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding Macro3}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button  Content="M4" HorizontalAlignment="Left" Margin="5" 
+                                 VerticalAlignment="Center" Width="40" ToolTip="Send predefined commands stored in Macro 4"
+                             Command="{Binding SendMacro4Command, Mode=OneWay}"/>
+                        <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                 VerticalContentAlignment="Center" 
+                             Text="{Binding Macro4}" Width="200">
+                        </TextBox>
+                    </StackPanel>
+                </StackPanel>
+                <GroupBox Header="Laser preview" Style="{DynamicResource GroupBoxStyleVD}" Margin="0 10 0 0" Grid.Row="1" >
+                        <Grid Margin="1" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <!--Power on/off laser + indicator-->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <CheckBox Margin="20,5,0,0" Height="30" Width="100" 
+                                            IsChecked="{Binding IsLaserEnabled}" 
+                                            Command="{Binding ToggleLaserCommand}"
+                                            Content="Laser Enable"
+                                            ToolTip="Enable/disable laser mode (safety)">
+                                    <CheckBox.Style>
+                                        <Style TargetType="CheckBox">
+                                            <Setter Property="Content" Value="Laser Enable" />
+                                            <Setter Property="Background" Value="LightGray" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsLaserEnabled}" Value="True">
+                                                    <Setter Property="Content" Value="Laser Disable" />
+                                                    <Setter Property="Background" Value="LightBlue" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </CheckBox.Style>
+                                </CheckBox>
+                                <Button Margin="20,5,0,0" Background="LightGray" IsEnabled="{Binding IsLaserEnabled}" 
+                                 PreviewMouseLeftButtonDown="OnLaserPreviewDown" 
+                                PreviewMouseLeftButtonUp="OnLaserPreviewUp" 
+                                MouseLeave="OnLaserPreviewMouseLeave"
+                                 Height="30" Width="80">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Content" Value="Preview OFF" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Content" Value="Preview ON" />
+                                                </Trigger>
+
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Button.ToolTip>Hold for laser preview (M4 ON), release for OFF (M5)</Button.ToolTip>
+                                </Button>
+                            </StackPanel>
+                            <!--laser power-->
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" IsEnabled="{Binding IsLaserEnabled}" >
+                                <Label Content="Power:" VerticalContentAlignment="Center"/>
+                                <Slider x:Name="SliderPLaser" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Center" 
+                            Width="130" TickPlacement="TopLeft" Maximum="{Binding MaxLaserPower}" Minimum="0"
+                            IsSnapToTickEnabled="True" 
+                            LargeChange="50" TickFrequency="50"
+                            Height="30" BorderThickness="1" Cursor="Hand" SmallChange="10" SelectionEnd="100" 
+                            Value="{Binding LaserPower, Mode=TwoWay}"
+                                        ToolTip="Ajustez la puissance laser (0 à {Binding MaxLaserPower})"/>
+                                <TextBox HorizontalAlignment="Left" Height="23" Margin="10,0,0,0" TextWrapping="Wrap" 
+                             VerticalAlignment="Center" Width="40" VerticalContentAlignment="Center" IsEnabled="False" 
+                             HorizontalContentAlignment="Center">
+                                    <TextBox.Text>
+                                        <Binding Path="LaserPower"
+                                            Mode="TwoWay"
+                                            UpdateSourceTrigger="PropertyChanged"
+                                            StringFormat="{}{0:F0}">
+                                            <Binding.ValidationRules>
+                                                <ExceptionValidationRule/>
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                                <TextBlock Text="mW" 
+                                            Margin="5,0,0,0" 
+                                            VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="2">
+                                <TextBlock x:Name="LaserPreviewStatus" 
+           Text="{Binding LaserPreviewStatusMessage}" 
+           Foreground="Red" 
+           HorizontalAlignment="Center" 
+           VerticalAlignment="Center" />
+
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+                
+            </Grid>
+            <!--Use to move the machine with buttons or keyboard-->
+            <GroupBox Header="Jog" Margin="5,5,5,5" Style="{DynamicResource GroupBoxStyleVD}" Grid.Column="1">
+                <StackPanel>
+                    <!--Buttons move all directions X, Y, Z-->
+                    <Grid Margin="0" Width="160" Height="150" 
+                      IsEnabled="{Binding IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <!--Button Home -->
+                        <Button Grid.Row="1" Grid.Column="1" Style="{DynamicResource ControlStyleVDTrigger}"
+                            Content="O" HorizontalAlignment="Center" Margin="0" Background="LightGray"
+                            VerticalAlignment="Center" Width="30" Height="30" FontWeight="Bold"
+                            Command="{Binding SendOrigineCommand, Mode=OneWay}"/>
+                        <!--Button Left -->
+                        <Button Grid.Row="1" Grid.Column="0" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" VerticalAlignment="Center"
+                            Width="30" Height="30" 
+                            Command="{Binding JogCommand}" CommandParameter="X-1"
+                            Tag="Left"
+                            PreviewMouseDown="OnJogButtonMouseDown"
+                            PreviewMouseUp="OnJogButtonMouseUp"
+                            MouseLeave="OnJogButtonMouseLeave">
+                            <Path Stroke="Black" Fill="Black" Data="M 10 0 L 5 5 L 10 10 Z"/>
+                        </Button>
+                        <!--Button Right -->
+                        <Button Grid.Row="1" Grid.Column="2" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding JogCommand}" CommandParameter="X1"
+                            Tag="Right"
+                            PreviewMouseDown="OnJogButtonMouseDown"
+                            PreviewMouseUp="OnJogButtonMouseUp"
+                            MouseLeave="OnJogButtonMouseLeave">
+                            <Path Stroke="Black" Fill="Black" Data="M 0 0 L 5 5 L 0 10 Z"/>
+                        </Button>
+                        <!--Button Up -->
+                        <Button Grid.Row="0" Grid.Column="1" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding JogCommand}" CommandParameter="Y1"
+                            Tag="Up"
+                            PreviewMouseDown="OnJogButtonMouseDown"
+                            PreviewMouseUp="OnJogButtonMouseUp"
+                            MouseLeave="OnJogButtonMouseLeave">
+                            <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z"/>
+                        </Button>
+                        <!--Button Down -->
+                        <Button Grid.Column="1" Grid.Row="2" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding JogCommand}" CommandParameter="Y-1"
+                            Tag="Down"
+                            PreviewMouseDown="OnJogButtonMouseDown"
+                            PreviewMouseUp="OnJogButtonMouseUp"
+                            MouseLeave="OnJogButtonMouseLeave">
+                            <Path Stroke="Black" Fill="Black" Data="M 0 0 L 5 5 L 10 0 Z"/>
+                        </Button>
+                        <!--Button NW -->
+                        <Button Grid.Row="0" Grid.Column="0" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding JogCommand}" CommandParameter="X-1Y1"
+                            Tag="NW"
+                            PreviewMouseDown="OnJogButtonMouseDown"
+                            PreviewMouseUp="OnJogButtonMouseUp"
+                            MouseLeave="OnJogButtonMouseLeave">
+                            <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z" RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform/>
+                                        <RotateTransform Angle="-45"/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Path.RenderTransform>
+                            </Path>
+                        </Button>
+                        <!--Button NE -->
+                        <Button Grid.Row="0" Grid.Column="2" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding JogCommand}" CommandParameter="X1Y1"
+                            Tag="NE"
+                            PreviewMouseDown="OnJogButtonMouseDown"
+                            PreviewMouseUp="OnJogButtonMouseUp"
+                            MouseLeave="OnJogButtonMouseLeave">
+                            <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z" RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform/>
+                                        <RotateTransform Angle="45"/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Path.RenderTransform>
+                            </Path>
+                        </Button>
+                        <!-- Button SW -->
+                        <Button Grid.Row="2" Grid.Column="0" Style="{DynamicResource ControlStyleVDTrigger}"
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding JogCommand}" CommandParameter="X-1Y-1"
+                            Tag="SW"
+                            PreviewMouseDown="OnJogButtonMouseDown"
+                            PreviewMouseUp="OnJogButtonMouseUp"
+                            MouseLeave="OnJogButtonMouseLeave">
+                            <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z" RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform/>
+                                        <RotateTransform Angle="-135"/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Path.RenderTransform>
+                            </Path>
+                        </Button>
+                        <!-- Button SE -->
+                        <Button Grid.Row="2" Grid.Column="2" 
+                            Style="{DynamicResource ControlStyleVDTrigger}" 
+                            HorizontalAlignment="Center" Background="LightGray" 
+                            VerticalAlignment="Center" Width="30" Height="30" 
+                            Command="{Binding JogCommand}" CommandParameter="X1Y-1"
+                            Tag="SE"
+                            PreviewMouseDown="OnJogButtonMouseDown"
+                            PreviewMouseUp="OnJogButtonMouseUp"
+                            MouseLeave="OnJogButtonMouseLeave">
+                            <Path Stroke="Black" Fill="Black" Data="M 0 10 L 5 5 L 10 10 Z" RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform/>
+                                        <RotateTransform Angle="135"/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Path.RenderTransform>
+                            </Path>
+                        </Button>
+                        <!--Button ZUp-->
+                        <!--Button ZDown-->
+                    </Grid>
+                    <!--Slider adjust Feed rate-->
+                    <StackPanel Orientation="Horizontal" 
+                            IsEnabled="{Binding IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" >
+                        <Label Content="Feed:" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
+                           Margin="5 5 0 5"/>
+                        <Slider Name="FeedSlider" Maximum="{Binding MaxManualFeedRate, Mode=OneWay}" Width="130" 
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0" Margin="5 0 0 0"
+                            Value="{Binding ManualFeedRate, Mode=TwoWay}" LargeChange="10" SmallChange="1" BorderThickness="1" 
+                            Cursor="Hand" TickPlacement="TopLeft" Minimum="0" TickFrequency="10" IsSnapToTickEnabled="True"/>
+                        <TextBox Width="40" Height="23" Margin="5 0 0 0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
+                            <TextBox.Text>
+                                <Binding Path="ManualFeedRate"
+                                 Mode="TwoWay"
+                                 UpdateSourceTrigger="PropertyChanged"
+                                 StringFormat="{}{0:F1}">   
+                                    <Binding.ValidationRules>
+                                                <ExceptionValidationRule/>
+                                            </Binding.ValidationRules>
+                                        </Binding>  
+                            </TextBox.Text>
+                        </TextBox>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding FeedRateUnit}" 
+                                       Margin="5,0,0,0" 
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <!--Toggle buttons select Step for X, Y and Z-->
+                    <StackPanel Orientation="Horizontal"
+                                IsEnabled="{Binding IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" >
+                        <StackPanel.Resources>
+                            <local:EqualityToBoolConverter x:Key="EqualityToBoolConverter" />
+                        </StackPanel.Resources>
+                        <Label Content="Step:" Margin="5" VerticalContentAlignment="Center" 
+                            HorizontalContentAlignment="Center"/>
+                        <RadioButton x:Name="radioButton" Content="1/10" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 IsChecked="{Binding SelectedStep, 
+                            Converter={StaticResource EqualityToBoolConverter}, 
+                            ConverterParameter=0.1, 
+                            Mode=TwoWay}"/>
+                        <RadioButton x:Name="radioButton1" Content="1/2" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 IsChecked="{Binding SelectedStep, 
+                            Converter={StaticResource EqualityToBoolConverter}, 
+                            ConverterParameter=0.5, 
+                            Mode=TwoWay}"/>
+                        <RadioButton x:Name="radioButton2" Content="1" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}"
+                                 IsChecked="{Binding SelectedStep, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=1, Mode=TwoWay}"/>
+                        <RadioButton x:Name="radioButton3" Content="5" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 IsChecked="{Binding SelectedStep, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=5, Mode=TwoWay}"/>
+                        <RadioButton x:Name="radioButton4" Content="10" Margin="5" Width="30" 
+                                 Style="{StaticResource {x:Type ToggleButton}}" 
+                                 IsChecked="{Binding SelectedStep, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=10, Mode=TwoWay}"/>
+                    </StackPanel>
+                    <!--Keyboard is enabled / mouth disable + metric/imperial-->
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox Margin="5" VerticalContentAlignment="Center" 
+                                  Content="Keyboard" 
+                                  IsChecked="{Binding IsSelectedKeyboard}"
+                                  ToolTip="Enable/disable Keyboard">
+                            <CheckBox.Style>
+                                <Style TargetType="CheckBox">
+                                    <Setter Property="Background" Value="LightGray" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelectedKeyboard}" Value="True">
+                                            <Setter Property="Background" Value="LightBlue" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </CheckBox.Style>
+                        </CheckBox>
+                        <CheckBox Margin="5" VerticalContentAlignment="Center" Content="Metric (mm)" 
+                                  IsEnabled="{Binding IsSelectedKeyboard,Converter={StaticResource ConvertBool}}"
+                              IsChecked="{Binding IsSelectedMetric}"
+                                  ToolTip="Metric/Inch">
+                            <CheckBox.Style>
+                                <Style TargetType="CheckBox">
+                                    <Setter Property="Background" Value="LightGray" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelectedMetric}" Value="True">
+                                            <Setter Property="Background" Value="LightBlue" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </CheckBox.Style>
+                        </CheckBox>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</UserControl>

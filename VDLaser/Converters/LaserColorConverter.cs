@@ -1,0 +1,20 @@
+﻿using System.Globalization;
+using System.Windows.Data;
+using System.Windows.Media;
+
+namespace VDLaser.Converters
+{
+    [ValueConversion(typeof(bool), typeof(SolidColorBrush))]
+    public class LaserColorConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+        {
+            return value is bool b ? (b ? new SolidColorBrush(Colors.Blue) : new SolidColorBrush(Colors.LightGray)) : null;
+        }
+
+        public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

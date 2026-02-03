@@ -1,0 +1,35 @@
+﻿<Application x:Class="VDLaser.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:VDLaser.Converters"
+             StartupUri="Views/Main/MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/VDStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:StatusToColorConverter x:Key="StatusToColorConverter" />
+            <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:PositionToStringConverter x:Key="PositionToStringConverter" />
+            <converters:StringToIntConverter x:Key="StringToIntConverter" />
+            <converters:BrushColorConverter x:Key="BrushColorConverter" />
+            <converters:PercentageConverter x:Key="PercentageConverter" />
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <converters:IntToTimeConverter x:Key="IntToTimeConverter" />
+            <converters:DotToCommaConverter x:Key="DotToCommaConverter" />
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <converters:IsHomingConverter x:Key="IsHomingConverter" />
+            <converters:MachineStateToTextConverter x:Key="MachineStateToTextConverter"/>
+            <converters:MachineStateToVisibilityConverter x:Key="MachineStateToVisibilityConverter"/>
+            <converters:OffsetConverter x:Key="OffsetConverter"/>
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <converters:NegativeConverter x:Key="NegativeConverter"/>
+            <converters:LaserColorConverter x:Key="LaserColorConverter"/>
+            <converters:TabToVisibilityConverter x:Key="TabToVisibilityConverter"/>
+            <converters:EqualityToBoolConverter x:Key="EqualityToBoolConverter"/>
+            <converters:ThicknessConverter x:Key="ThicknessConverter"/>
+            
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

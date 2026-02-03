@@ -1,0 +1,17 @@
+﻿<UserControl x:Class="VDLaser.Views.Controls.GcodeSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDLaser.ViewModels.Controls;assembly=VDLaser.ViewModels"
+             mc:Ignorable="d">
+    <GroupBox Header="Paramètres d'exécution G-Code">
+        <StackPanel>
+            <TextBlock Text="Gestion des erreurs :" Margin="0,0,0,5"/>
+            <ComboBox ItemsSource="{Binding ErrorModeValues}"
+                      SelectedItem="{Binding SelectedErrorMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      IsEnabled="{Binding IsJobNotRunning}"
+                      ToolTip="Strict : Arrête le job à la moindre erreur (recommandé pour le fraisage). Tolérant : Ignore certaines erreurs mineures."/>
+        </StackPanel>
+    </GroupBox>
+</UserControl>
