@@ -22,22 +22,22 @@
         <DockPanel Grid.Row="0">
             <UniformGrid DockPanel.Dock="Top" Columns="6" Height="50">
                 <ToggleButton Content="Home" Style="{StaticResource TabButtonStyleVD}"
-                        IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Home}"
+                        IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Home}"
                         Command="{Binding SelectTabCommand}" CommandParameter="Home" />
                 <ToggleButton Content="Jogging" Style="{StaticResource TabButtonStyleVD}"
-                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Jogging}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Jogging}"
                       Command="{Binding SelectTabCommand}" CommandParameter="Jogging" />
                 <ToggleButton Content="File" Style="{StaticResource TabButtonStyleVD}"
-                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=File}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=File}"
                       Command="{Binding SelectTabCommand}" CommandParameter="File" />
                 <ToggleButton Content="Plotter" Style="{StaticResource TabButtonStyleVD}"
-                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Plotter}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Plotter}"
                       Command="{Binding SelectTabCommand}" CommandParameter="Plotter" />
                 <ToggleButton Content="Console" Style="{StaticResource TabButtonStyleVD}"
-                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Console}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Console}"
                     Command="{Binding SelectTabCommand}" CommandParameter="Console" />
                 <ToggleButton Content="Settings" Style="{StaticResource TabButtonStyleVD}"
-                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualityToBoolConverter}, ConverterParameter=Settings}"
+                      IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Settings}"
                       Command="{Binding SelectTabCommand}" CommandParameter="Settings" />
             </UniformGrid>
             <Grid VerticalAlignment="Stretch" Background="#FFE5E5E5">
@@ -84,10 +84,12 @@
                     Grid.ColumnSpan="6">
                     <local:PlotterView/>
                 </Viewbox>
+                
                 <StackPanel Visibility="{Binding DataContext.CurrentTab, 
                         RelativeSource={RelativeSource AncestorType=Window}, 
                         Converter={StaticResource TabToVisibilityConverter}, 
-                        ConverterParameter=Console}" Grid.ColumnSpan="6"
+                        ConverterParameter=Console}" 
+                        Grid.ColumnSpan="6"
                         HorizontalAlignment="Center" 
                         VerticalAlignment="Center">
                         <local:ConsoleView Background="Transparent" ShowControls="True"/>

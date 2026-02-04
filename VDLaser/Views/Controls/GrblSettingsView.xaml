@@ -33,7 +33,7 @@
                         <Label Content="Version:" 
                                HorizontalAlignment="Center" Margin="5,0,0,0" 
                                VerticalAlignment="Center" VerticalContentAlignment="Center" 
-                               HorizontalContentAlignment="Center" Height="26" Width="50"/>
+                               HorizontalContentAlignment="Center" Height="26" Width="60"/>
                         <Label Grid.Column="2" Content="Build:" 
                                 HorizontalAlignment="Center" Margin="5,0,0,0" 
                                 VerticalAlignment="Center" VerticalContentAlignment="Center" 

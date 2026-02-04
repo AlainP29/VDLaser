@@ -28,6 +28,7 @@
             <converters:LaserColorConverter x:Key="LaserColorConverter"/>
             <converters:TabToVisibilityConverter x:Key="TabToVisibilityConverter"/>
             <converters:EqualityToBoolConverter x:Key="EqualityToBoolConverter"/>
+            <converters:EqualToBoolConverter x:Key="EqualToBoolConverter"/>
             <converters:ThicknessConverter x:Key="ThicknessConverter"/>
             <converters:SeverityToBrushConverter x:Key="SeverityToBrushConverter"/>
             <converters:ConsoleTypeToBrushConverter x:Key="ConsoleTypeToBrushConverter"/>

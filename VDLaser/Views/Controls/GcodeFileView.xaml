@@ -32,11 +32,16 @@
             <!-- Colonne droite : File name et DataGrid (span sur toutes les rows) -->
             <StackPanel Grid.Column="1" Margin="10,0,0,10" Grid.RowSpan="8">
                 <TextBox Text="{Binding FileName}" Height="25" IsReadOnly="True" Margin="0,0,0,5"/>
-                <DataGrid ItemsSource="{Binding GcodeLines}" AutoGenerateColumns="False" IsReadOnly="True"
+                <DataGrid ItemsSource="{Binding GcodeLines}" 
+                          AutoGenerateColumns="False" 
+                          IsReadOnly="True"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True"
-                      VirtualizingPanel.VirtualizationMode="Recycling" MaxHeight="300" MaxWidth="500">
+                      VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.CanContentScroll="True" 
+                          VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling" 
+                          MaxHeight="300" MaxWidth="500">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="N°" Binding="{Binding LineNumber}" Width="50"/>
                         <DataGridTextColumn Header="G-Code" Binding="{Binding RawLine}" Width="*"/>
@@ -82,31 +87,31 @@
             </StackPanel>
             <!-- Total lines, RX, Buffer (Row 1) -->
             <StackPanel Grid.Row="1" Orientation="Horizontal">
-                <Label Content="Total Lignes :" VerticalContentAlignment="Center"/>
+                <Label Content="Total Lignes :" VerticalAlignment="Center"/>
                 <TextBox Text="{Binding TotalLines}" MinWidth="30" Height="25"
-                         IsReadOnly="True" HorizontalContentAlignment="Center" 
+                         IsReadOnly="True" 
                          IsEnabled="False"/>
-                <Label Content="Exécutées :" VerticalContentAlignment="Center"/>
+                <Label Content="Exécutées :" VerticalAlignment="Center"/>
                 <TextBox Text="{Binding LinesExecuted}" MinWidth="30" Height="25" 
-                         IsReadOnly="True" HorizontalContentAlignment="Center" 
+                         IsReadOnly="True" 
                          IsEnabled="False" />
             </StackPanel>
             <StackPanel Grid.Row="2" Orientation="Horizontal" >
-                <Label Content="RX :" VerticalContentAlignment="Center" />
+                <Label Content="RX :" VerticalAlignment="Center" />
                 <TextBox Text="{Binding RxBufferDisplay}" MinWidth="30" Height="25"
-                         IsReadOnly="True" HorizontalContentAlignment="Center" 
+                         IsReadOnly="True" 
                          IsEnabled="False"
                          Margin="5"/>
                 <!-- Binding ajouté -->
-                <Label Content="Buf :" VerticalContentAlignment="Center" />
+                <Label Content="Buf :" VerticalAlignment="Center" />
                 <TextBox Text="{Binding PlannerBuffer}" MinWidth="30" Height="25"
-                         IsReadOnly="True" HorizontalContentAlignment="Center" 
+                         IsReadOnly="True"
                          IsEnabled="False"/>
                 <!-- Binding ajouté -->
             </StackPanel>
             <!-- Zone de gravure (Row 3) -->
             <StackPanel Grid.Row="3" Orientation="Horizontal">
-                <TextBlock Text="Zone de gravure :" />
+                <TextBlock Text="Zone de gravure :" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding WidthHeight}"/>
             </StackPanel>
            <!-- Temps restant (Row 4) -->
