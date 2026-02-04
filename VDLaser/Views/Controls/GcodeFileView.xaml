@@ -6,7 +6,7 @@
              xmlns:vm="clr-namespace:VDLaser.ViewModels.Controls;assembly=VDLaser.ViewModels"
              xmlns:local="clr-namespace:VDLaser.Converters"
              mc:Ignorable="d">
-    <GroupBox Header="G-Code file">
+    <GroupBox Header="G-Code file" Style="{StaticResource GroupBoxStyleVD}">
         <Grid Background="#FFE5E5E5" Margin="5">
             <!-- Ajout d'un margin global pour l'espacement -->
             <Grid.ColumnDefinitions>
@@ -18,17 +18,13 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <!-- Boutons -->
-                <RowDefinition Height="40"/>
+                <RowDefinition Height="50"/>
                 <!-- Total lines -->
-                <RowDefinition Height="40"/>
+                <RowDefinition Height="50"/>
                 <!-- Total lines, RX, Buffer -->
-                <RowDefinition Height="30"/>
+                <RowDefinition Height="50"/>
                 <!-- Dimensions (Zone de gravure) -->
-                <RowDefinition Height="30"/>
-                <!-- Dimensions X/Y -->
-                <RowDefinition Height="40"/>
-                <!-- Temps restant -->
-                <RowDefinition Height="30"/>
+                <RowDefinition Height="50"/>
                 <!-- ProgressBar -->
                 <RowDefinition Height="*"/>
                 <!-- Espace flexible si needed -->
@@ -85,52 +81,47 @@
                 </Button>
             </StackPanel>
             <!-- Total lines, RX, Buffer (Row 1) -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5">
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
                 <Label Content="Total Lignes :" VerticalContentAlignment="Center"/>
-                <TextBox Text="{Binding TotalLines}" Width="30" 
+                <TextBox Text="{Binding TotalLines}" MinWidth="30" Height="25"
                          IsReadOnly="True" HorizontalContentAlignment="Center" 
-                         IsEnabled="False"
-                         Margin="0,5,0,5"/>
-                <Label Content="Exécutées :" />
-                <TextBox Text="{Binding LinesExecuted}" Width="30" 
+                         IsEnabled="False"/>
+                <Label Content="Exécutées :" VerticalContentAlignment="Center"/>
+                <TextBox Text="{Binding LinesExecuted}" MinWidth="30" Height="25" 
                          IsReadOnly="True" HorizontalContentAlignment="Center" 
-                         IsEnabled="False" Margin="0,5,0,5"/>
+                         IsEnabled="False" />
             </StackPanel>
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,5">
-                <Label Content="RX :" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
-                <TextBox Text="{Binding RxBufferDisplay}" Width="50" 
+            <StackPanel Grid.Row="2" Orientation="Horizontal" >
+                <Label Content="RX :" VerticalContentAlignment="Center" />
+                <TextBox Text="{Binding RxBufferDisplay}" MinWidth="30" Height="25"
                          IsReadOnly="True" HorizontalContentAlignment="Center" 
                          IsEnabled="False"
-                         Margin="0,5,0,5"/>
+                         Margin="5"/>
                 <!-- Binding ajouté -->
-                <Label Content="Buf :" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
-                <TextBox Text="{Binding PlannerBuffer}" Width="50" 
+                <Label Content="Buf :" VerticalContentAlignment="Center" />
+                <TextBox Text="{Binding PlannerBuffer}" MinWidth="30" Height="25"
                          IsReadOnly="True" HorizontalContentAlignment="Center" 
-                         IsEnabled="False"
-                         Margin="0,5,0,5"/>
+                         IsEnabled="False"/>
                 <!-- Binding ajouté -->
             </StackPanel>
             <!-- Zone de gravure (Row 3) -->
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,5">
-                <TextBlock Text="Zone de gravure :" Margin="0,0,5,0"/>
+            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                <TextBlock Text="Zone de gravure :" />
                 <TextBlock Text="{Binding WidthHeight}"/>
             </StackPanel>
-            <!-- Dimensions X/Y (Row 4) -->
-            <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,5">
-                <TextBlock Text="X :" Margin="0,0,5,0"/>
-                <TextBlock Text="{Binding DimensionsX}"/>
-                <TextBlock Text=" | Y :" Margin="10,0,5,0"/>
-                <TextBlock Text="{Binding DimensionsY}"/>
+           <!-- Temps restant (Row 4) -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal">
+                <Label Content="Temps restant :"
+                       VerticalContentAlignment="Center"/>
+                <TextBlock Text="{Binding EstimatedJobTime, StringFormat={}{0}, Mode=OneWay}" 
+                           Width="70" 
+                           HorizontalAlignment="Center"
+                       VerticalAlignment="Center" 
+                           TextAlignment="Center" 
+                           ToolTip="Estimation dynamique basée sur l'exécution GRBL"/>
             </StackPanel>
-            <!-- Temps restant (Row 5) -->
-            <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="0,5">
-                <Label Content="Temps restant :" VerticalContentAlignment="Center"/>
-                <TextBlock Text="{Binding EstimatedJobTime, StringFormat={}{0}, Mode=OneWay}" Width="70" HorizontalAlignment="Center"
-                       VerticalAlignment="Center" TextAlignment="Center" ToolTip="Estimation dynamique basée sur l'exécution GRBL"/>
-                <!-- Indicateur de pause (optionnel, visible en Hold) -->
-            </StackPanel>
-            <!-- ProgressBar (Row 6) -->
-            <Grid Grid.Row="6" Margin="0,5" Width="200" Height="20">
+            <!-- ProgressBar (Row 5) -->
+            <Grid Grid.Row="5" Margin="0,5" Width="200" Height="20">
                 <ProgressBar Maximum="100" Minimum="0" Value="{Binding ProgressPercentage, Mode=OneWay}"
                          Foreground="#FF78DD8A" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
                     <!-- Animation pour transitions fluides -->

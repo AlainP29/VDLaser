@@ -128,7 +128,7 @@ namespace VDLaser.Core.Grbl.Parsers
             }
             else if (block.StartsWith("WPos:"))
             {
-                var (x, y, z) = ParseVector(block, "WWPos:");
+                var (x, y, z) = ParseVector(block, "WPos:");
                 state.WorkPosX = x;
                 state.WorkPosY = y;
                 state.WorkPosZ = z;

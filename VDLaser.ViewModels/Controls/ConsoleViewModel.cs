@@ -46,7 +46,7 @@ namespace VDLaser.ViewModels.Controls
         // ============================================================
 
         [ObservableProperty]
-        private int _maxLines = 200;
+        private int _maxLines = 500;
 
         [ObservableProperty]
         private bool _isAutoScrollPaused;
@@ -85,6 +85,7 @@ namespace VDLaser.ViewModels.Controls
         {
             _coreService = coreService;
             _parser = parser;
+            _log = log;
             _syncContext = SynchronizationContext.Current;
 
             RawView = CollectionViewSource.GetDefaultView(RawLines);
@@ -209,7 +210,7 @@ namespace VDLaser.ViewModels.Controls
         // ============================================================
 
         [RelayCommand]
-        private void Clear()
+        private void ClearConsole()
         {
             RawLines.Clear();
             StructuredLines.Clear();
@@ -219,7 +220,7 @@ namespace VDLaser.ViewModels.Controls
         }
 
         [RelayCommand]
-        private void Export()
+        private void ExportConsole()
         {
             _log.Information("[Console] Exporting logs...");
 
@@ -250,6 +251,7 @@ namespace VDLaser.ViewModels.Controls
                     // Export STRUCTURÉ
                     foreach (var item in StructuredLines)
                     {
+                        if(item.Type!= ConsoleMessageType.Status)
                         sb.AppendLine(
                             $"[{item.Timestamp:HH:mm:ss}] [{item.Type}] {item.ToExportString()}"
                         );

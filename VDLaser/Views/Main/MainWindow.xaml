@@ -117,17 +117,9 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <local:ConsoleView Grid.Column="0" 
-                               VerticalAlignment="Center" 
-                               HorizontalAlignment="Stretch" 
-                               ShowControls="False" 
-                               MaxHeight="85"
-                               MinHeight="60"
-                               Background="Transparent"/>
-            
             <Separator Grid.Column="1" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="5"/>
 
-            <local:ControleView Grid.Column="2" ShowControls="False" VerticalAlignment="Center" Height="85"/>
+            <local:ControleView Grid.Column="2" ShowControls="False" VerticalAlignment="Center" Height="90"/>
             
             <Button Grid.Column="3" 
             Content="E-STOP" 
@@ -140,7 +132,7 @@
         </Grid>
 
         <!--Connexion (Port & Baudrate), Machine state, WCS (X,Y & Z), Cutting parameter (Feed & Power) and profile (Normal, CNC & support)-->
-        <StatusBar Grid.Row="2" >
+        <StatusBar Grid.Row="2" Style="{StaticResource StatusBarStyleVD}">
             <StatusBarItem>
                 <Viewbox MaxHeight="20">
                 <StackPanel Orientation="Horizontal">

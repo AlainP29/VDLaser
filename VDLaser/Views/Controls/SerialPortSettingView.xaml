@@ -14,7 +14,7 @@
         <Binding Path="DataContext.SerialPortSettingVM"
              RelativeSource="{RelativeSource AncestorType=Window}" />
     </UserControl.DataContext>
-    <GroupBox Header="Port settings" Margin="5,5,5,5">
+    <GroupBox Header="Port settings" Style="{StaticResource GroupBoxStyleVD}">
         <StackPanel>
             <!-- Parameters of the serial port. Only COM port and Baud rate are available -->
             <Grid Margin="5">
@@ -42,28 +42,27 @@
                          VerticalAlignment="Center" Width="20" Fill="{Binding DataContext.IsConnected,
        RelativeSource={RelativeSource AncestorType=Window},
        Converter={StaticResource BrushColorConverter}}"/>
+                <Button x:Name="RefreshButton" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Center" Margin="5,0,5,0"
+        VerticalAlignment="Center" HorizontalContentAlignment="Center" 
+        Command="{Binding RefreshPortsCommand}"
+        IsEnabled="{Binding DataContext.CanEditSerialSettings,
+            RelativeSource={RelativeSource AncestorType=Window}}"
+        ToolTip="Refresh Port COM">
+                    <StackPanel Height="20" Width="20" >
+                        <Image Source="/Resources/Assets/iconRefresh40.png"/>
+                    </StackPanel>
+                </Button>
             </Grid>
             <!--Buttons to connect/disconnect and refresh port COM-->
-            <Grid Margin="5" Width="Auto" Height="40">
+            <Grid Margin="5" Width="Auto">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="0.5*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Center"
                         VerticalAlignment="Center" Command="{Binding DataContext.ConnectCommand, 
                                   RelativeSource={RelativeSource AncestorType=Window}}"
                         Width="75" HorizontalContentAlignment="Center" Margin="0"/>
-                <Button x:Name="RefreshButton" Grid.Column="1" HorizontalAlignment="Center" Margin="5,0,5,0"
-                        VerticalAlignment="Center" HorizontalContentAlignment="Center" 
-                        Command="{Binding RefreshPortsCommand}"
-                        IsEnabled="{Binding DataContext.CanEditSerialSettings,
-                            RelativeSource={RelativeSource AncestorType=Window}}"
-                        ToolTip="Refresh Port COM">
-                    <StackPanel Height="20" Width="20" >
-                        <Image Source="/Resources/Assets/iconRefresh40.png"/>
-                    </StackPanel>
-                </Button>
                 <Button x:Name="DisconnectButton" Grid.Column="2" Content="Disconnect" HorizontalAlignment="Center"
                         VerticalAlignment="Center" Width="75" HorizontalContentAlignment="Center" Margin="0" Command="{Binding DataContext.DisconnectCommand, 
                         RelativeSource={RelativeSource AncestorType=Window}}"/>

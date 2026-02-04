@@ -44,7 +44,7 @@ namespace VDLaser.Core.Services
             if (line.StartsWith(">>")) return null;
 
             // 1. Ignore the commands sent back by GRBL
-            if (IsCommand(line)) return null;
+            //if (IsCommand(line)) return null;
 
             // 2. OK → complete the current order
             if (line.Equals("ok", StringComparison.OrdinalIgnoreCase))
@@ -138,6 +138,18 @@ namespace VDLaser.Core.Services
                 {
                     Response = msg.Groups[1].Value,
                     Type = ConsoleMessageType.Info,
+                };
+            }
+            // 6b. Generic bracketed info: [VER:], [OPT:], [G54:], [G55:], [TLO:], etc.
+            if (line.StartsWith("[MSG:") ||
+                line.StartsWith("[VER:") ||
+                line.StartsWith("[OPT:"))
+            {
+                return new ConsoleItem
+                {
+                    Response = line,
+                    Type = ConsoleMessageType.Info,
+                    Source = ConsoleSource.System
                 };
             }
 

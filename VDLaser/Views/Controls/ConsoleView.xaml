@@ -8,7 +8,7 @@
              xmlns:local="clr-namespace:VDLaser.Converters"
              xmlns:behaviors="clr-namespace:VDLaser.Views.Behaviors"
              mc:Ignorable="d"
-             Background="Transparent" Width="1000" Height="500">
+             Background="Transparent" Width="1000" Height="490">
     <UserControl.Resources>
         <ResourceDictionary>
             <local:BoolToVisibilityConverter x:Key="BoolToVis" />

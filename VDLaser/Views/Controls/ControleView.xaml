@@ -22,30 +22,31 @@
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!--Unlock ($X), Soft reset & pause/resume-->
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center"
                             VerticalAlignment="Top">
-                    <Button Content="Kill alarm" Margin="0 5 0 0" Width="60" 
+                    <Button Content="Kill alarm" Margin="5" Width="75" 
                         ToolTip="Unlock $X, used to get your machine going again after pressing reset" FontWeight="Bold" Background="Orange"
                         Command="{Binding KillAlarmCommand, Mode=OneWay}"/>
-                    <Button Content="Soft reset" Margin="5 5 0 0" Width="60" 
+                    <Button Content="Soft reset" Margin="5" Width="75" 
                         ToolTip="Soft reset, it stop any axis mouvement" FontWeight="Bold" Background="Orange"
                         Command="{Binding SoftResetCommand, Mode=OneWay}"/>
                 </StackPanel>
-                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center"
+                <StackPanel Grid.Row="1" Orientation="Horizontal" 
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Top">
-                    <Button Width="60" Margin="0 5 0 0" Content="Pause" 
+                    <Button Width="75" Margin="5" Content="Pause"
                             ToolTip="Pause cycle"
                             Command="{Binding FeedHoldCommand, Mode=OneWay}"
                             Style="{StaticResource PauseButtonStyleVD}"/>
-                    <Button Width="60" Margin="5 5 0 0" Content="Resume" 
+                    <Button Width="75" Margin="5" Content="Resume" 
                             ToolTip="Start/Resume cycle after a pause"
                             Command="{Binding StartCycleCommand, Mode=OneWay}"/>    
                 </StackPanel>
@@ -53,23 +54,24 @@
             <!--Homing button, pre-defined position 1 & 2 and set zero WCS-->
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" 
-                            Visibility="{Binding ShowControls, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}">
-                    <Button Width="60" 
-                            Margin="0,5,0,0" Content="Home" 
+                            Visibility="{Binding ShowControls, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"
+                        >
+                    <Button Width="75" 
+                            Margin="5" Content="Home" 
                             ToolTip="Homing the machine, only if limits switch are configured"
                             Command="{Binding HomingCommand, Mode=OneWay}"/>
-                    <Button Content="H1" Width="27" 
+                    <Button Content="H1" Width="33" 
                             ToolTip="Pre-defined position 1 set by G28.1 in Grbl settings"
-                            Margin="5,5,0,0"
+                            Margin="5"
                             Command="{Binding Home1Command, Mode=OneWay}"/>
-                    <Button Content="H2" Width="27" 
+                    <Button Content="H2" Width="33" 
                             ToolTip="Pre-defined position 2 set by G30.1 in Grbl settings"
-                            Margin="5,5,0,0"
+                            Margin="5"
                             Command="{Binding Home2Command, Mode=OneWay}"/>
                 </StackPanel>
             <StackPanel Grid.Row="3" 
             Visibility="{Binding ShowControls, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}">
-                <Button Command="{Binding SetWorkZeroCommand}" Margin="0,5,0,0" Width="120" 
+                <Button Command="{Binding SetWorkZeroCommand}" Margin="5" Width="120" 
                         ToolTip="Set zero (X0 Y0) to the current work position">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="🎯" VerticalAlignment="Center"/>

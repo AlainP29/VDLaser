@@ -5,18 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VDLaser.Core.Interfaces;assembly=VDLaser.Core"
              mc:Ignorable="d">
-    <GroupBox Header="Diagnostic and profile">
-        <StackPanel>
-            <TextBlock Text="Niveau de Diagnostic (Logs)" Margin="0,0,0,5"/>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <ComboBox Grid.Column="1" 
+    <GroupBox Header="Diagnostic" Style="{StaticResource GroupBoxStyleVD}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Niveau Logs : " Margin="0,0,0,5"/>
+                <ComboBox Grid.Column="1" Width="80" Margin="0 0 0 5"
                           SelectedItem="{Binding SelectedProfile}"
-                          ItemsSource="{Binding LogProfileValues}"/>
-            </Grid>
+                          ItemsSource="{Binding LogProfileValues}"
+                          ToolTip="Mode Normal par défaut pour les utilisateurs"/>
         </StackPanel>
     </GroupBox>
 </UserControl>

@@ -16,6 +16,12 @@
         <Setter Property="BorderBrush" Value="LightBlue"/>
     </Style>
 
+    <!-- Style pour Statusbar, basé sur le style de base -->
+    <Style x:Key="StatusBarStyleVD" TargetType="StatusBar" BasedOn="{StaticResource ControlStyleVD}">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="BorderBrush" Value="LightBlue"/>
+    </Style>
+
     <!-- Style avec triggers pour hover -->
     <Style x:Key="ControlStyleVDTrigger" TargetType="Control" BasedOn="{StaticResource ControlStyleVD}">
         <Style.Triggers>
@@ -31,7 +37,7 @@
     <Style x:Key="ControlStyleVDError" TargetType="Control">
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="true">
-                <Setter Property="Background" Value="Red"/>
+                <Setter Property="Background" Value="DarkOrange"/>
             </Trigger>
         </Style.Triggers>
     </Style>
