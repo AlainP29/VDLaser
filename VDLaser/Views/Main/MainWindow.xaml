@@ -6,6 +6,7 @@
         mc:Ignorable="d"
         xmlns:local="clr-namespace:VDLaser.Views.Controls"
         xmlns:conv="clr-namespace:VDLaser.Converters"
+        xmlns:vm="clr-namespace:VDLaser.Views.Settings"
         xmlns:main="clr-namespace:VDLaser.ViewModels.Main;assembly=VDLaser.ViewModels"
         d:DataContext="{d:DesignInstance Type=main:MainWindowViewModel}"
         WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
@@ -83,25 +84,25 @@
                     Grid.ColumnSpan="6">
                     <local:PlotterView/>
                 </Viewbox>
-                <Viewbox Visibility="{Binding DataContext.CurrentTab, 
+                <StackPanel Visibility="{Binding DataContext.CurrentTab, 
                         RelativeSource={RelativeSource AncestorType=Window}, 
                         Converter={StaticResource TabToVisibilityConverter}, 
                         ConverterParameter=Console}" Grid.ColumnSpan="6"
                         HorizontalAlignment="Center" 
                         VerticalAlignment="Center">
-                        <local:ConsoleView Background="LightGray"/>
-                </Viewbox>
+                        <local:ConsoleView Background="Transparent" ShowControls="True"/>
+                </StackPanel>
                 <Viewbox Grid.ColumnSpan="6"
                          Visibility="{Binding CurrentTab, Converter={StaticResource TabToVisibilityConverter}, 
                          ConverterParameter=Settings}">
                     <StackPanel Orientation="Horizontal">
                         <StackPanel Orientation="Vertical">
-                        <local:SerialPortSettingView/>
+                            <local:SerialPortSettingView/>
                             <local:ControleView/>
                             <local:LoggingSettingsView/>
                             <local:GcodeSettingsView/>
                         </StackPanel>
-                        <local:SettingView/>
+                        <local:GrblSettingsView/>
                     </StackPanel>
                 </Viewbox>
             </Grid>

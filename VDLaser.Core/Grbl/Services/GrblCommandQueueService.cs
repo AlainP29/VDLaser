@@ -1,4 +1,5 @@
-﻿using VDLaser.Core.Grbl.Commands;
+﻿using VDLaser.Core.Console;
+using VDLaser.Core.Grbl.Commands;
 using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Interfaces;
 using VDLaser.Core.Models;
@@ -10,6 +11,7 @@ namespace VDLaser.Core.Grbl.Services
         private readonly ILogService _log;
         private readonly Queue<GrblCommand> _queue = new();
         private readonly IGrblCoreService _core;
+        private readonly IConsoleParserService _consoleParser;
         private readonly object _sync = new();
         private readonly SemaphoreSlim _signal = new(0, int.MaxValue);
         private GrblCommand? _current;
@@ -32,10 +34,12 @@ namespace VDLaser.Core.Grbl.Services
 
         public event Action<LaserMode>? LaserModeCommandSent;
 
-        public GrblCommandQueueService(IGrblCoreService core, ILogService log)
+        public GrblCommandQueueService(IGrblCoreService core, ILogService log, IConsoleParserService consoleParser)
         {
             _log = log ?? throw new ArgumentNullException(nameof(log));
             _core = core ?? throw new ArgumentNullException(nameof(core));
+            _consoleParser = consoleParser;
+
             _core.DataReceived += OnDataReceived;
             Task.Run(ProcessQueueAsync);
         }
@@ -92,6 +96,10 @@ namespace VDLaser.Core.Grbl.Services
                     RxBufferSizeChanged?.Invoke(this, _currentRxBytes);
                     if (_current != null)
                     {
+                        _consoleParser.BeginCommand(_current.Command);
+                        if (_consoleParser.CurrentPendingCommand != null)
+                            _consoleParser.CurrentPendingCommand.Source = ConsoleSource.Job;
+
                         NotifyLaserState(_current.Command);
                         _core.SendLine(_current.Command);
                         _log.Debug("[GrblCommandQueueService] {Source} >> {Cmd}", _current.Source, _current.Command);

@@ -200,7 +200,7 @@ namespace VDLaser.ViewModels.Controls
 
             if (_responseParser.CanParse(status))
             {
-                _responseParser.Parse(status, _gcodeState);
+                _responseParser.Parse(status, _grblState);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     ResponseStatus = RespStatus.Ok;

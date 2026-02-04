@@ -21,6 +21,12 @@ namespace VDLaser.Converters
                 ConsoleMessageType.Error => Brushes.OrangeRed,
                 ConsoleMessageType.Alarm => Brushes.Red,
                 ConsoleMessageType.System => Brushes.Cyan,
+                ConsoleMessageType.Command => Brushes.DodgerBlue,
+                ConsoleMessageType.Response => Brushes.LightGreen,
+                ConsoleMessageType.Status => Brushes.LightGray,
+                ConsoleMessageType.Job => Brushes.MediumTurquoise,
+                ConsoleMessageType.Debug => Brushes.DarkGray,
+                ConsoleMessageType.Raw => Brushes.WhiteSmoke,
                 _ => Brushes.White
             };
         }

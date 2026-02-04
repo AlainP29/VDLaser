@@ -24,12 +24,14 @@ namespace VDLaser.Tests.UnitTests
 
             var logMock = new Mock<ILogService>();
             var providerMock = new Mock<IServiceProvider>();
+            var parser= new Mock<IConsoleParserService>();
 
             var service = new GrblCoreService(
                 serialMock.Object,
                 logMock.Object,
                 Array.Empty<IGrblSubParser>(),
-                providerMock.Object
+                providerMock.Object,
+                parser.Object
             );
 
             var ex = await Assert.ThrowsAsync<GrblConnectionException>(
@@ -49,6 +51,7 @@ namespace VDLaser.Tests.UnitTests
             var pollingMock = new Mock<IStatusPollingService>();
             var commandQueueMock = new Mock<IGrblCommandQueue>();
             var providerMock = new Mock<IServiceProvider>();
+            var parser = new Mock<IConsoleParserService>();
 
             // On configure le provider pour toutes les dépendances appelées dans DispatchLine
             providerMock
@@ -63,7 +66,8 @@ namespace VDLaser.Tests.UnitTests
                 Mock.Of<ISerialPortService>(),
                 logMock.Object,
                 Enumerable.Empty<IGrblSubParser>(),
-                providerMock.Object
+                providerMock.Object,
+                parser.Object
             );
 
             bool eventFired = false;
@@ -88,7 +92,7 @@ namespace VDLaser.Tests.UnitTests
             serialMock.SetupGet(s => s.IsOpen).Returns(true);
 
             var commandQueueMock = new Mock<IGrblCommandQueue>();
-
+            var parser = new Mock<IConsoleParserService>();
             var providerMock = new Mock<IServiceProvider>();
             providerMock
                 .Setup(sp => sp.GetService(typeof(IGrblCommandQueue)))
@@ -99,6 +103,7 @@ namespace VDLaser.Tests.UnitTests
                 Mock.Of<ILogService>(),
                 new List<IGrblSubParser>(),
                 providerMock.Object,
+                parser.Object,
                 serialMock.Object
             );
 

@@ -7,15 +7,15 @@ namespace VDLaser.Views.Controls
     /// <summary>
     /// Logique d'interaction pour SettingsView.xaml
     /// </summary>
-    public partial class SettingView : UserControl
+    public partial class GrblSettingsView : UserControl
     {
-        public SettingView()
+        public GrblSettingsView()
         {
             InitializeComponent();
             var serviceProvider = (App.Current as App)?.ServiceProvider;
             if (serviceProvider != null)
             {
-                DataContext = serviceProvider.GetRequiredService<SettingViewModel>();
+                DataContext = serviceProvider.GetRequiredService<GrblSettingsViewModel>();
             }
         }
     }

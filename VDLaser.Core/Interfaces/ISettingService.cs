@@ -5,7 +5,7 @@ namespace VDLaser.Core.Interfaces
 {
     public interface ISettingService
     {
-        Task<SettingItems> GetSettingsAsync();
-        Task SaveSettingsAsync(SettingItems items);
+        Task<SoftwareSettings> GetSettingsAsync();
+        Task SaveSettingsAsync(SoftwareSettings items);
     }
 }

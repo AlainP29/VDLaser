@@ -13,7 +13,7 @@ using VDLaser.ViewModels.Base;
 
 namespace VDLaser.ViewModels.Controls
 {
-    public partial class SettingViewModel : ViewModelBase
+    public partial class GrblSettingsViewModel : ViewModelBase
     {
         private readonly ILogService _log;
         private readonly IGrblCoreService _coreService;
@@ -46,7 +46,7 @@ namespace VDLaser.ViewModels.Controls
         [ObservableProperty]
         private ObservableCollection<GrblSetting> _settings = new ObservableCollection<GrblSetting>();
 
-        public SettingViewModel(IGrblCoreService coreService, ILogService log, IGrblCommandQueue commandQueue, GcodeFileViewModel gcodeFileVM)
+        public GrblSettingsViewModel(IGrblCoreService coreService, ILogService log, IGrblCommandQueue commandQueue, GcodeFileViewModel gcodeFileVM)
         {
             _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
             _log = log ?? throw new ArgumentNullException(nameof(log));

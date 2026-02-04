@@ -26,11 +26,13 @@ namespace VDLaser.Tests.UnitTests
             var parser = new GrblSettingsParser(mockLogger.Object);
             var mockStatusPolling = Mock.Of<IStatusPollingService>();
             var mockServiceProvider = new Mock<IServiceProvider>();
+            var mockConsoleParser = new Mock<IConsoleParserService>();
             var service = new GrblCoreService(
                 mockSerial.Object,
                 mockLogger.Object,
                 new[] { parser },
-                mockServiceProvider.Object
+                mockServiceProvider.Object,
+                mockConsoleParser.Object
             );
 
             IReadOnlyCollection<GrblSetting>? receivedSettings = null;

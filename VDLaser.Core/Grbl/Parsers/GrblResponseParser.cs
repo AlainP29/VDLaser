@@ -1,5 +1,5 @@
-﻿using VDLaser.Core.Codes;
-using VDLaser.Core.Gcode.Models;
+﻿using System;
+using VDLaser.Core.Codes;
 using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Grbl.Models;
 using VDLaser.Core.Interfaces;
@@ -7,97 +7,178 @@ using VDLaser.Core.Interfaces;
 namespace VDLaser.Core.Grbl.Parsers
 {
     /// <summary>
-    /// Generic GRBL response messages.
-    /// Handles: ok, error.
+    /// Parses GRBL responses such as:
+    /// - ok
+    /// - error:XX
+    /// - ALARM:XX
+    /// - busy:...
+    /// - [MSG:...]
+    /// Updates GrblState with structured GrblError and GrblAlarm objects.
     /// </summary>
     public class GrblResponseParser : IGrblSubParser
     {
-        private readonly ILogService _log;
+        private readonly ILogService? _log;
+
+        public string Name => "GrblResponseParser";
 
         private readonly ErrorCodes _errors = new();
-        public string Name => "GrblResponseParser";
-        public GrblResponseParser()
-        {
-            
-        }
+        private readonly AlarmCodes _alarms = new();
+
+        #region Constructors
+
+        public GrblResponseParser() { }
+
         public GrblResponseParser(ILogService log)
         {
-            _log = log ?? throw new ArgumentNullException(nameof(log));
-            _log.Information("[GCodeResponseParser] Initialised");
+            _log = log;
+            _log?.Information("[GrblResponseParser] Initialised");
         }
+
+        #endregion
+
+        #region CanParse
+
         public bool CanParse(string line)
         {
+            if (string.IsNullOrWhiteSpace(line))
+                return false;
+
             line = line.Trim().ToLowerInvariant();
 
-            return
-                line.StartsWith("ok") ||
-                line.StartsWith("error:");
-        }
-        public void Parse(string line, GcodeState state)
-        {
-            line = line.Trim();
-
-            if (line.StartsWith("ok"))
-            {
-                HandleOk(state);
-                return;
-            }
-
-            if (line.StartsWith("error:"))
-            {
-                HandleError(line, state);
-                return;
-            }
+            return line == "ok"
+                || line.StartsWith("error:")
+                || line.StartsWith("alarm:")
+                || line.StartsWith("busy:")
+                || (line.StartsWith("[") && line.EndsWith("]"));
         }
 
-        private void HandleOk(GcodeState state)
+        #endregion
+
+        #region Parse Entry Points
+
+        public void Parse(string line, GrblInfo state)
         {
-            state.Error = null;
-            state.ErrorMessage = string.Empty;
-            _log.Information("[GCodeResponseParser] Ok");
-        }
-
-        private void HandleError(string line, GcodeState state)
-        {
-            var codePart = line.Split(':')[1].Trim();
-            _log.Information("[GCodeResponseParser] error format {err}", line);
-
-            if (int.TryParse(codePart, out int code))
-            {
-                var err = GetError(code, state.IsGrbl11);
-                state.Error = err;
-                state.ErrorMessage = err?.Description ?? $"Unknown error {code}";
-                state.ErrorHistory.Add(err);
-            }
-            else
-            {
-                state.ErrorMessage = $"Invalid GRBL error format: {line}";
-            }
-        }
-
-        // -----------------------------------------------------------
-        // Error translation (no factory)
-        // -----------------------------------------------------------
-        private GrblError GetError(int code, bool is11)
-        {
-            var def = is11
-                ? _errors.ErrorDict11.GetValueOrDefault(code)
-                : _errors.ErrorDict09.GetValueOrDefault(code);
-
-            if (def == null)
-                return new GrblError(code, code.ToString(), "Unknown GRBL error");
-
-            return new GrblError(code, def.Message, def.Description);
-            _log.Information("[GCodeResponseParser] Get error");
-
+            // Not used for GrblInfo
         }
 
         public void Parse(string line, GrblState state)
         {
+            if (string.IsNullOrWhiteSpace(line) || state == null)
+                return;
+
+            var msg = line.Trim();
+            state.LastMessage = msg;
+
+            // OK
+            if (msg.Equals("ok", StringComparison.OrdinalIgnoreCase))
+            {
+                state.IsBusy = false;
+                state.LastBusyMessage = string.Empty;
+                _log?.Debug("[GrblResponseParser] OK");
+                return;
+            }
+
+            // BUSY
+            if (msg.StartsWith("busy:", StringComparison.OrdinalIgnoreCase))
+            {
+                state.IsBusy = true;
+                state.LastBusyMessage = msg;
+                _log?.Debug("[GrblResponseParser] Busy: {Msg}", msg);
+                return;
+            }
+
+            // ERROR
+            if (msg.StartsWith("error:", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleError(msg, state);
+                return;
+            }
+
+            // ALARM
+            if (msg.StartsWith("alarm:", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleAlarm(msg, state);
+                return;
+            }
+
+            // [MSG:...]
+            if (msg.StartsWith("[") && msg.EndsWith("]"))
+            {
+                HandleMessage(msg, state);
+                return;
+            }
         }
 
-        public void Parse(string line, GrblInfo info)
+        #endregion
+
+        #region Handlers
+
+        private void HandleError(string msg, GrblState state)
         {
+            var codeStr = msg.Substring(6).Trim();
+
+            if (int.TryParse(codeStr, out int code))
+            {
+                var err = _errors.GetError(code, state.IsGrbl11);
+
+                if (err != null)
+                {
+                    state.ErrorMessage = err.ToString();
+                    _log?.Error("[GrblResponseParser] Error {Code}: {Msg}", code, err.Message);
+                }
+                else
+                {
+                    state.ErrorMessage = $"Unknown error {code}";
+                    _log?.Error("[GrblResponseParser] Unknown error code: {Code}", code);
+                }
+            }
+            else
+            {
+                state.ErrorMessage = "Invalid error format";
+                _log?.Error("[GrblResponseParser] Invalid error format: {Msg}", msg);
+            }
         }
+
+        private void HandleAlarm(string msg, GrblState state)
+        {
+            var codeStr = msg.Substring(6).Trim();
+
+            if (int.TryParse(codeStr, out int code))
+            {
+                var alarm = _alarms.GetAlarm(code, state.IsGrbl11);
+
+                if (alarm != null)
+                {
+                    state.Alarm = alarm;
+                    state.AlarmHistory.Add(alarm);
+
+                    _log?.Error("[GrblResponseParser] Alarm {Code}: {Msg} ({Severity})",
+                        code, alarm.Message, alarm.Severity);
+                }
+                else
+                {
+                    state.ErrorMessage = $"Unknown alarm {code}";
+                    _log?.Error("[GrblResponseParser] Unknown alarm code: {Code}", code);
+                }
+            }
+            else
+            {
+                state.ErrorMessage = "Invalid alarm format";
+                _log?.Error("[GrblResponseParser] Invalid alarm format: {Msg}", msg);
+            }
+        }
+
+        private void HandleMessage(string msg, GrblState state)
+        {
+            var content = msg.Trim('[', ']');
+
+            if (content.StartsWith("MSG:", StringComparison.OrdinalIgnoreCase))
+            {
+                state.FeedbackMessage = content.Substring(4);
+                _log?.Information("[GrblResponseParser] Feedback: {Msg}", state.FeedbackMessage);
+            }
+        }
+
+        #endregion
     }
 }

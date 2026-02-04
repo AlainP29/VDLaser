@@ -8,84 +8,115 @@ using static VDLaser.Core.Grbl.Models.GrblState;
 
 namespace VDLaser.Core.Grbl.Parsers
 {
+    /// <summary>
+    /// Parses GRBL status reports such as:
+    /// <Idle|MPos:0.000,0.000,0.000|FS:0,0>
+    /// Updates the GrblState object with machine position, feed, speed, overrides, etc.
+    /// </summary>
     public class GrblStateParser : IGrblSubParser
     {
-        private readonly ILogService _log;
+        private readonly ILogService? _log;
 
         public string Name => "GrblStatusParser";
 
         private readonly AlarmCodes _alarms = new();
-        /// <summary>
-        /// Enumeration of the response states. Ok: All is good, NOk: Alarm state Q: Queued [DR: Data received] 
-        /// </summary>
-        public enum RespStatus { Ok, NOk, Q };
 
         public MachState MachineState { get; private set; } = MachState.Undefined;
         public SolidColorBrush MachineStateColor { get; private set; } = Brushes.DarkGray;
-        public GrblStateParser()
-        {
-        }
+
+        #region Constructors
+
+        public GrblStateParser() { }
+
         public GrblStateParser(ILogService log)
         {
-            _log = log ?? throw new ArgumentNullException(nameof(log));
+            _log = log;
+            _log?.Information("[GrblStateParser] Initialised");
         }
+
+        #endregion
+
+        #region CanParse
+
+        /// <summary>
+        /// Determines whether the line is a GRBL status report.
+        /// Status reports always start with '<' and end with '>'.
+        /// </summary>
         public bool CanParse(string line)
         {
             if (string.IsNullOrWhiteSpace(line))
                 return false;
 
             line = line.Trim().ToLowerInvariant();
-
             return line.StartsWith("<") && line.EndsWith(">");
         }
 
+        #endregion
+
+        #region Parse Entry Point
+
+        /// <summary>
+        /// Parses a full GRBL status report and updates the GrblState object.
+        /// </summary>
         public void Parse(string line, GrblState state)
         {
             if (string.IsNullOrWhiteSpace(line) || state == null)
                 return;
+
             try
             {
                 var content = line.Trim('<', '>');
                 var parts = content.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                _log.Debug("[GrblStateParser Parser Start] Parsing status content: {Content}", content);
+
                 if (parts.Length == 0)
                     return;
 
+                _log?.Debug("[GrblStateParser] Parsing status: {Content}", content);
+
+                // First token = machine state (Idle, Run, Hold, Alarm, etc.)
                 ParseMachineState(parts[0], state);
 
+                // Remaining tokens = data blocks
                 for (int i = 1; i < parts.Length; i++)
                 {
                     ParseBlock(parts[i], state);
-                    if (parts[i].StartsWith("FS:"))
-                    {
-                        _log.Debug("[GrblStateParser Parser FS] Block: {Block}, Extracting S...", parts[i]); 
-                    }
                 }
-                _log.Debug("[GrblStateParser Parser End] Parsed state - PowerLaser: {PowerLaser}, MachineState: {State}", state.PowerLaser, state.MachineState);
-                UpdateStatusColor(state);
-            }
 
+                UpdateStatusColor(state);
+
+                _log?.Debug("[GrblStateParser] State updated: {State}", state.MachineState);
+            }
             catch (Exception ex)
             {
                 state.ErrorMessage = ex.Message;
-                _log.Error("[GrblStateParser] Parse error: {Msg}", ex.Message);
+                _log?.Error("[ConsoleViewModel] Failed to export logs to file:", ex);
             }
         }
 
-            // -----------------------
-            // MACHINE STATE
-            // -----------------------
-            private static void ParseMachineState(string token, GrblState state)
+        #endregion
+
+        #region Machine State
+
+        /// <summary>
+        /// Parses the machine state token (Idle, Run, Hold, Alarm, etc.).
+        /// </summary>
+        private static void ParseMachineState(string token, GrblState state)
         {
             var stateName = token.Split(':')[0];
+
             if (Enum.TryParse<MachState>(stateName, true, out var ms))
                 state.MachineState = ms;
             else
                 state.MachineState = MachState.Undefined;
         }
-        // =====================================================
-        // BLOCK ROUTING
-        // =====================================================
+
+        #endregion
+
+        #region Block Parsing
+
+        /// <summary>
+        /// Routes each block to the appropriate parser.
+        /// </summary>
         private static void ParseBlock(string block, GrblState state)
         {
             if (block.StartsWith("MPos:"))
@@ -97,7 +128,7 @@ namespace VDLaser.Core.Grbl.Parsers
             }
             else if (block.StartsWith("WPos:"))
             {
-                var (x, y, z) = ParseVector(block, "WPos:");
+                var (x, y, z) = ParseVector(block, "WWPos:");
                 state.WorkPosX = x;
                 state.WorkPosY = y;
                 state.WorkPosZ = z;
@@ -139,13 +170,15 @@ namespace VDLaser.Core.Grbl.Parsers
                     state.RxBuffer = rx;
                 }
             }
-           
-
         }
 
-        // =====================================================
-        // HELPERS
-        // =====================================================
+        #endregion
+
+        #region Helpers
+
+        /// <summary>
+        /// Parses a generic X,Y,Z vector from a block.
+        /// </summary>
         private static (double x, double y, double z) ParseVector(string block, string prefix)
         {
             var values = block[prefix.Length..].Split(',');
@@ -156,9 +189,10 @@ namespace VDLaser.Core.Grbl.Parsers
 
             return (x, y, z);
         }
-        // =====================================================
-        // UI COLOR
-        // =====================================================
+
+        /// <summary>
+        /// Updates the UI color associated with the machine state.
+        /// </summary>
         private static void UpdateStatusColor(GrblState state)
         {
             state.MachineStatusColor = state.MachineState switch
@@ -172,41 +206,13 @@ namespace VDLaser.Core.Grbl.Parsers
                 _ => Brushes.DarkGray
             };
         }
-        // =====================================================
-        // UNUSED
-        // =====================================================
-        public void Parse(string line, GrblInfo state)
-        {
-        }
-        private static bool TryParseTriple(string token, string key,
-    out double a, out double b, out double c)
-        {
-            a = b = c = 0;
 
-            if (!token.StartsWith(key + ":", StringComparison.OrdinalIgnoreCase))
-                return false;
+        #endregion
 
-            var parts = token[(key.Length + 1)..].Split(',');
-            return parts.Length >= 3
-                && double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out a)
-                && double.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out b)
-                && double.TryParse(parts[2], NumberStyles.Any, CultureInfo.InvariantCulture, out c);
-        }
+        #region Unused Interface Methods
 
-        private static bool TryParsePair(string token, string key,
-            out double a, out double b)
-        {
-            a = b = 0;
+        public void Parse(string line, GrblInfo state) { }
 
-            if (!token.StartsWith(key + ":", StringComparison.OrdinalIgnoreCase))
-                return false;
-
-            var parts = token[(key.Length + 1)..].Split(',');
-            return parts.Length >= 2
-                && double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out a)
-                && double.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out b);
-        }
-
+        #endregion
     }
 }
-

@@ -1,382 +1,228 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
-using Serilog;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Windows.Data;
-using System.Windows.Shapes;
-using VDLaser.Core.Codes;
 using VDLaser.Core.Console;
-using VDLaser.Core.Gcode.Interfaces;
 using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Interfaces;
 using VDLaser.Core.Models;
 using VDLaser.ViewModels.Base;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static VDLaser.Core.Grbl.Models.GrblState;
 
 namespace VDLaser.ViewModels.Controls
 {
-    /// <summary>
-    /// Gère l'affichage des messages série, le filtrage des types de messages GRBL 
-    /// et l'exportation des logs de communication.
-    /// </summary>
-    public partial class ConsoleViewModel : ViewModelBase
+    public partial class ConsoleViewModel : ViewModelBase, IDisposable
     {
-        #region Fields & Properties
         private readonly ILogService _log;
-        private readonly SynchronizationContext? _syncContext;
+        private readonly IConsoleParserService _parser;
         private readonly IGrblCoreService _coreService;
-        private readonly IStatusPollingService _polling;
-        private readonly IGcodeJobService _gcodeJobService;
-        [ObservableProperty]
-        private ObservableCollection<ConsoleItem> _lines = new ObservableCollection<ConsoleItem>();
-        public ICollectionView FilteredLines { get; }
+        private readonly SynchronizationContext? _syncContext;
+        private bool _disposed;
+
+        // ============================================================
+        //  COLLECTIONS
+        // ============================================================
+
+        public ObservableCollection<string> RawLines { get; } = new();
+        public ObservableCollection<ConsoleItem> StructuredLines { get; } = new();
+
+        public ICollectionView RawView { get; }
+        public ICollectionView StructuredView { get; }
+
+        // ============================================================
+        //  MODES
+        // ============================================================
 
         [ObservableProperty]
-        private bool _onlyShowErrors = false;
-        [ObservableProperty]
-        private bool _isAutoScrollPaused;
+        private bool _isRawMode = false;
 
-        [ObservableProperty]
-        private bool _isVerbose = false;
+        public bool IsStructuredMode => !IsRawMode;
+
+        // ============================================================
+        //  PARAMÈTRES
+        // ============================================================
 
         [ObservableProperty]
         private int _maxLines = 200;
 
         [ObservableProperty]
-        private bool _hideOkMessages = false;
+        private bool _isAutoScrollPaused;
+
+        // ============================================================
+        //  FILTRES CHECKBOX
+        // ============================================================
+
+        [ObservableProperty] private bool _showCommands = true;
+        [ObservableProperty] private bool _showResponses = true;
+        [ObservableProperty] private bool _showStatus = false;
+        [ObservableProperty] private bool _showErrors = true;
+        [ObservableProperty] private bool _showWarnings = true;
+        [ObservableProperty] private bool _showSystem = true;
+        [ObservableProperty] private bool _showJob = true;
+        [ObservableProperty] private bool _showDebug = false;
+
+        // ============================================================
+        //  ERREURS
+        // ============================================================
 
         [ObservableProperty]
-        private bool _hideStatusReports = true;
-        [ObservableProperty]
-        private string _lastResponse = "Ready";
-        [ObservableProperty]
-        private bool _hasJobErrors = false;
-        //public int LineCount=>Lines.Count;
-        [ObservableProperty]
-        private int _errorCount=0;
-        public bool AreFiltersEnabled => !IsVerbose;
-        private readonly ErrorCodes _errorCodes = new();
-        private readonly AlarmCodes _alarmCodes = new();
-        #endregion
+        private int _errorCount;
 
-        public ConsoleViewModel(IGrblCoreService coreService, ILogService log, IStatusPollingService polling,IGcodeJobService gcodeJobService)
+        [ObservableProperty]
+        private string _lastErrorMessage = "Aucune erreur";
+
+        // ============================================================
+        //  CONSTRUCTEUR
+        // ============================================================
+
+        public ConsoleViewModel(
+            IGrblCoreService coreService,
+            ILogService log,
+            IConsoleParserService parser)
         {
-            _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
-            _log = log ?? throw new ArgumentNullException(nameof(log));
-            _polling = polling ?? throw new ArgumentNullException(nameof(polling));
-            _gcodeJobService = gcodeJobService ?? throw new ArgumentNullException(nameof(gcodeJobService));
-            
+            _coreService = coreService;
+            _parser = parser;
             _syncContext = SynchronizationContext.Current;
+
+            RawView = CollectionViewSource.GetDefaultView(RawLines);
+            StructuredView = CollectionViewSource.GetDefaultView(StructuredLines);
+            StructuredView.Filter = o => FilterItem((ConsoleItem)o);
+
             _coreService.DataReceived += OnDataReceived;
-            _coreService.StatusUpdated += OnMachineStatusUpdated;
-
-            // Dans le constructeur de ConsoleViewModel.cs
-            FilteredLines = CollectionViewSource.GetDefaultView(Lines);
-            FilteredLines.Filter = obj =>
-            {
-                if (obj is ConsoleItem item)
-                {
-                    // On ne retourne "true" que pour les types critiques
-                    return item.Type == ConsoleMessageType.Error ||
-                           item.Type == ConsoleMessageType.Alarm ||
-                           item.Type == ConsoleMessageType.Warning;
-                }
-                return false;
-            };
-
-            _log.Debug("[ConsoleViewModel] Initialized. SyncContext captured: {IsPresent}", _syncContext != null);
-            AddSystem("Console initialized");
         }
 
-        #region Logic : Data Parsing & Events
-        /// <summary>
-        /// Analyse les chaînes brutes reçues du contrôleur GRBL pour les catégoriser.
-        /// </summary>
+        // ============================================================
+        //  DISPOSE
+        // ============================================================
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _coreService.DataReceived -= OnDataReceived;
+            _disposed = true;
+        }
+
+        // ============================================================
+        //  RÉCEPTION DES DONNÉES
+        // ============================================================
+
         private void OnDataReceived(object? sender, DataReceivedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(e.Text)) return;
-
-            var line = e.Text.Trim();
-
-            // --- CAS 1 : ENVOI D'UNE COMMANDE (Signalé par >>) ---
-            if (line.StartsWith(">>"))
-            {
-                var cmd = line.Substring(2).Trim();
-                //if (IsVerbose || !cmd.StartsWith("G", StringComparison.OrdinalIgnoreCase))
-                    if (IsVerbose || !cmd.StartsWith("?", StringComparison.OrdinalIgnoreCase))
-                {
-                    Add(new ConsoleItem { Command = cmd, Type = ConsoleMessageType.Info });
-                }
+            if (string.IsNullOrWhiteSpace(e.Text))
                 return;
-            }
 
-            // --- CAS 2 : RÉPONSE À UNE COMMANDE ---
-            // On cherche le dernier item qui a une commande mais pas encore de réponse
-            var lastPendingItem = Lines.LastOrDefault(x => !string.IsNullOrEmpty(x.Command)
-                                                        && string.IsNullOrEmpty(x.Response));
-            if (line.Equals("ok", StringComparison.OrdinalIgnoreCase))
-            {
-                HandleOkResponse();
-            }
-            else if (line.StartsWith("error:", StringComparison.OrdinalIgnoreCase))
-            {
-                if (int.TryParse(line.Split(':')[1], out int code))
-                    AddGrblError(code);
-            }
-            else if (line.StartsWith("ALARM:", StringComparison.OrdinalIgnoreCase))
-            {
-                if (int.TryParse(line.Split(':')[1], out int code))
-                    AddGrblAlarm(code);
-            }
-            else if (line.StartsWith("<") && line.EndsWith(">"))
-            {
-                // On vérifie si l'utilisateur veut voir les rapports d'état (ou si mode Verbose)
-                if (ShouldDisplay(line, ConsoleMessageType.System))
-                {
-                    // On crée une ligne spécifique "Status" qui ne se couple pas
-                    // pour ne pas interférer avec le dernier 'ok' attendu
-                    Add(new ConsoleItem
-                    {
-                        Command = "Status",
-                        Response = line,
-                        Type = ConsoleMessageType.System
-                    });
-                }
-            }
+            string raw = e.Text.Trim();
 
+            _syncContext?.Post(_ => AddRaw(raw), null);
+
+            var item = _parser.ParseStructured(raw);
+            if (item != null)
+                _syncContext?.Post(_ => AddStructured(item), null);
         }
-        partial void OnIsVerboseChanged(bool value)
+
+        // ============================================================
+        //  AJOUT DES LIGNES
+        // ============================================================
+
+        private void AddRaw(string line)
         {
-            OnPropertyChanged(nameof(AreFiltersEnabled));
-        }
-        private void OnMachineStatusUpdated(object? sender, EventArgs e)
-        {
-            // On vérifie si la machine vient de passer en état Alarm
-            if (_coreService.State.MachineState == MachState.Alarm)
+            RawLines.Add(line);
+
+            if (!IsAutoScrollPaused && MaxLines > 0)
             {
-                //_log.Fatal("[Console] État ALARME détecté. Annulation des commandes en attente.");
-
-                // IMPORTANT : Exécuter sur le thread UI pour modifier la collection
-                _syncContext?.Post(_ =>
-                {
-                    // 1. On récupère toutes les commandes qui attendent un "ok" (Type Info/Bleu)
-                    var pendingCommands = Lines.Where(x => x.Type == ConsoleMessageType.Info && string.IsNullOrEmpty(x.Response)).ToList();
-
-                    foreach (var item in pendingCommands)
-                    {
-                        item.Response = "STOPPED";
-                        item.Description = "Commande annulée suite à une alarme machine.";
-                        item.Type = ConsoleMessageType.Warning; // Change la couleur (ex: Orange/Jaune)
-                    }
-
-                    // 2. Optionnel : Vider la file d'attente si vous avez accès à _commandQueue ici
-                    // Sinon, c'est le GcodeJobService qui doit s'en charger.
-                }, null);
+                while (RawLines.Count > MaxLines)
+                    RawLines.RemoveAt(0);
             }
         }
-        partial void OnOnlyShowErrorsChanged(bool value)
-        {
-            FilteredLines.Refresh();
-        }
-        #endregion
 
-        // ---------------------------------------------------------
-        // Messages simples
-        // ---------------------------------------------------------
-        public void AddInfo(string msg) => Add(msg, ConsoleMessageType.Info);
-        public void AddWarning(string msg) => Add(msg, ConsoleMessageType.Warning);
-        public void AddSuccess(string msg) => Add(msg, ConsoleMessageType.Success);
-        public void AddSystem(string msg) => Add(msg, ConsoleMessageType.System);
-        public void AddError(string msg) => Add(msg, ConsoleMessageType.Error);
-        public void AddAlarm(string msg) => Add(msg, ConsoleMessageType.Alarm);
-
-        // ---------------------------------------------------------
-        // GRBL : erreurs / alarmes structurées
-        // ---------------------------------------------------------
-        public void AddGrblError(int code, string description)
+        private void AddStructured(ConsoleItem item)
         {
-            ErrorCount++;
-            Add(new ConsoleItem
+            StructuredLines.Add(item);
+
+            if (item.Type == ConsoleMessageType.Error || item.Type == ConsoleMessageType.Alarm)
             {
-                Code = code,
-                Message = $"Error {code}: {description}",
-                Description = description,
-                Type = ConsoleMessageType.Error
-            });
-        }
-        public void AddGrblError(int code)
-        {
-            ErrorCount++;
-            HasJobErrors = true;
-            var errorInfo = _errorCodes.GetError(code, isVersion11: true);
-            string description = errorInfo?.Description ?? "Unknown GRBL error";
-            string message = $"Error {code}: {errorInfo?.Message ?? "Error"}";
-
-            var lastItem = Lines.LastOrDefault(x => !string.IsNullOrEmpty(x.Command)
-                                                 && string.IsNullOrEmpty(x.Response));
-
-            if (lastItem != null)
-            {
-                lastItem.Response = $"error:{code}";
-                lastItem.Description = description;
-                //lastItem.Type = ConsoleMessageType.Error;
-                lastItem.Type = ConsoleMessageType.Warning;
-                
+                ErrorCount++;
+                LastErrorMessage = item.Message;
             }
-            else
-            {
-                Add(new ConsoleItem(code, message, description, ConsoleMessageType.Warning));
-                
-            }
-            LastResponse = "⚠️ Gravure effectuée avec erreurs";
-            _polling.ForcePoll();
-        }
-        public void AddGrblAlarm(int code, string description)
-        {
-            Add(new ConsoleItem
-            {
-                Code = code,
-                Message = $"Alarm {code}: {description}",
-                Description = description,
-                Type = ConsoleMessageType.Alarm
-            });
-        }
-        public void AddGrblAlarm(int code)
-        {
-            var alarmInfo = _alarmCodes.GetAlarm(code, isVersion11: true);
-            string description = alarmInfo?.Message ?? "Unknown Alarm";
-            var lastItem = Lines.LastOrDefault(x => !string.IsNullOrEmpty(x.Command)
-                                                 && string.IsNullOrEmpty(x.Response));
 
-            if (lastItem != null)
-            {
-                lastItem.Response = $"ALARM:{code}";
-                lastItem.Description = description;
-                lastItem.Type = ConsoleMessageType.Alarm;
-                LastResponse = description;
-            }
-            else
-            {
-                Add(new ConsoleItem(code, $"ALARM:{code}", description, ConsoleMessageType.Alarm));
-                LastResponse = description;
-            }
-            _polling.ForcePoll();
+            EnforceVisibleLimit();
         }
-        private void HandleOkResponse()
+
+        // ============================================================
+        //  FILTRAGE STRUCTURÉ
+        // ============================================================
+
+        private bool FilterItem(ConsoleItem item)
         {
-            var lastItem = Lines.LastOrDefault(x => !string.IsNullOrEmpty(x.Command)
-                                                 && string.IsNullOrEmpty(x.Response));
-
-            if (lastItem != null)
-            {
-                lastItem.Response = "ok";
-                lastItem.Type = ConsoleMessageType.Success;
-
-                // Si on doit cacher les OK et qu'on n'est pas en mode verbeux
-                if (HideOkMessages && !IsVerbose)
-                {
-                    _syncContext?.Post(_ => Lines.Remove(lastItem), null);
-                }
-            }
-        }
-        /// <summary>
-        /// Détermine si un message doit être affiché dans la console en fonction des filtres actifs.
-        /// Priorité : IsVerbose > HideOkMessages > HideStatusReports.
-        /// </summary>
-        private bool ShouldDisplay(string text, ConsoleMessageType type)
-        {
-            // Si Verbose est actif, on affiche tout (y compris les status et les ok)
-            if (IsVerbose) return true;
-
-            // Filtre pour les messages "ok"
-            if (HideOkMessages && type == ConsoleMessageType.Success)
+            if (string.IsNullOrWhiteSpace(item.Message) && string.IsNullOrWhiteSpace(item.Response)) 
                 return false;
 
-            // Filtre pour les rapports d'état (Status Reports)
-            if (HideStatusReports && type == ConsoleMessageType.System)
-                return false;
-
-            return true;
+            return item.Type switch
+            {
+                ConsoleMessageType.Command => ShowCommands,
+                ConsoleMessageType.Response => ShowResponses,
+                ConsoleMessageType.Status => ShowStatus,
+                ConsoleMessageType.Error => ShowErrors,
+                ConsoleMessageType.Warning => ShowWarnings,
+                ConsoleMessageType.System => ShowSystem,
+                ConsoleMessageType.Job => ShowJob,
+                ConsoleMessageType.Debug => ShowDebug,
+                ConsoleMessageType.Raw => false,
+                _ => true
+            };
         }
-        #region Logic : Buffer Management
-        /// <summary>
-        /// Ajoute un élément à la collection en s'assurant d'être sur le thread UI.
-        /// </summary>
-        public void Add(ConsoleItem item)
+        private void EnforceVisibleLimit()
         {
-            if (_syncContext != null)
+            if (MaxLines <= 0)
+                return;
+
+            // On récupère les lignes visibles selon le filtre
+            var visible = StructuredLines.Where(item => FilterItem(item)).ToList();
+
+            int overflow = visible.Count - MaxLines;
+            if (overflow <= 0)
+                return;
+
+            // On supprime les plus anciennes visibles
+            for (int i = 0; i < overflow; i++)
             {
-                _syncContext.Post(_ => AddInternal(item), null);
-            }
-            else
-            {
-                _log.Warning("[ConsoleViewModel] No SynchronizationContext. Adding item on current thread.");
-                AddInternal(item);
-            }
-        }
-        public void Add(string message, ConsoleMessageType type)
-        {
-            Add(new ConsoleItem(message, type));
-        }
-
-
-
-        private void AddInternal(ConsoleItem item)
-        {
-            try
-            {
-                Lines.Add(item);
-
-                // Gestion de la mémoire: limite le nombre de lignes
-                if (MaxLines <= 0)
-                    return;
-
-                if (!IsAutoScrollPaused)
-                {
-                    while (Lines.Count > MaxLines)
-                    {
-                        Lines.RemoveAt(0);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _log.Error("[ConsoleViewModel] Failed to add item to ObservableCollection.");
+                StructuredLines.Remove(visible[i]);
             }
         }
-        #endregion
 
-        #region Commands
+        partial void OnShowCommandsChanged(bool value) => StructuredView.Refresh();
+        partial void OnShowResponsesChanged(bool value) => StructuredView.Refresh();
+        partial void OnShowStatusChanged(bool value) => StructuredView.Refresh();
+        partial void OnShowErrorsChanged(bool value) => StructuredView.Refresh();
+        partial void OnShowWarningsChanged(bool value) => StructuredView.Refresh();
+        partial void OnShowSystemChanged(bool value) => StructuredView.Refresh();
+        partial void OnShowJobChanged(bool value) => StructuredView.Refresh();
+        partial void OnShowDebugChanged(bool value) => StructuredView.Refresh();
+
+        // ============================================================
+        //  COMMANDES
+        // ============================================================
+
         [RelayCommand]
-        private void ClearConsole()
+        private void Clear()
         {
-            _log.Information("[ConsoleViewModel] Manual clear requested.");
-            if (_syncContext != null)
-            {
-                _syncContext.Post(_ => ClearInternal(), null);
-            }
-            else
-            {
-                ClearInternal();
-            }
+            RawLines.Clear();
+            StructuredLines.Clear();
             ErrorCount = 0;
-        }
-        private void ClearInternal()
-        {
-            Lines.Clear();
+            LastErrorMessage = "Aucune erreur";
             IsAutoScrollPaused = false;
-            AddSystem("Console cleared");
-            LastResponse = "Ready";
         }
+
         [RelayCommand]
-        private void ExportConsole()
+        private void Export()
         {
-            _log.Information("[Console] Exporting logs... Including filtered items if present in buffer.");
+            _log.Information("[Console] Exporting logs...");
+
             var dialog = new SaveFileDialog
             {
                 Filter = "Text file (*.txt)|*.txt",
@@ -388,59 +234,53 @@ namespace VDLaser.ViewModels.Controls
                 _log.Debug("[ConsoleViewModel] Export cancelled by user.");
                 return;
             }
+
             try
             {
                 var sb = new StringBuilder();
 
-                foreach (var line in Lines)
+                if (IsRawMode)
                 {
-                     sb.AppendLine($"[{line.Timestamp:HH:mm:ss}] [{line.Type}] {line.ToExportString()}");
+                    // Export RAW
+                    foreach (var line in RawLines)
+                        sb.AppendLine(line);
+                }
+                else
+                {
+                    // Export STRUCTURÉ
+                    foreach (var item in StructuredLines)
+                    {
+                        sb.AppendLine(
+                            $"[{item.Timestamp:HH:mm:ss}] [{item.Type}] {item.ToExportString()}"
+                        );
+                    }
                 }
 
                 File.WriteAllText(dialog.FileName, sb.ToString(), Encoding.UTF8);
-                _log.Information("[ConsoleViewModel] Successfully exported {LineCount} lines to {Path}", Lines.Count, dialog.FileName);
-                AddSystem($"Console exported to {System.IO.Path.GetFileName(dialog.FileName)}");
+
+                _log.Information(
+                    "[ConsoleViewModel] Successfully exported {LineCount} lines to {Path}",
+                    IsRawMode ? RawLines.Count : StructuredLines.Count,
+                    dialog.FileName
+                );
+
+                // Ajout d’un message système dans la console structurée
+                StructuredLines.Add(new ConsoleItem(
+                    $"Console exported to {System.IO.Path.GetFileName(dialog.FileName)}",
+                    ConsoleMessageType.System
+                ));
             }
             catch (Exception ex)
             {
-                _log.Error("[ConsoleViewModel] Failed to export logs to file.");
-                AddError("Failed to export console logs.");
-            }
+                _log.Error("[ConsoleViewModel] Failed to export logs to file:", ex);
 
+                StructuredLines.Add(new ConsoleItem(
+                    "Failed to export console logs.",
+                    ConsoleMessageType.Error
+                ));
+            }
+        }
 
-        }
-        #endregion
-        public void ResetJobErrorState()
-        {
-            HasJobErrors = false;
-        }
-        public void BeginJob()
-        {
-            HasJobErrors = false;
-            LastResponse = "Gravure en cours...";
-        }
-        public void EndJob()
-        {
-            if (HasJobErrors)
-            {
-                AddWarning("Gravure effectuée avec erreurs");
-                LastResponse = "⚠️ Gravure effectuée avec erreurs";
-            }
-            else
-            {
-                AddSuccess("Gravure effectuée sans erreur");
-                LastResponse = "✅ Gravure effectuée sans erreur";
-            }
-        }
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _log.Debug("[ConsoleViewModel] Disposing ConsoleViewModel. Unhooking DataReceived.");
-                _coreService.DataReceived -= OnDataReceived;
-                _coreService.StatusUpdated -= OnMachineStatusUpdated;
-            }
-            base.Dispose(disposing);
-        }
     }
+
 }

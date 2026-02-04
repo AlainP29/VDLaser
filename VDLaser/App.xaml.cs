@@ -4,20 +4,21 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Filters;
 using System.Windows;
+using VDLaser.Core.Gcode.Interfaces;
+using VDLaser.Core.Gcode.Parsers;
 using VDLaser.Core.Gcode.Services;
+using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Grbl.Parsers;
 using VDLaser.Core.Grbl.Services;
 using VDLaser.Core.Interfaces;
 using VDLaser.Core.Services;
+using VDLaser.Infrastructure.Logging;
 using VDLaser.ViewModels.Controls;
 using VDLaser.ViewModels.Main;
+using VDLaser.ViewModels.Plotter;
+using VDLaser.ViewModels.Settings;
 using VDLaser.Views.Controls;
 using VDLaser.Views.Main;
-using VDLaser.Core.Gcode.Interfaces;
-using VDLaser.Core.Gcode.Parsers;
-using VDLaser.Core.Grbl.Interfaces;
-using VDLaser.ViewModels.Plotter;
-using VDLaser.Infrastructure.Logging;
 
 namespace VDLaser
 {
@@ -100,7 +101,7 @@ namespace VDLaser
                     services.AddSingleton<IGrblSubParser, GrblStateParser>();
                     services.AddSingleton<IGrblSubParser, GrblInfoParser>();
                     services.AddSingleton<IGrblSubParser, GrblResponseParser>();
-
+                    services.AddSingleton<IConsoleParserService, ConsoleParserService>();
                     services.AddSingleton<GCodePlotterService>();
 
                     // ===============================
@@ -113,10 +114,11 @@ namespace VDLaser
                     services.AddSingleton<GcodeFileViewModel>();
                     services.AddSingleton<JoggingViewModel>();
                     services.AddSingleton<ControleViewModel>();
-                    services.AddSingleton<SettingViewModel>();
+                    services.AddSingleton<GrblSettingsViewModel>();
                     services.AddSingleton<SerialPortSettingViewModel>();
                     services.AddSingleton<PlotterViewModel>();
                     services.AddSingleton<GcodeSettingsViewModel>();
+                    services.AddSingleton<SoftwareSettingViewModel>();
 
 
                     // ===============================

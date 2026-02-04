@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.IO.Ports;
-using System.Windows.Controls;
+using VDLaser.Core.Console;
 using VDLaser.Core.Grbl.Errors;
 using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Grbl.Models;
@@ -13,9 +13,8 @@ using static VDLaser.Core.Grbl.Models.GrblState;
 
 namespace VDLaser.Core.Grbl.Services
 {
-    // <summary>
-    /// Service central de gestion de la communication avec le contrôleur GRBL.
-    /// Gère le cycle de vie de la connexion, le parsing des retours et l'état de la machine.
+    /// <summary>
+    /// Core service for managing GRBL device communication over a serial port.
     /// </summary>
     public class GrblCoreService : IGrblCoreService, IDisposable, INotifyPropertyChanged
     {
@@ -24,6 +23,7 @@ namespace VDLaser.Core.Grbl.Services
         private readonly ILogService _log;
         private readonly IServiceProvider _serviceProvider;
         private readonly List<IGrblSubParser> _parsers;
+        private readonly IConsoleParserService _consoleParser;
 
         private ISerialConnection? _serial;
         private readonly GrblState _state = new();
@@ -59,18 +59,34 @@ namespace VDLaser.Core.Grbl.Services
 
         #endregion
 
-        public GrblCoreService(ISerialPortService config, ILogService log,IEnumerable<IGrblSubParser> parsers,IServiceProvider serviceProvider,ISerialConnection? serialOverride = null)
+        #region Constructor
+        public GrblCoreService
+            (
+            ISerialPortService config,
+            ILogService log,
+            IEnumerable<IGrblSubParser> parsers,
+            IServiceProvider serviceProvider,
+            IConsoleParserService consoleParser,
+            ISerialConnection? serialOverride = null
+            )
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _log = log ?? throw new ArgumentNullException(nameof(log));
             _parsers = parsers?.ToList() ?? throw new ArgumentNullException(nameof(parsers));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _consoleParser= consoleParser ?? throw new ArgumentNullException(nameof(consoleParser));
             _serial = serialOverride;//injection mock pour tests unitaires
 
             _log.Information("[GrblCoreService] Initialized");
+            _consoleParser = consoleParser;
         }
+        #endregion
 
-        
+        #region Private Methods
+        /// <summary>
+        /// Sets up the serial port connection using the configuration settings.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
         private void InitializeSerialPort()
         {
             if (string.IsNullOrWhiteSpace(_config.PortName))
@@ -97,9 +113,10 @@ namespace VDLaser.Core.Grbl.Services
 
 
         /// <summary>
-        /// Tente d'établir une connexion avec la machine GRBL et effectue le handshake initial.
+        /// Asynchronously connects to the GRBL device using the configured serial port settings.
         /// </summary>
-        /// <exception cref="GrblConnectionException">Levée si le port est occupé ou si la machine ne répond pas.</exception>
+        /// <returns></returns>
+        /// <exception cref="GrblConnectionException"></exception>
         public async Task ConnectAsync()
         {
             if (IsConnected)
@@ -173,6 +190,14 @@ namespace VDLaser.Core.Grbl.Services
 
 
         }
+
+        /// <summary>
+        /// Asynchronously disconnects from the GRBL device and releases associated resources.
+        /// </summary>
+        /// <remarks>If the service is not currently connected, the method returns immediately without
+        /// performing any action.  After disconnection, the command queue is reset and connection state change events
+        /// are raised. </remarks>
+        /// <returns>A task that represents the asynchronous disconnect operation.</returns>
         public async Task DisconnectAsync()
         {
             if (!IsConnected)
@@ -204,42 +229,23 @@ namespace VDLaser.Core.Grbl.Services
             
         }
 
-        private void SerialPort_DataReceived(object? sender, SerialDataReceivedEventArgs e)
-        {
-            try
-            {
-                if (_serial?.IsOpen != true)
-                    return;
-
-                while (_serial.BytesToRead > 0)
-                {
-                    var line = _serial.ReadLine().Trim();
-                    _rxRingBuffer.Push(line);
-
-                    if (_log.IsSupportEnabled)
-                    {
-                        _log.Debug("[SUPPORT][RX-BUFFER] {Buffer}", string.Join(" | ", _rxRingBuffer));
-                    }
-                    DataReceived?.Invoke(this, new DataReceivedEventArgs(line));
-                    DispatchLine(line);
-                    if (!line.StartsWith("<"))
-                    { 
-                    _log.Debug("[GrblCoreService RAW RX] {Line}", line);
-                }
-                }
-                
-
-            }
-            catch (Exception ex)
-            {
-                _log.Error("[GrblCoreService] RX error: {Message}", ex.Message);
-            }
-        }
+        /// <summary>
+        /// Processes a single line of input from the GRBL device, updating internal state and raising relevant events
+        /// based on the content of the line.
+        /// </summary>
+        /// <remarks>This method interprets handshake, alarm, error, and status lines from the GRBL
+        /// device. Depending on the content, it updates the machine state, triggers status or settings updates, and
+        /// logs relevant information. If the line matches a known parser, the corresponding state or settings events
+        /// are raised. This method is intended for internal use within the service to handle device
+        /// communication.</remarks>
+        /// <param name="line">The line of text received from the GRBL device to be parsed and dispatched. Cannot be <see
+        /// langword="null"/>.</param>
         private void DispatchLine(string line)
         {
             if (line.StartsWith("[VER:") || line.StartsWith("Grbl"))
             {
                 _log.Debug("[GrblCoreService] Handshake signature detected: {Line}", line);
+                DataReceived?.Invoke(this, new DataReceivedEventArgs(line));
                 _grblHandshakeTcs?.TrySetResult(true);
             }
 
@@ -294,10 +300,12 @@ namespace VDLaser.Core.Grbl.Services
             }
         }
 
-
-        // ----------------------------------------------------
-        // TX : COMMAND SENT
-        // ----------------------------------------------------
+        /// <summary>
+        /// Gcode TX command to GRBL
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task SendCommandAsync(string command)
         {
             if (!IsConnected) throw new InvalidOperationException("[GrblCoreService] Not connected");
@@ -306,11 +314,20 @@ namespace VDLaser.Core.Grbl.Services
             {
                 _log.Debug("[CNC][CORE][TX] {Command}", command);
             }
-            DataReceived?.Invoke(this, new DataReceivedEventArgs($">> {command}"));
+
+            _consoleParser.BeginCommand(command);
+            if (_consoleParser.CurrentPendingCommand != null) 
+                _consoleParser.CurrentPendingCommand.Source = ConsoleSource.Manual;
 
             await Task.Run(() => _serial?.WriteLine(command));
         }
 
+        /// <summary>
+        /// Realtime TX command to GRBL
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task SendRealtimeCommandAsync(byte command)
         {
             if (!IsConnected)
@@ -320,10 +337,16 @@ namespace VDLaser.Core.Grbl.Services
             {
                 _log.Information("[GrblCoreService TX RT] 0x{Cmd:X2}", command);
             }
-            
 
             await Task.Run(() => _serial?.Write(new[] { command }, 0, 1));
         }
+
+        /// <summary>
+        /// Sends the specified command to the serial port, appending a line terminator.
+        /// </summary>
+        /// <remarks>The command is transmitted only if the serial port is open. A line terminator is
+        /// automatically appended to the command before transmission.</remarks>
+        /// <param name="command">The command string to send. Cannot be <see langword="null"/>.</param>
         public void SendLine(string command)
         {
             if (!_serial.IsOpen)
@@ -335,42 +358,107 @@ namespace VDLaser.Core.Grbl.Services
         }
 
 
-        // ----------------------------------------------------
-        // COMMON COMMANDS
-        // ----------------------------------------------------
         public Task HomeAsync() => SendCommandAsync("$H");
         public Task UnlockAsync() => SendCommandAsync("$X");
         public Task GetSettingsAsync() => SendCommandAsync("$$");
         internal GrblRxRingBuffer RxRingBuffer => _rxRingBuffer;
+
+        /// <summary>
+        /// Determines whether the most recent error in the receive buffer occurred after a successful operation.
+        /// </summary>
+        /// <remarks>Use this method to check the sequence of events in the receive buffer, particularly
+        /// to verify if an error has occurred following a successful operation. This can be useful for error handling
+        /// or diagnostics.</remarks>
+        /// <returns><see langword="true"/> if the last error was recorded after a successful operation; otherwise, <see
+        /// langword="false"/>.</returns>
         public bool IsLastErrorAfterOk()
         {
             return _rxRingBuffer.ErrorAfterOk();
         }
 
+        /// <summary>
+        /// Gets the most recent error code encountered during receive operations, if any.
+        /// </summary>
+        /// <returns>The last receive error code as an integer, or <see langword="null"/> if no error has occurred.</returns>
         public int? GetLastRxErrorCode()
         {
             return _rxRingBuffer.LastErrorCode();
         }
+        #endregion
+
+        #region Event Handlers
+        /// <summary>
+        /// Handles the <see cref="System.IO.Ports.SerialPort.DataReceived"/> event and processes incoming serial data.
+        /// </summary>
+        /// <remarks>This method reads available lines from the serial port, adds them to an internal
+        /// receive buffer, logs received data if support logging is enabled, and raises the <c>DataReceived</c> event
+        /// for each line. It also dispatches each received line for further processing.</remarks>
+        /// <param name="sender">The source of the event, typically the serial port instance.</param>
+        /// <param name="e">An object that contains the event data.</param>
+        private void SerialPort_DataReceived(object? sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                if (_serial?.IsOpen != true)
+                    return;
+
+                while (_serial.BytesToRead > 0)
+                {
+                    var line = _serial.ReadLine().Trim();
+                    _rxRingBuffer.Push(line);
+
+                    if (_log.IsSupportEnabled)
+                    {
+                        _log.Debug("[SUPPORT][RX-BUFFER] {Buffer}", string.Join(" | ", _rxRingBuffer));
+                    }
+                    DataReceived?.Invoke(this, new DataReceivedEventArgs(line));
+                    DispatchLine(line);
+                    if (!line.StartsWith("<"))
+                    {
+                        _log.Debug("[GrblCoreService RAW RX] {Line}", line);
+                    }
+                }
 
 
-        // ----------------------------------------------------
-        // NOTIFY PROPERTY CHANGED
-        // ----------------------------------------------------
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[GrblCoreService] RX error: {Message}", ex.Message);
+            }
+        }
+        /// <summary>
+        /// Raises the <see cref="PropertyChanged"/> event to notify listeners that a property value has changed.
+        /// </summary>
+        /// <remarks>Call this method from within a property setter to notify data binding clients or
+        /// other listeners that the property value has changed. Derived classes can override this method to customize
+        /// the event invocation behavior.</remarks>
+        /// <param name="propertyName">The name of the property that changed. This value cannot be null or empty.</param>
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        /// <summary>
+        /// Marks the settings as loaded.
+        /// </summary>
+        /// <remarks>Sets the internal state to indicate that the settings have been successfully loaded. 
+        /// Call this method after completing the loading process to update the status.</remarks>
         public void MarkSettingsLoaded()
         {
             HasLoadedSettings = true;
         }
+        /// <summary>
+        /// Raises the <see cref="DataReceived"/> event with the specified text data.
+        /// </summary>
+        /// <param name="text">The text data to include in the <see cref="DataReceivedEventArgs"/> when raising the event. Can be <see
+        /// langword="null"/>.</param>
         public void RaiseDataReceived(string text)
         {
             DataReceived?.Invoke(this, new DataReceivedEventArgs(text));
         }
-        // ----------------------------------------------------
-        // DISPOSE
-        // ----------------------------------------------------
+
+        #endregion
+
+        #region Dispose
         public void Dispose()
         {
             try
@@ -380,11 +468,14 @@ namespace VDLaser.Core.Grbl.Services
             }
             catch { }
         }
+        #endregion
+
+        #region Debug Methods
 #if DEBUG
         // ----------------------------------------------------
         // FOR UNIT TEST GETSETTINGS
         // ----------------------------------------------------
-        
+
         internal void SetSerialConnectionForTests(ISerialConnection serial)
         {
             _serial = serial;
@@ -399,7 +490,7 @@ namespace VDLaser.Core.Grbl.Services
 #endif
 #endif
 
-
+        #endregion
     }
 }
 

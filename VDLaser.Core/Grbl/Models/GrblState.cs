@@ -42,6 +42,10 @@ namespace VDLaser.Core.Grbl.Models
         /// Dernier message textuel non structuré reçu.
         /// </summary>
         public string LastMessage { get; set; } = string.Empty;
+        /// <summary>
+        /// Messages non critique de feedback (ex: [PRB:0,0,0],[MSG:Door closed]).
+        /// </summary>
+        public string FeedbackMessage { get; set; } = string.Empty;
 
         /// <summary>
         /// True si la machine est en exécution d’un job.

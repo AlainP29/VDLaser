@@ -45,6 +45,8 @@ public sealed class GcodeJobService : IGcodeJobService
     = GcodeErrorHandlingMode.Strict;
     #endregion
 
+    #region Constructor
+
     public GcodeJobService(
         IGrblCommandQueue commandQueue,
         ILogService log,
@@ -56,8 +58,15 @@ public sealed class GcodeJobService : IGcodeJobService
         _commandQueue.CommandExecuted += OnCommandExecuted;
         _log.Information("[JOB][STATE] Démarrage — ModeErreur={Mode}", ErrorHandlingMode);
     }
-    #region Public API
+    #endregion
 
+    #region Public API
+    /// <summary>
+    /// Plays a G-code job asynchronously.
+    /// </summary>
+    /// <param name="gcodeLines"></param>
+    /// <param name="externalToken"></param>
+    /// <returns></returns>
     public async Task<bool> PlayAsync(IEnumerable<string> gcodeLines, CancellationToken externalToken)
     {
 
@@ -102,8 +111,6 @@ public sealed class GcodeJobService : IGcodeJobService
                         line);
                 }
 
-                _grblCore.RaiseDataReceived($">> {line}");// Aconserver pour le logging CNC?
-
                 var result = await _commandQueue.EnqueueAsync(
                     line,
                     source: "Job",
@@ -117,10 +124,6 @@ public sealed class GcodeJobService : IGcodeJobService
                         result,
                         line);
                 }
-
-                // --- Gestion des erreurs GRBL ---
-                // Combinaison du code issu de la queue + contexte RX (buffer circulaire)
-
 
                 if (result == GrblCommandResult.Error)
                 {
@@ -204,17 +207,13 @@ public sealed class GcodeJobService : IGcodeJobService
     _linesFailed);
 
                 await _commandQueue.EnqueueAsync("S0 M5", "JobCleanup", waitForOk: true, _cts.Token);
-                _grblCore.RaiseDataReceived($">> S0 M5");
                 await _commandQueue.EnqueueAsync("G90 G0 X0 Y0", "JobCleanup", waitForOk: true, _cts.Token);
-                _grblCore.RaiseDataReceived($">> G90 G0 X0 Y0");
-
             }
             else
             {
                 _log.Warning(
                     "[JOB][STATE] Job incomplet — Cleanup partiel (M5 uniquement)");
                 await _commandQueue.EnqueueAsync("S0 M5", "JobCleanup", waitForOk: true, _cts.Token);  // Toujours arrêter le laser
-                _grblCore.RaiseDataReceived($">> S0 M5");
             }
             await Task.Delay(200);
         }

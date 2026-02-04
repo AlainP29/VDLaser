@@ -141,7 +141,7 @@ namespace VDLaser.ViewModels.Controls
                 return;
             }
             _jobTokenSource = new CancellationTokenSource();
-            _consoleViewModel.BeginJob();
+            //_consoleViewModel.BeginJob();
             try
             {
                 _log.Information("[GcodeFileViewModel] Démarrage du job G-code : {Total} lignes.", TotalLines);
@@ -173,7 +173,7 @@ namespace VDLaser.ViewModels.Controls
             }
             finally
             {
-                _consoleViewModel.EndJob();
+                //_consoleViewModel.EndJob();
                 CleanupJob();
             }
         }

@@ -8,12 +8,14 @@
              xmlns:local="clr-namespace:VDLaser.Converters"
              xmlns:behaviors="clr-namespace:VDLaser.Views.Behaviors"
              mc:Ignorable="d"
-             Background="Transparent" d:MinHeight="85">
+             Background="Transparent" Width="1000" Height="500">
     <UserControl.Resources>
         <ResourceDictionary>
-            <BooleanToVisibilityConverter x:Key="BoolToVis" />
+            <local:BoolToVisibilityConverter x:Key="BoolToVis" />
+            <local:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
             <local:ConsoleTypeToBrushConverter x:Key="ConsoleTypeBrushConverter" />
             <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <local:SeverityToBrushConverter x:Key="SeverityToBrushConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
     <GroupBox Style="{StaticResource GroupBoxStyleVD}"
@@ -31,16 +33,25 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+            <ListBox Grid.Row="0" Grid.Column="0"
+         ItemsSource="{Binding RawView}"
+         FontFamily="Consolas"
+         FontSize="12"
+         Background="Black"
+         Foreground="White"
+         Visibility="{Binding IsRawMode, Converter={StaticResource BoolToVis}}"/>
+
             <DataGrid Grid.Row="0" Grid.Column="0"
+                      Visibility="{Binding IsRawMode, Converter={StaticResource InverseBoolToVis}}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
-                  HeadersVisibility="None"
+                  HeadersVisibility="All"
                   FontFamily="Consolas"
                   FontSize="12"
                   Background="Transparent"
                   Foreground="Black"
-                  RowBackground="Transparent"
-                  AlternatingRowBackground="#0AFFFFFF"
+                  RowBackground="#0D1B2A"
+                  AlternatingRowBackground="#1B263B"
                   AlternationCount="2"
                       GridLinesVisibility="None"
                   HorizontalScrollBarVisibility="Hidden"
@@ -48,7 +59,7 @@
                   behaviors:DataGridAutoScrollBehavior.IsPaused="{Binding IsAutoScrollPaused}">
                 <DataGrid.Style>
                     <Style TargetType="DataGrid">
-                        <Setter Property="ItemsSource" Value="{Binding Lines}" />
+                        <Setter Property="ItemsSource" Value="{Binding StructuredView}" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding ShowControls, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
                                 <Setter Property="ItemsSource" Value="{Binding FilteredLines}" />
@@ -88,7 +99,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="Response" Width="*">
+                    <DataGridTemplateColumn Header="Response">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Response}" 
@@ -111,9 +122,41 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Description" Width="300">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Description}" 
+       FontWeight="SemiBold" FontFamily="Consolas"
+       Foreground="{Binding Type, Converter={StaticResource ConsoleTypeBrushConverter}}" 
+       Margin="5,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Source" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Source}" 
+FontWeight="SemiBold" FontFamily="Consolas"
+Foreground="{Binding Type, Converter={StaticResource ConsoleTypeBrushConverter}}" 
+Margin="5,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Severity" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Severity}"
+                       FontFamily="Consolas"
+                       FontWeight="Bold"
+                       Foreground="{Binding Severity, Converter={StaticResource SeverityToBrushConverter}}"
+                       Margin="5,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
                 </DataGrid.Columns>
             </DataGrid>
-            <StackPanel Grid.Row="1" Grid.Column="0" Background="#111" Orientation="Horizontal" 
+            <StackPanel Grid.Row="1" Grid.Column="0" Background="#1B263B" Orientation="Horizontal" Margin="5 2 0 0" 
                         Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="Total errors: " Foreground="Gray"/>
                 <TextBlock Text="{Binding ErrorCount}" Foreground="Gray" Margin="0,0,20,0"/>
@@ -127,9 +170,22 @@
             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="5,0,5,0"
                         Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}">
                 <CheckBox Content="Scroll" IsChecked="{Binding IsAutoScrollPaused}" Margin="0,2"/>
-                <CheckBox Content="Verbose" IsChecked="{Binding IsVerbose}" Margin="0,2"/>
-                <CheckBox Content="Hide OK" IsChecked="{Binding HideOkMessages}" IsEnabled="{Binding AreFiltersEnabled}" Margin="0,2"/>
-                <CheckBox Content="Hide &lt;&gt;" IsChecked="{Binding HideStatusReports}" IsEnabled="{Binding AreFiltersEnabled}" Margin="0,2"/>
+
+                <Separator Margin="0,2" Background="#444"/>
+
+                <CheckBox Content="Commands" IsChecked="{Binding ShowCommands}" />
+                <CheckBox Content="Responses" IsChecked="{Binding ShowResponses}" />
+                <CheckBox Content="Errors" IsChecked="{Binding ShowErrors}" />
+                <CheckBox Content="Warnings" IsChecked="{Binding ShowWarnings}" />
+                <CheckBox Content="System" IsChecked="{Binding ShowSystem}" />
+                <CheckBox Content="Job" IsChecked="{Binding ShowJob}" />
+                
+                <Separator Margin="0,2" Background="#444"/>
+
+                <CheckBox Content="Debug" IsChecked="{Binding ShowDebug}" />
+                <CheckBox Content="Status" IsChecked="{Binding ShowStatus}" />
+                <CheckBox Content="RAW mode" IsChecked="{Binding IsRawMode}" Margin="0,2"/>
+
 
                 <Separator Margin="0,2" Background="#444"/>
 

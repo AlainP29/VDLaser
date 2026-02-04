@@ -22,7 +22,7 @@ namespace VDLaser.ViewModels.Main
     public partial class MainWindowViewModel : ViewModelBase
     {
         private readonly ILogService _log;
-        private readonly SettingViewModel _settingVM;
+        private readonly GrblSettingsViewModel _settingVM;
         private readonly IStatusPollingService _polling;
         private readonly ControleViewModel _controleVM;
         private readonly IGcodeJobService _gcodeJobService;
@@ -83,7 +83,7 @@ namespace VDLaser.ViewModels.Main
             IGrblCoreService grblService, 
             ISerialPortService serialService,
             SerialPortSettingViewModel serialPortSettingVM, 
-            SettingViewModel settingVM,
+            GrblSettingsViewModel settingVM,
             ControleViewModel controleVM,
             IStatusPollingService polling,
             ILogService log,
@@ -137,7 +137,7 @@ namespace VDLaser.ViewModels.Main
         }
         private void OnSettingVMPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(SettingViewModel.IsLoading))
+            if (e.PropertyName == nameof(GrblSettingsViewModel.IsLoading))
             {
                 IsLoading = _settingVM.IsLoading;  // Copie l'état local vers global
             }
