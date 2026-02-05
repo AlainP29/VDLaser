@@ -56,7 +56,16 @@
                     Grid.ColumnSpan="6"
                     HorizontalAlignment="Center" 
                     VerticalAlignment="Center">
-                        <local:MachineStateView/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <local:CompactMachineStateView Grid.Column="0"/>
+                        <local:CompactGcodeFileView Grid.Column="1"/>
+                        <local:CompactJobReport Grid.Column="2"/>
+                    </Grid>
                 </Viewbox>
                 <Viewbox Visibility="{Binding DataContext.CurrentTab, 
                     RelativeSource={RelativeSource AncestorType=Window}, 

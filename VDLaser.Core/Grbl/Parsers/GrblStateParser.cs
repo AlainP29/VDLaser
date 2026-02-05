@@ -197,12 +197,16 @@ namespace VDLaser.Core.Grbl.Parsers
         {
             state.MachineStatusColor = state.MachineState switch
             {
-                MachState.Idle => Brushes.Beige,
-                MachState.Run => Brushes.LightGreen,
-                MachState.Hold => Brushes.LightBlue,
+                MachState.Idle => Brushes.LimeGreen,
+                MachState.Run => Brushes.DodgerBlue,
+                MachState.Jog => Brushes.SkyBlue,
+                MachState.Hold => Brushes.Orange,
                 MachState.Alarm => Brushes.Red,
-                MachState.Door => Brushes.Orange,
-                MachState.Home => Brushes.LightPink,
+                MachState.Door => Brushes.DeepPink,
+                MachState.Check => Brushes.MediumPurple,
+                MachState.Home => Brushes.DarkTurquoise,
+                MachState.Sleep => Brushes.DimGray,
+                MachState.Undefined => Brushes.Gray,
                 _ => Brushes.DarkGray
             };
         }

@@ -28,7 +28,7 @@ namespace VDLaser.ViewModels.Controls
 
         public ObservableCollection<string> RawLines { get; } = new();
         public ObservableCollection<ConsoleItem> StructuredLines { get; } = new();
-
+        public ObservableCollection<string> ErrorMessages { get; } = new();
         public ICollectionView RawView { get; }
         public ICollectionView StructuredView { get; }
 
@@ -149,6 +149,7 @@ namespace VDLaser.ViewModels.Controls
             {
                 ErrorCount++;
                 LastErrorMessage = item.Message;
+                ErrorMessages.Add($"{item.Timestamp:HH:mm:ss} - {item.Message}");
             }
 
             EnforceVisibleLimit();
@@ -283,6 +284,21 @@ namespace VDLaser.ViewModels.Controls
             }
         }
 
+        public void ResetErrorsForJob()
+        {
+            ErrorCount = 0;
+            LastErrorMessage = "Aucune erreur";
+        }
+        public void BeginJob()
+        {
+            AddStructured(new ConsoleItem("Début du job de gravure", ConsoleMessageType.Job));
+            ResetErrorsForJob();
+        }
+
+        public void EndJob(bool success)
+        {
+            AddStructured(new ConsoleItem(success ? "Fin du job : Succès" : "Fin du job : Avec erreurs", ConsoleMessageType.Job));
+        }
     }
 
 }

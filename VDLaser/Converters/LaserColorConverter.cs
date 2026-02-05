@@ -9,7 +9,7 @@ namespace VDLaser.Converters
     {
         public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
         {
-            return value is bool b ? (b ? new SolidColorBrush(Colors.Blue) : new SolidColorBrush(Colors.LightGray)) : null;
+            return value is bool b ? (b ? new SolidColorBrush(Colors.OrangeRed) : new SolidColorBrush(Colors.LightGray)) : null;
         }
 
         public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)

@@ -1,0 +1,61 @@
+﻿<UserControl x:Class="VDLaser.Views.Controls.CompactMachineStateView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDLaser.Views.Controls"
+             xmlns:conv="clr-namespace:VDLaser.Converters"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <conv:LaserColorConverter x:Key="LaserColorConverter" />
+    </UserControl.Resources>
+    
+    <Grid>
+        <Border BorderBrush="LightBlue" BorderThickness="1" Margin="10">
+        <StackPanel Orientation="Vertical" Grid.ColumnSpan="2" Margin="5">
+            <TextBox Name="TextBoxMachineStatus" Margin="5"
+                         VerticalContentAlignment="Center" 
+                         HorizontalContentAlignment="Center" 
+                         Background="{Binding MachineStateColor}"
+                         Text="{Binding MachineState}" 
+                        Height="40" Width="80" 
+                        IsEnabled="False"/>
+                <Grid>
+            <Ellipse Height="40" Width="40" Margin="5" 
+         Stroke="#FFABADB3" VerticalAlignment="Center">
+                <Ellipse.Style>
+                    <Style TargetType="Ellipse">
+                        <Setter Property="Fill" Value="{Binding IsLaserPower, Converter={StaticResource LaserColorConverter}}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLaserPower}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Name="LaserBlink">
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                    Storyboard.TargetProperty="Opacity"
+                                    From="1.0" To="0.2" 
+                                    Duration="0:0:0.5" 
+                                    AutoReverse="True" 
+                                    RepeatBehavior="Forever" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <StopStoryboard BeginStoryboardName="LaserBlink"/>
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Ellipse.Style>
+            </Ellipse>
+                    <TextBlock Text="{Binding LaserPower}"
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" 
+                   FontSize="14" 
+                   FontWeight="Bold" 
+                   Foreground="LightGoldenrodYellow" />
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

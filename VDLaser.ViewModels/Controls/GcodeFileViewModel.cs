@@ -6,6 +6,7 @@ using Serilog;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using VDLaser.Core.Gcode;
 using VDLaser.Core.Gcode.Interfaces;
 using VDLaser.Core.Grbl.Interfaces;
@@ -35,6 +36,7 @@ namespace VDLaser.ViewModels.Controls
         private TimeSpan _estimatedTotalTime;
         private TimeSpan _pausedDuration = TimeSpan.Zero;
         private DateTime? _pauseStartTime;
+        private bool JobSuccess=false;
         #endregion
 
         #region Observable Properties
@@ -47,7 +49,7 @@ namespace VDLaser.ViewModels.Controls
         [ObservableProperty]
         private int _currentLineIndex;
         [ObservableProperty]
-        private string _fileName;
+        private string _fileName = "File name";
         [ObservableProperty]
         private string _estimatedJobTime = "00:00:00";
         [ObservableProperty]
@@ -68,6 +70,10 @@ namespace VDLaser.ViewModels.Controls
         private bool _isSent;
         [ObservableProperty]
         private GcodeItemViewModel? _selectedItem;
+        [ObservableProperty]
+        private TimeSpan _actualTotalTime = TimeSpan.Zero;
+        [ObservableProperty]
+        private int _errorCount;
         public record GcodeLineSelectedMessage(double? X, double? Y);
 
         #endregion
@@ -141,7 +147,7 @@ namespace VDLaser.ViewModels.Controls
                 return;
             }
             _jobTokenSource = new CancellationTokenSource();
-            //_consoleViewModel.BeginJob();
+            _consoleViewModel.BeginJob();
             try
             {
                 _log.Information("[GcodeFileViewModel] Démarrage du job G-code : {Total} lignes.", TotalLines);
@@ -149,31 +155,39 @@ namespace VDLaser.ViewModels.Controls
 
                 var rawLines = GcodeLines.Select(item => item.RawLine).ToList();
                 bool jobSuccess = await _gcodeJobService.PlayAsync(rawLines, _jobTokenSource.Token);
-
                 if (jobSuccess)
                 {
                     ProgressPercentage = 100;
+                    _consoleViewModel.EndJob(true);
+                    JobSuccess = jobSuccess;
                     _log.Information("[GcodeFileViewModel] Job G-code terminé avec succès.");
                 }
                 else
                 {
                     _log.Warning("[GcodeFileViewModel] Job G-code interrompu ou terminé avec des erreurs.");
                     ProgressPercentage = 0;
+                    _consoleViewModel.EndJob(false);
                 }
             }
             catch (OperationCanceledException)
             {
                 _log.Information("[GcodeFileViewModel] Job annulé par l'utilisateur.");
+                _consoleViewModel.EndJob(false);
             }
             catch (Exception ex)
             {
                 _log.Error("[GcodeFileViewModel] Erreur fatale lors de l'exécution du job : {Message}", ex.Message);
                 ProgressPercentage = 0;
                 await _dialogService.ShowErrorAsync($"Erreur durant l'exécution : {ex.Message}");
+                _consoleViewModel.EndJob(false);
             }
             finally
             {
-                //_consoleViewModel.EndJob();
+                ActualTotalTime = DateTime.UtcNow - _jobStartTime - _pausedDuration;
+                //JobSuccess = jobSuccess && _consoleViewModel.ErrorCount == 0;  // Utilise ErrorCount de console pour erreurs non bloquantes
+                ErrorCount = _consoleViewModel.ErrorCount;
+                GenerateEngravingReport();
+                _consoleViewModel.EndJob(JobSuccess);
                 CleanupJob();
             }
         }
@@ -310,6 +324,10 @@ namespace VDLaser.ViewModels.Controls
             _pauseStartTime = null;
             ProgressPercentage = 0;
             EstimatedJobTime = _estimatedTotalTime.ToString(@"hh\:mm\:ss");
+            
+            JobSuccess = false;
+            ActualTotalTime = TimeSpan.Zero;
+            _consoleViewModel.ResetErrorsForJob();
         }
         /// <summary> Libère les ressources du job et réinitialise les indicateurs visuels des lignes. </summary>
         private void CleanupJob()
@@ -450,6 +468,24 @@ namespace VDLaser.ViewModels.Controls
                 WeakReferenceMessenger.Default.Send(new GcodeLineSelectedMessage(value.Command.X, value.Command.Y));
             }
         }
+        private void GenerateEngravingReport()
+        {
+            var report = new StringBuilder();
+            report.AppendLine($"Rapport de gravure pour {FileName}:");
+            report.AppendLine($"Succès : {(JobSuccess ? "Oui" : $"Non (avec {_consoleViewModel.ErrorCount} erreurs non bloquantes)")}");
+            report.AppendLine($"Temps total réel : {ActualTotalTime:hh\\:mm\\:ss}");
+            report.AppendLine($"Lignes exécutées : {LinesExecuted}/{TotalLines}");
+            if (_consoleViewModel.ErrorCount > 0)
+            {
+                report.AppendLine("Erreurs détaillées :");
+                foreach (var msg in _consoleViewModel.ErrorMessages)  // Si ajoutée
+                    report.AppendLine($"- {msg}");
+                report.AppendLine($"Dernière erreur : {_consoleViewModel.LastErrorMessage}");
+            }
+
+            _log.Information("[GcodeFileViewModel] {Report}", report.ToString());
+        }
+        
         #endregion
 
         protected override void Dispose(bool disposing)

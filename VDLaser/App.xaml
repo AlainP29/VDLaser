@@ -32,6 +32,7 @@
             <converters:ThicknessConverter x:Key="ThicknessConverter"/>
             <converters:SeverityToBrushConverter x:Key="SeverityToBrushConverter"/>
             <converters:ConsoleTypeToBrushConverter x:Key="ConsoleTypeToBrushConverter"/>
+            <converters:TimeSpanToStringConverter x:Key="TimeSpanToStringConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
