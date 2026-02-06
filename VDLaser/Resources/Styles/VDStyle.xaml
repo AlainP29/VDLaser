@@ -52,6 +52,7 @@
 
     <!-- Style pour boutons d'onglets -->
     <Style x:Key="TabButtonStyleVD" TargetType="ToggleButton">
+        <Setter Property="FontSize" Value="18"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">

@@ -186,7 +186,7 @@
             </Grid>
             <!--Use to move the machine with buttons or keyboard-->
             <GroupBox Header="Jog" Margin="5,5,5,5" Style="{DynamicResource GroupBoxStyleVD}" Grid.Column="1">
-                <StackPanel>
+                <StackPanel IsEnabled="{Binding IsJogEnabled}">
                     <!--Buttons move all directions X, Y, Z-->
                     <Grid Margin="0" Width="160" Height="150" 
                       IsEnabled="{Binding IsSelectedKeyboard,Converter={StaticResource ConvertBool}}">

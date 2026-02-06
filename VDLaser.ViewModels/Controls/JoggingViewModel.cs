@@ -66,8 +66,7 @@ namespace VDLaser.ViewModels.Controls
         private bool _isSelectedKeyboard = false;
         [ObservableProperty]
         private bool _isSelectedMetric = true;
-        [ObservableProperty]
-        private bool _isJogEnabled = true;
+        
         [ObservableProperty]
         private bool _isLaserEnabled = false;
         // Configuration des Macros
@@ -89,6 +88,7 @@ namespace VDLaser.ViewModels.Controls
         private int _selectedLaser;
         public string FeedRateUnit => IsSelectedMetric ? "mm/min" : "in/min";
         public string DistanceUnit => IsSelectedMetric ? "mm" : "in";
+        public bool IsJogEnabled => _coreService.IsConnected;
         public List<double> AvailableSteps { get; } = new() { 0.1, 0.5, 1, 5, 10 };
         [ObservableProperty]
         private RespStatus _responseStatus = RespStatus.Ok;
@@ -105,8 +105,6 @@ namespace VDLaser.ViewModels.Controls
             _isJoggingVMInitialized = true;
             _coreService.DataReceived += OnGrblDataReceived;
             _coreService.PropertyChanged += OnCoreServicePropertyChanged;
-
-            //_shortcutManager.HandleKeyPress(Key.W);  // Exemple pour simuler une pression de touche
 
             _log.Debug("[JoggingViewModel] Initialized.");
         }
@@ -179,6 +177,7 @@ namespace VDLaser.ViewModels.Controls
                 ToggleLaserCommand.NotifyCanExecuteChanged();
                 IncreaseFeedRateCommand.NotifyCanExecuteChanged();
                 DecreaseFeedRateCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(IsJogEnabled));
                 _log.Debug("[JoggingViewModel] IsConnected changed - CanExecute updated");
             }
         }
