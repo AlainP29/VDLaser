@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="VDLaser.Views.Controls.CompactControleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VDLaser.Views.Controls"
+             mc:Ignorable="d">
+    <Grid>
+        <Border BorderBrush="LightBlue" BorderThickness="1" Margin="10">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center"
+                            VerticalAlignment="Top" >
+                <Button Content="Kill alarm" Margin="5" Width="75" Style="{StaticResource ControlStyleVD }" Height="40"
+                        ToolTip="Unlock $X, used to get your machine going again after pressing reset" Background="Orange"
+                        Command="{Binding KillAlarmCommand, Mode=OneWay}"/>
+                <Button Content="Soft reset" Margin="5" Width="75" Style="{StaticResource ControlStyleVD}"
+                        ToolTip="Soft reset, it stop any axis mouvement" Background="Orange" Height="40"
+                        Command="{Binding SoftResetCommand, Mode=OneWay}"/>
+
+                <Button Width="75" Margin="5" Content="Pause"
+                            ToolTip="Pause cycle" Height="40"
+                            Command="{Binding FeedHoldCommand, Mode=OneWay}"
+                            Style="{StaticResource PauseButtonStyleVD}"/>
+                <Button Width="75" Margin="5" Content="Resume" Style="{StaticResource ControlStyleVD}"
+                            ToolTip="Start/Resume cycle after a pause" Height="40"
+                            Command="{Binding StartCycleCommand, Mode=OneWay}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -60,28 +60,36 @@
             </StackPanel>
             <!-- Boutons (Row 0) -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,5">
-                <Button Height="30" Width="30" ToolTip="Charger un fichier G-Code" 
-                        Command="{Binding OpenFileCommand}" Margin="5">
+                <Button Height="30" Width="30" 
+                        ToolTip="Charger un fichier G-Code" 
+                        Command="{Binding OpenFileCommand}" 
+                        Margin="5">
                     <Image Source="/resources/Assets/iconOpenFile40.png" Height="20" Width="20"/>
                 </Button>
-                <Button Height="30" Width="30" ToolTip="Parcourir les limites du projet sans graver" 
-                        Command="{Binding RunFrameCommand}" Margin="5">
+                <Button Height="30" Width="30" 
+                        ToolTip="Parcourir les limites du projet sans graver" 
+                        Command="{Binding RunFrameCommand}" 
+                        Margin="5">
                     <Image Source="/resources/Assets/iconFrame40.png" Height="20" Width="20"/>
                 </Button>
-                <Button Height="30" Width="30" ToolTip="Démarrer ou reprendre l'envoi du fichier" Command="{Binding StartJobCommand}" Margin="5"
-                    >
+                <Button Height="30" Width="30" 
+                        ToolTip="Démarrer ou reprendre l'envoi du fichier" 
+                        Command="{Binding StartJobCommand}" 
+                        Margin="5">
                     <!-- Désactiver si non connecté -->
                     <Image Source="/resources/Assets/iconPlay40.png" Height="20" Width="20"/>
                 </Button>
-                <Button Height="30" Width="30" ToolTip="Mettre en pause l'envoi du fichier" 
-                        Command="{Binding PauseJobCommand}" 
+                <Button Height="30" Width="30" 
+                        ToolTip="{Binding PauseToolTip}" 
+                        Command="{Binding TogglePauseJobCommand}"
                         Margin="5">
 
                     <!-- Ajout de Command ; désactiver si pas en cours -->
-                    <Image Source="/resources/Assets/iconPause40.png" Height="20" Width="20"/>
+                    <Image Source="{Binding PauseIcon}" Height="20" Width="20"/>
                 </Button>
-                <Button Height="30" Width="30" ToolTip="Arrêter l'envoi du fichier" Command="{Binding StopJobCommand}" Margin="5"
-                    >
+                <Button Height="30" Width="30" ToolTip="Arrêter l'envoi du fichier" 
+                        Command="{Binding StopJobCommand}" 
+                        Margin="5">
                     <Image Source="/resources/Assets/iconStopFile40.png" Height="20" Width="20"/>
                 </Button>
             </StackPanel>

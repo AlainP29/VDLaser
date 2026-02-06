@@ -14,7 +14,7 @@ namespace VDLaser.Converters
         {
             if (value is TimeSpan ts && ts > TimeSpan.Zero)
                 return ts.ToString(@"hh\:mm\:ss");
-            return "N/A";
+            return "00:00:00";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

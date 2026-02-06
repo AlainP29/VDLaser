@@ -33,10 +33,10 @@
                 <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center"
                             VerticalAlignment="Top">
                     <Button Content="Kill alarm" Margin="5" Width="75" 
-                        ToolTip="Unlock $X, used to get your machine going again after pressing reset" FontWeight="Bold" Background="Orange"
+                        ToolTip="Unlock $X, used to get your machine going again after pressing reset" FontWeight="Bold"
                         Command="{Binding KillAlarmCommand, Mode=OneWay}"/>
                     <Button Content="Soft reset" Margin="5" Width="75" 
-                        ToolTip="Soft reset, it stop any axis mouvement" FontWeight="Bold" Background="Orange"
+                        ToolTip="Soft reset, it stop any axis mouvement" FontWeight="Bold"
                         Command="{Binding SoftResetCommand, Mode=OneWay}"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Orientation="Horizontal" 

@@ -31,10 +31,11 @@ public sealed class GcodeJobService : IGcodeJobService
     #region Events & State
     private CancellationTokenSource? _cts;
     private TaskCompletionSource<int>? _commandTaskSource;
-    private ManualResetEventSlim _pauseEvent = new(true);
+    //private ManualResetEventSlim _pauseEvent = new(true);
     public event EventHandler? StateChanged;
     public event EventHandler<GcodeJobProgress>? ProgressChanged;
     public event EventHandler<GcodeJobProgress>? ExecutionProgressChanged;
+    private TaskCompletionSource _pauseTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public record GcodeJobProgress(int CurrentLine, int TotalLines);
 
     public bool IsRunning { get; private set; }
@@ -57,6 +58,8 @@ public sealed class GcodeJobService : IGcodeJobService
         _log = log;
         _commandQueue.CommandExecuted += OnCommandExecuted;
         _log.Information("[JOB][STATE] Démarrage — ModeErreur={Mode}", ErrorHandlingMode);
+
+        _pauseTcs.SetResult();
     }
     #endregion
 
@@ -99,7 +102,8 @@ public sealed class GcodeJobService : IGcodeJobService
             {
                 _cts.Token.ThrowIfCancellationRequested();
 
-                _pauseEvent.Wait(_cts.Token);
+                //_pauseEvent.Wait(_cts.Token);
+                await _pauseTcs.Task;
 
                 _commandTaskSource = new TaskCompletionSource<int>(
     TaskCreationOptions.RunContinuationsAsynchronously);
@@ -235,7 +239,8 @@ public sealed class GcodeJobService : IGcodeJobService
             return;
 
         IsPaused = true;
-        _pauseEvent.Reset();
+        //_pauseEvent.Reset();
+        _pauseTcs=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         StateChanged?.Invoke(this, EventArgs.Empty);
         _log.Information("[JOB][STATE] Pause demandée.");
     }
@@ -246,7 +251,8 @@ public sealed class GcodeJobService : IGcodeJobService
             return;
 
         IsPaused = false;
-        _pauseEvent.Set();
+        //_pauseEvent.Set();
+        _pauseTcs.TrySetResult();
         StateChanged?.Invoke(this, EventArgs.Empty);
         _log.Information("[JOB][STATE] Reprise demandée.");
     }
@@ -351,7 +357,7 @@ public sealed class GcodeJobService : IGcodeJobService
         IsPaused = false;
         _linesExecuted = 0;
 
-        _pauseEvent.Set();
+        //_pauseEvent.Set();
         _cts?.Dispose();
         _cts = null;
         StateChanged?.Invoke(this, EventArgs.Empty); 

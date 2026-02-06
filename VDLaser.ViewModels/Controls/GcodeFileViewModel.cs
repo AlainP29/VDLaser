@@ -18,6 +18,9 @@ using static VDLaser.ViewModels.Controls.GcodeSettingsViewModel;
 
 namespace VDLaser.ViewModels.Controls
 {
+    /// <summary>
+    /// G
+    /// </summary>
     public partial class GcodeFileViewModel : ViewModelBase
     {
         #region Fields & Services
@@ -74,6 +77,10 @@ namespace VDLaser.ViewModels.Controls
         private TimeSpan _actualTotalTime = TimeSpan.Zero;
         [ObservableProperty]
         private int _errorCount;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(OpenFileCommand))]
+        [NotifyCanExecuteChangedFor(nameof(RunFrameCommand))]
+        private bool _isFraming;
         public record GcodeLineSelectedMessage(double? X, double? Y);
 
         #endregion
@@ -84,6 +91,15 @@ namespace VDLaser.ViewModels.Controls
         public string DimensionsX => Stats != null ? $"{Stats.MinX:F2} à {Stats.MaxX:F2} mm" : "-";
         public string DimensionsY => Stats != null ? $"{Stats.MinY:F2} à {Stats.MaxY:F2} mm" : "-";
         public string WidthHeight => Stats != null ? $"{Stats.Width:F2} x {Stats.Height:F2} mm" : "-";
+        public bool IsPaused => _gcodeJobService.IsPaused;
+        public bool IsJobRunning => _gcodeJobService.IsRunning;
+        public bool IsJobNotRunning => !_gcodeJobService.IsRunning;
+        private bool CanLoadOrFrame => !IsJobRunning;
+        private bool CanStart => !IsJobRunning && GcodeLines.Count > 0 && _grblCoreService.IsConnected;
+        private bool CanPause => IsJobRunning && _grblCoreService.State.MachineState != GrblState.MachState.Hold;
+        private bool CanResume => IsJobRunning && _grblCoreService.State.MachineState == GrblState.MachState.Hold;
+        public string PauseToolTip => IsPaused ? "Reprendre la gravure" : "Mettre en pause";
+        public string PauseIcon => IsPaused ? "/Resources/Assets/iconResume40.png" : "/Resources/Assets/iconPause40.png";
         #endregion
         public GcodeFileViewModel(IGcodeFileService gcodeFileService,
             IGcodeJobService gcodeJobService, IGrblCommandQueue commandQueue, ILogService log, IGrblCoreService grblCoreService, IDialogService dialogService, ConsoleViewModel consoleViewModel)
@@ -114,7 +130,7 @@ namespace VDLaser.ViewModels.Controls
         /// <summary>
         /// Ouvre une boîte de dialogue pour sélectionner et charger un fichier G-code.
         /// </summary>
-        [RelayCommand(CanExecute = nameof(IsJobNotRunning))]
+        [RelayCommand(CanExecute = nameof(CanLoadOrFrame))]
         private async Task OpenFileAsync()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
@@ -130,7 +146,7 @@ namespace VDLaser.ViewModels.Controls
         /// <summary>
         /// Démarre l'exécution du job G-code actuel.
         /// </summary>
-        [RelayCommand(CanExecute = nameof(IsJobNotRunning))]
+        [RelayCommand(CanExecute = nameof(CanStart))]
         public async Task StartJobAsync()
         {
             if (GcodeLines.Count == 0)
@@ -205,14 +221,16 @@ namespace VDLaser.ViewModels.Controls
             _log.Information("[GcodeFileViewModel] Action - Demande d'arrêt du job reçue.");
         }
         /// <summary> Met l'exécution du job en pause. </summary>
-        [RelayCommand(CanExecute = nameof(IsJobRunning))]
+        [RelayCommand(CanExecute = nameof(CanPause))]
         public void PauseJob()
         { 
             _gcodeJobService.Pause();
+            OnPropertyChanged(nameof(PauseIcon));
+            OnPropertyChanged(nameof(PauseToolTip));
             _log.Information("[GcodeFileViewModel] Action - Mise en pause du job en cours.");
         }
         /// <summary> Reprend l'exécution du job mis en pause. </summary>
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanResume))]
         public void ResumeJob()
         {
             _gcodeJobService.Resume();
@@ -222,7 +240,7 @@ namespace VDLaser.ViewModels.Controls
         /// <summary>
         /// Exécute un tracé rectangulaire (cadrage) correspondant aux dimensions maximales du G-code chargé.
         /// </summary>
-        [RelayCommand(CanExecute = nameof(IsJobNotRunning))]
+        [RelayCommand(CanExecute = nameof(CanLoadOrFrame))]
         public async Task RunFrameAsync()
         {
             if (Stats == null || !_grblCoreService.IsConnected)
@@ -232,7 +250,7 @@ namespace VDLaser.ViewModels.Controls
             }
 
             const string frameSpeed = "F2000";
-
+            IsFraming = true;
             try
             {
                 _log.Information("[GcodeFileViewModel] Début de la séquence de cadrage (Framing)");
@@ -268,9 +286,21 @@ namespace VDLaser.ViewModels.Controls
             {
                 _log.Error("[GcodeFileViewModel] Erreur lors du framing : {Message}", ex.Message);
             }
+            finally
+            {
+                IsFraming = false;
+                OnJobStateChanged(this, EventArgs.Empty);
+            }
         }
-        public bool IsJobRunning => _gcodeJobService.IsRunning;
-        public bool IsJobNotRunning => !_gcodeJobService.IsRunning;
+        [RelayCommand]
+        public void TogglePauseJob()
+        {             if (IsPaused)
+                ResumeJob();
+            else
+                PauseJob();
+            OnPropertyChanged(nameof(PauseIcon));
+            OnPropertyChanged(nameof(PauseToolTip));
+        }
 
         #endregion
 
@@ -403,13 +433,16 @@ namespace VDLaser.ViewModels.Controls
                 dispatcher.Invoke(() =>
                 {
                     StartJobCommand.NotifyCanExecuteChanged();
-                PauseJobCommand.NotifyCanExecuteChanged();
-                StopJobCommand.NotifyCanExecuteChanged();
-                OpenFileCommand.NotifyCanExecuteChanged();
-                RunFrameCommand.NotifyCanExecuteChanged();
-
-                OnPropertyChanged(nameof(IsJobRunning));
-            OnPropertyChanged(nameof(IsJobNotRunning));
+                    PauseJobCommand.NotifyCanExecuteChanged();
+                    StopJobCommand.NotifyCanExecuteChanged();
+                    OpenFileCommand.NotifyCanExecuteChanged();
+                    RunFrameCommand.NotifyCanExecuteChanged();
+                    ResumeJobCommand.NotifyCanExecuteChanged();
+                    TogglePauseJobCommand.NotifyCanExecuteChanged();
+                    OnPropertyChanged(nameof(IsJobRunning));
+                    OnPropertyChanged(nameof(IsJobNotRunning));
+                    OnPropertyChanged(nameof(PauseIcon));
+                    OnPropertyChanged(nameof(PauseToolTip));
                 });
             }
         }
@@ -439,6 +472,7 @@ namespace VDLaser.ViewModels.Controls
                 case GrblState.MachState.Hold:
                     if (!_pauseStartTime.HasValue)
                         _pauseStartTime = DateTime.UtcNow;
+                    
                     break;
 
                 case GrblState.MachState.Idle:
@@ -452,10 +486,10 @@ namespace VDLaser.ViewModels.Controls
                         EstimatedJobTime = "00:00:00";
                     }
                     break;*/
+                    OnJobStateChanged(this, EventArgs.Empty);
                     return;
             }
         }
-        
         private void OnRxBufferSizeChanged(object? sender, int currentByteCount)
         {
             RxBuffer = currentByteCount;

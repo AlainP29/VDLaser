@@ -15,7 +15,7 @@
         x:Name="Root">
     <Grid x:Name="MainGrid"  Background="#FFE5E5E5" >
         <Grid.RowDefinitions>
-            <RowDefinition Height="5*"/>
+            <RowDefinition Height="7*"/>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -122,24 +122,26 @@
         <!--Emergency, Controle & Console-->
         <Grid Grid.Row="1" Background="#FFDCDCDC">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             
             <Separator Grid.Column="1" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="5"/>
-
-            <local:ControleView Grid.Column="2" ShowControls="False" VerticalAlignment="Center" Height="90"/>
-            
-            <Button Grid.Column="3" 
+            <Viewbox Grid.Column="0">
+            <local:CompactControleView  VerticalAlignment="Center"/>
+            </Viewbox>
+            <Viewbox Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <Button 
             Content="E-STOP" 
-            FontSize="18"
+            FontSize="16"
             Style="{StaticResource EmergencyButtonStyleVD}"
             Command="{Binding EmergencyStopCommand}"
-            Width="80" Height="80" 
+            Width="70" Height="70" 
             Margin="10" 
             VerticalAlignment="Center"/>
+            </Viewbox>
         </Grid>
 
         <!--Connexion (Port & Baudrate), Machine state, WCS (X,Y & Z), Cutting parameter (Feed & Power) and profile (Normal, CNC & support)-->
