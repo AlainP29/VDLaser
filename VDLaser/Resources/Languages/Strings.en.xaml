@@ -1,0 +1,104 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!--MainWindow-->
+    <sys:String x:Key="Title">VDLaser - 2D laser printing</sys:String>
+    <sys:String x:Key="HomeTabItem">Home</sys:String>
+    <sys:String x:Key="JoggingTabItem">Jogging</sys:String>
+    <sys:String x:Key="FileTabItem">File</sys:String>
+    <sys:String x:Key="PlotterTabItem">Plotter</sys:String>
+    <sys:String x:Key="ConsoleTabItem">Console</sys:String>
+    <sys:String x:Key="SettingsTabItem">Settings</sys:String>
+    <sys:String x:Key="SoftwareStatusBar">Software status:</sys:String>
+    <!--CompactControleView-->
+    <sys:String x:Key="SoftResetToolTip">Soft reset, stops all axis movement</sys:String>
+    <sys:String x:Key="KillAlarmToolTip">Unlock $X, used to get your machine going again after pressing reset</sys:String>
+    <sys:String x:Key="ResumeToolTip">Start/Resume cycle after a pause</sys:String>
+    <sys:String x:Key="PauseToolTip">Pause cycle</sys:String>
+    <sys:String x:Key="ResumeButton">Resume</sys:String>
+    <!--CompactJobView-->
+    <sys:String x:Key="TotalErrorText">Error</sys:String>
+    <sys:String x:Key="TotalTimeText">Total time</sys:String>
+    <!--CompactGcodeFileView-->
+    <sys:String x:Key="EstimatedTimeText">Remaining time</sys:String>
+    <!--CompactJoggingView-->
+    <sys:String x:Key="SendButton">Send</sys:String>
+    <sys:String x:Key="SendTooltip">Send a line of commands manually</sys:String>
+    <sys:String x:Key="M1Tooltip">Send predefined commands stored in Macro 1</sys:String>
+    <sys:String x:Key="M2Tooltip">Send predefined commands stored in Macro 2</sys:String>
+    <sys:String x:Key="M3Tooltip">Send predefined commands stored in Macro 3</sys:String>
+    <sys:String x:Key="M4Tooltip">Send predefined commands stored in Macro 4</sys:String>
+    <sys:String x:Key="LaserGroupBox">Laser preview</sys:String>
+    <sys:String x:Key="LaserCheckBox">Laser enable</sys:String>
+    <sys:String x:Key="LaserToolTip">Enable/disable laser mode (safety)</sys:String>
+    <sys:String x:Key="LaserPowerLabel">Power:</sys:String>
+    <sys:String x:Key="LaserPreviewToolTip">Hold for laser preview (M4 ON), release for OFF (M5)</sys:String>
+    <sys:String x:Key="LaserSliderToolTip">Ajust laser power (0 to {Binding MaxLaserPower})</sys:String>
+    <sys:String x:Key="KeyboardCheckBox">Keyboard</sys:String>
+    <sys:String x:Key="KeyboardToolTip">Enable/disable Keyboard</sys:String>
+    <sys:String x:Key="FeedLabel">Feed:</sys:String>
+    <sys:String x:Key="StepLabel">Step:</sys:String>
+    <sys:String x:Key="MetricCheckBox">Metric(mm)</sys:String>
+    <sys:String x:Key="MetricToolTip">Check for metric(mm) else imperial(inch)</sys:String>
+    <!--GcodeFileView-->
+    <sys:String x:Key="FileToolTip">Load Gcode file</sys:String>
+    <sys:String x:Key="FrameToolTip">Framing: explore the project's boundaries without engraging</sys:String>
+    <sys:String x:Key="StartFileToolTip">Start file engraving</sys:String>
+    <sys:String x:Key="PauseFileToolTip">Pause/Resume file engraving</sys:String>
+    <sys:String x:Key="StopFileToolTip">Stop file engraving</sys:String>
+    <sys:String x:Key="LineExecutedText">In progress:</sys:String>
+    <sys:String x:Key="LineExecutedToolTip">Number of lines sent out of the total number of lines</sys:String>
+    <sys:String x:Key="EngraveAreaLabel">Engraving area:</sys:String>
+    <sys:String x:Key="EstimatedTimeToolTip">Dynamic estimation based on GRBL execution</sys:String>
+    <sys:String x:Key="FileGroupBox">G-Code file</sys:String>
+    <!--PlotterView-->
+    <sys:String x:Key="CenterPlotterButton">Centering</sys:String>
+    <sys:String x:Key="CenterPlotterToolTip">Centering and auto-zooming of the pattern</sys:String>
+    <sys:String x:Key="SetOriginPlotterButton">Set origin</sys:String>
+    <sys:String x:Key="SetOriginPlotterToolTip">Set the current position as the WCS origin</sys:String>
+    <sys:String x:Key="ColorPlotterCheckBox">White</sys:String>
+    <sys:String x:Key="SimulationPlotterLabel">Simulation</sys:String>
+    <sys:String x:Key="ResetPlotterButton">Reset</sys:String>
+    <sys:String x:Key="ResetPlotterToolTip">Default pattern display</sys:String>
+    <!--SerialPortSettingView-->
+    <sys:String x:Key="PortSettingsGroupBox">serial port settings</sys:String>
+    <sys:String x:Key="ConnectButton">Connect</sys:String>
+    <sys:String x:Key="DisConnectButton">Disconnect</sys:String>
+    <sys:String x:Key="RefreshPortToolTip">Serial port list update</sys:String>
+    <!--LoggingSettingsView-->
+    <sys:String x:Key="LoggingSettingsGroupBox">Diagnostic</sys:String>
+    <sys:String x:Key="loggingModeLabel">log level: </sys:String>
+    <sys:String x:Key="loggingModeToolTip">Normal mode is the default for users</sys:String>
+    <!--GcodeSettingsView-->
+    <sys:String x:Key="GcodeSettingsGroupBox">G-Code Execution Parameters</sys:String>
+    <sys:String x:Key="ErrorManagementLabel">Error handling:</sys:String>
+    <sys:String x:Key="ErrorManagementToolTip">Strict: Stops the job at the slightest error (recommended for engraving). Tolerant: Ignores some minor errors.</sys:String>
+    <!--GrblSettingsView-->
+    <sys:String x:Key="GrblSettingsGroupBox">Grbl parameters</sys:String>
+    <sys:String x:Key="GrblRefreshButton">Refresh Grbl settings</sys:String>
+    <sys:String x:Key="GrblNameDataGrid">Name</sys:String>
+    <sys:String x:Key="GrblValueDataGrid">Value</sys:String>
+    <sys:String x:Key="GrblUnitDataGrid">Unit</sys:String>
+    <sys:String x:Key="GrblDescriptionDataGrid">Description</sys:String>
+    <sys:String x:Key="GrblCommentDataGrid">Comment</sys:String>
+    <sys:String x:Key="GrblStatusReportToolTip">Status Report Query</sys:String>
+    <sys:String x:Key="GrblHelpToolTip">Grbl print a help message</sys:String>
+    <sys:String x:Key="GrblParametersToolTip">View gcode parameters</sys:String>
+    <sys:String x:Key="GrblStartupToolTip">View startup blocks</sys:String>
+    <sys:String x:Key="GrblBuildToolTip">View build info</sys:String>
+    <sys:String x:Key="GrblCheckToolTip">Check gcode mode</sys:String>
+    <sys:String x:Key="GrblGcodeModeToolTip">View gcode parser state</sys:String>
+    <sys:String x:Key="GrblSleepToolTip">Enable Sleep Mode</sys:String>
+    <sys:String x:Key="GrblDefaultToolTip">Restore Grbl settings and data to defaults</sys:String>
+    <!--ConsoleView-->
+    <sys:String x:Key="ExportConsoleButton">Export</sys:String>
+    <sys:String x:Key="ExportConsoleToolTip">Save the console data to a text file</sys:String>
+    <sys:String x:Key="ClearConsoleButton">Clear</sys:String>
+    <sys:String x:Key="ClearConsoleToolTip">Clear console data</sys:String>
+    <sys:String x:Key="ConsoleDataGridResponseToolTip">Response</sys:String>
+    <sys:String x:Key="ConsoleDataGridCommandToolTip">Command</sys:String>
+    <sys:String x:Key="ConsoleDataGridTimeToolTip">Time</sys:String>
+    <sys:String x:Key="ConsoleDataGridDescriptionToolTip">Description</sys:String>
+    <sys:String x:Key="ConsoleDataGridSourceToolTip">Source</sys:String>
+    <sys:String x:Key="ConsoleDataGridSeverityToolTip">Severity</sys:String>
+</ResourceDictionary>

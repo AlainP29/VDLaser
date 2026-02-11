@@ -79,7 +79,10 @@
                 </DataGrid.RowStyle>
 
                 <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="Time" Width="70">
+                    <DataGridTemplateColumn Width="70">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource ConsoleDataGridTimeToolTip}"/>
+                        </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Timestamp, StringFormat=HH:mm:ss}" 
@@ -88,7 +91,10 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="Command" Width="200">
+                    <DataGridTemplateColumn Width="200">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource ConsoleDataGridCommandToolTip}"/>
+                        </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Command}" 
@@ -99,7 +105,10 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="Response" Width="150">
+                    <DataGridTemplateColumn Width="150">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource ConsoleDataGridResponseToolTip}"/>
+                        </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Response}" 
@@ -132,7 +141,10 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Source" Width="80">
+                    <DataGridTemplateColumn Width="80">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource ConsoleDataGridSourceToolTip}"/>
+                        </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Source}" 
@@ -142,7 +154,10 @@ Margin="5,0"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Severity" Width="80">
+                    <DataGridTemplateColumn Width="80">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource ConsoleDataGridSeverityToolTip}"/>
+                        </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Severity}"
@@ -158,15 +173,16 @@ Margin="5,0"/>
             </DataGrid>
             <StackPanel Grid.Row="1" Grid.Column="0" Background="#1B263B" Orientation="Horizontal" Margin="5 2 0 0" 
                         Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}">
-                <TextBlock Text="Total errors: " Foreground="Gray"/>
+                <TextBlock Text="{DynamicResource TotalErrorText}" Foreground="Gray"/>
                 <TextBlock Text="{Binding ErrorCount}" Foreground="Gray" Margin="0,0,20,0"/>
                 <TextBlock Text=" | " Foreground="Gray"/>
                 <TextBlock Text="{Binding LastResponse}" Foreground="#2ECC40"/>
             </StackPanel>
             <StackPanel Grid.Row="1" Grid.Column="1" Margin="5 0 5 0">
-                    <Button Content="Clear" 
+                <Button Content="{DynamicResource ClearConsoleButton}" 
                             Command="{Binding ClearConsoleCommand}"
-                            Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}"/>
+                            Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}"
+                        ToolTip="{DynamicResource ClearConsoleToolTip}"/>
             </StackPanel>
             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="5,0,5,0"
                         Visibility="{Binding ShowControls, ElementName=ConsoleRoot, Converter={StaticResource BoolToVis}}">
@@ -189,7 +205,7 @@ Margin="5,0"/>
                 
                 <Separator Margin="5,5" Background="#444"/>
 
-                <Button Content="Export" Command="{Binding ExportConsoleCommand}" />
+                <Button Content="{DynamicResource ExportConsoleButton}" Command="{Binding ExportConsoleCommand}" ToolTip="{DynamicResource ExportConsoleToolTip}"/>
 
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Max:" Foreground="Gray" VerticalAlignment="Center"/>

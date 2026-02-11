@@ -16,6 +16,12 @@
         <Setter Property="BorderBrush" Value="LightBlue"/>
     </Style>
 
+    <!-- Style pour GroupBox, basé sur le style de base -->
+    <Style x:Key="ComboBoxStyleVD" TargetType="ComboBox" BasedOn="{StaticResource ControlStyleVD}">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="BorderBrush" Value="LightBlue"/>
+    </Style>
+
     <!-- Style pour Statusbar, basé sur le style de base -->
     <Style x:Key="StatusBarStyleVD" TargetType="StatusBar" BasedOn="{StaticResource ControlStyleVD}">
         <Setter Property="Foreground" Value="Black"/>

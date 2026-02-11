@@ -8,19 +8,20 @@
     
     <Grid>
         <Border BorderBrush="LightBlue" BorderThickness="1" Margin="10">
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Margin="5">
                 <TextBox Text="{Binding FileName}" Height="25" Width="Auto" 
                      IsReadOnly="True" 
                          IsEnabled="False"
                      Margin="5" 
                      HorizontalContentAlignment="Left" 
                      VerticalContentAlignment="Center"/>
+                <TextBlock Text="{DynamicResource EstimatedTimeText}" Foreground="Gray" HorizontalAlignment="Center"/>
                 <TextBlock Text="{Binding EstimatedJobTime, StringFormat={}{0}, Mode=OneWay}" 
                             Width="70" Margin="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center" 
                             TextAlignment="Center" 
-                           Foreground="Gray"
+                           Foreground="Green"
                            IsEnabled="False"/>
                 <Grid Margin="5">
                 <ProgressBar Maximum="100" 

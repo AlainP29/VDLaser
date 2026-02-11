@@ -7,13 +7,11 @@
              mc:Ignorable="d">
     <Grid>
         <Border BorderBrush="LightBlue" BorderThickness="1" Margin="10">
-            <StackPanel Orientation="Vertical">
-                <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Error " Foreground="Gray"/>
-                    <TextBlock Text="{Binding ErrorCount}" Foreground="Green"/>
-                </StackPanel>
-                <TextBlock Text="Total time " Foreground="Gray"/>
-            <TextBlock Text="{Binding ActualTotalTime, Converter={StaticResource TimeSpanToStringConverter}}" Foreground="Green" />
+            <StackPanel Orientation="Vertical" Margin="5">
+                <TextBlock Text="{DynamicResource TotalErrorText}" Foreground="Gray" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding ErrorCount}" Foreground="Green" HorizontalAlignment="Center"/>
+                <TextBlock Text="{DynamicResource TotalTimeText}" Foreground="Gray" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding ActualTotalTime, Converter={StaticResource TimeSpanToStringConverter}}" Foreground="Green" HorizontalAlignment="Center"/>
             </StackPanel>
         </Border>
     </Grid>

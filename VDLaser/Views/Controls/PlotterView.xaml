@@ -26,17 +26,17 @@
                 <StackPanel Grid.Column="0" Orientation="Vertical" 
                             Margin="5,0,5,0" 
                             VerticalAlignment="Center" Height="230" Grid.RowSpan="2">
-                    <Button Content="Center" 
+                    <Button Content="{DynamicResource CenterPlotterButton}" 
                             Command="{Binding AutoCenterCommand}" 
-                            ToolTip="Auto zoom"
+                            ToolTip="{DynamicResource CenterPlotterToolTip}"
                              Width="70"
                             Margin="0,0,0,5"/>
-                    <Button Content="Set Origin" Command="{Binding SetOriginCommand}" 
-                            ToolTip="Position actuelle comme origine WCS" 
+                    <Button Content="{DynamicResource SetOriginPlotterButton}" Command="{Binding SetOriginCommand}" 
+                            ToolTip="{DynamicResource SetOriginPlotterToolTip}" 
                             Margin="0,0,0,5"/>
-                    <Button Content="Reset"
+                    <Button Content="{DynamicResource ResetPlotterButton}"
                             Command="{Binding ResetViewCommand}"
-                            ToolTip="Réinitialisation du graphe"
+                            ToolTip="{DynamicResource ResetPlotterToolTip}"
                             Width="70"
                             Margin="0"/>
                     <TextBlock Text="{Binding ToolPathGeometry.Figures.Count, StringFormat='Segments: {0}'}"
@@ -51,14 +51,14 @@
                         ConverterParameter=Stop|Start}"
                         Command="{Binding ToggleSimulationCommand}">
                         </Button>
-                        <TextBlock Text="Simulation" Foreground="Black" Margin="0,5,0,0"/>
+                        <Label Content="{DynamicResource SimulationPlotterLabel}"/>
                         <Slider Minimum="0.5" Maximum="10" Value="{Binding SimulationSpeed}" 
             TickFrequency="0.5" IsSnapToTickEnabled="True" Margin="0"/>
                         <TextBlock Text="{Binding SimulationSpeed, StringFormat={}{0:F1}x}" 
                Foreground="Black" HorizontalAlignment="Center"/>
                         <TextBlock Text="{Binding MachinepositionPointSize}" HorizontalAlignment="Center" Foreground="Black" Margin="0,5,0,0"/>
 
-                        <CheckBox x:Name="ColorToggle" Content="Blanc" Margin="0" Width="54"/>
+                        <CheckBox x:Name="ColorToggle" Content="{DynamicResource ColorPlotterCheckBox}" Margin="0" Width="54"/>
                         <TextBlock Text="{Binding MachinepositionPointSize}" HorizontalAlignment="Center" Foreground="Black" Margin="0,5,0,0"/>
                     </StackPanel>
 

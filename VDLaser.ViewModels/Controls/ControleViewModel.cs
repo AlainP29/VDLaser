@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Localization;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Grbl.Models;
@@ -29,6 +31,8 @@ namespace VDLaser.ViewModels.Controls
         private string _initializationStatus = "Initializing...";
         [ObservableProperty]
         private bool _isPaused;
+        [ObservableProperty]
+        private string _localizedToolTip = string.Empty;
         #endregion
         public ControleViewModel(IGrblCoreService coreService, 
             ILogService log,IStatusPollingService polling)
@@ -36,8 +40,8 @@ namespace VDLaser.ViewModels.Controls
             _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
             _polling = polling ?? throw new ArgumentNullException(nameof(polling));
-
             _log.Information("[ControleViewModel] Initialized");
+
             _coreService.PropertyChanged += OnCoreServicePropertyChanged;
             _coreService.StatusUpdated += OnMachineStatusUpdated;
         }

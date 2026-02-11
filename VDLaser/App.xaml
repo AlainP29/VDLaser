@@ -7,6 +7,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/VDStyle.xaml" />
+                <ResourceDictionary Source="Resources/Languages/Strings.en.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:StatusToColorConverter x:Key="StatusToColorConverter" />
             <converters:BooleanToStringConverter x:Key="BooleanToStringConverter" />

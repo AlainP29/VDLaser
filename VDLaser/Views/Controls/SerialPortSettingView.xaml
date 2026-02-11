@@ -14,7 +14,7 @@
         <Binding Path="DataContext.SerialPortSettingVM"
              RelativeSource="{RelativeSource AncestorType=Window}" />
     </UserControl.DataContext>
-    <GroupBox Header="Port settings" Style="{StaticResource GroupBoxStyleVD}">
+    <GroupBox Header="{DynamicResource PortSettingsGroupBox}" Style="{StaticResource GroupBoxStyleVD}">
         <StackPanel>
             <!-- Parameters of the serial port. Only COM port and Baud rate are available -->
             <Grid Margin="5">
@@ -47,7 +47,7 @@
         Command="{Binding RefreshPortsCommand}"
         IsEnabled="{Binding DataContext.CanEditSerialSettings,
             RelativeSource={RelativeSource AncestorType=Window}}"
-        ToolTip="Refresh Port COM">
+        ToolTip="{DynamicResource RefreshPortToolTip}">
                     <StackPanel Height="20" Width="20" >
                         <Image Source="/Resources/Assets/iconRefresh40.png"/>
                     </StackPanel>
@@ -59,11 +59,11 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Center"
+                <Button x:Name="ConnectButton" Content="{DynamicResource ConnectButton}" HorizontalAlignment="Center"
                         VerticalAlignment="Center" Command="{Binding DataContext.ConnectCommand, 
                                   RelativeSource={RelativeSource AncestorType=Window}}"
                         Width="75" HorizontalContentAlignment="Center" Margin="0"/>
-                <Button x:Name="DisconnectButton" Grid.Column="2" Content="Disconnect" HorizontalAlignment="Center"
+                <Button x:Name="DisconnectButton" Grid.Column="2" Content="{DynamicResource DisConnectButton}" HorizontalAlignment="Center"
                         VerticalAlignment="Center" Width="75" HorizontalContentAlignment="Center" Margin="0" Command="{Binding DataContext.DisconnectCommand, 
                         RelativeSource={RelativeSource AncestorType=Window}}"/>
             </Grid>

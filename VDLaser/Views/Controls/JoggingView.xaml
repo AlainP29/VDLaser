@@ -48,8 +48,8 @@
                                 <KeyBinding Command="{Binding SendManualCommand, Mode=OneWay}" Key="Return"/>
                             </TextBox.InputBindings>
                         </TextBox>
-                        <Button  Content="Send" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" 
-                             Width="75" ToolTip="Send a line of commands manually"
+                        <Button  Content="{DynamicResource SendButton}" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Center" 
+                             Width="75" ToolTip="{DynamicResource SendTooltip}"
                              Command="{Binding SendManualCommand, Mode=OneWay}"/>
                         <TextBox  Text="{Binding ResponseStatus, Mode=OneWay}" Margin="5" 
                               VerticalContentAlignment="Center" 
@@ -62,7 +62,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Button  Content="M1" HorizontalAlignment="Left" Margin="5" 
                                  VerticalAlignment="Center" Width="40" 
-                                 ToolTip="Send predefined commands stored in Macro 1"
+                                 ToolTip="{DynamicResource M1ToolTip}"
                              Command="{Binding SendMacro1Command, Mode=OneWay}"/>
                         <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
                              VerticalContentAlignment="Center" 
@@ -72,7 +72,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Button  Content="M2" HorizontalAlignment="Left" Margin="5" 
                                  VerticalAlignment="Center" Width="40" 
-                                 ToolTip="Send predefined commands stored in Macro 2"
+                                 ToolTip="{DynamicResource M2Tooltip}"
                              Command="{Binding SendMacro2Command, Mode=OneWay}"/>
                         <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
                                  VerticalContentAlignment="Center" 
@@ -81,7 +81,8 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button  Content="M3" HorizontalAlignment="Left" Margin="5" 
-                                 VerticalAlignment="Center" Width="40" ToolTip="Send predefined commands stored in Macro 3"
+                                 VerticalAlignment="Center" Width="40" 
+                                 ToolTip="{DynamicResource M3Tooltip}"
                              Command="{Binding SendMacro3Command, Mode=OneTime}"/>
                         <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
                                  VerticalContentAlignment="Center" 
@@ -90,7 +91,8 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button  Content="M4" HorizontalAlignment="Left" Margin="5" 
-                                 VerticalAlignment="Center" Width="40" ToolTip="Send predefined commands stored in Macro 4"
+                                 VerticalAlignment="Center" Width="40" 
+                                 ToolTip="{DynamicResource M4Tooltip}"
                              Command="{Binding SendMacro4Command, Mode=OneWay}"/>
                         <TextBox Height="23" Margin="5" TextWrapping="Wrap" VerticalAlignment="Center" 
                                  VerticalContentAlignment="Center" 
@@ -98,7 +100,7 @@
                         </TextBox>
                     </StackPanel>
                 </StackPanel>
-                <GroupBox Header="Laser preview" Style="{DynamicResource GroupBoxStyleVD}" Margin="0 10 0 0" Grid.Row="1" >
+                <GroupBox Header="{DynamicResource LaserGroupBox}" Style="{DynamicResource GroupBoxStyleVD}" Margin="0 10 0 0" Grid.Row="1" >
                         <Grid Margin="1" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
@@ -107,11 +109,11 @@
                             </Grid.RowDefinitions>
                             <!--Power on/off laser + indicator-->
                             <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <CheckBox Margin="20,5,0,0" Height="30" Width="100" 
+                                <CheckBox Margin="20,5,0,0" Height="30" Width="120" 
                                             IsChecked="{Binding IsLaserEnabled}" 
                                             Command="{Binding ToggleLaserCommand}"
-                                            Content="Laser Enable"
-                                            ToolTip="Enable/disable laser mode (safety)">
+                                            Content="{DynamicResource LaserCheckBox}"
+                                            ToolTip="{DynamicResource LaserToolTip}">
                                     <CheckBox.Style>
                                         <Style TargetType="CheckBox">
                                             <Setter Property="Content" Value="Laser Enable" />
@@ -125,35 +127,36 @@
                                         </Style>
                                     </CheckBox.Style>
                                 </CheckBox>
-                                <Button Margin="20,5,0,0" Background="LightGray" IsEnabled="{Binding IsLaserEnabled}" 
+                                <Button Margin="30,5,0,0" Background="LightGray" IsEnabled="{Binding IsLaserEnabled}" 
                                  PreviewMouseLeftButtonDown="OnLaserPreviewDown" 
                                 PreviewMouseLeftButtonUp="OnLaserPreviewUp" 
                                 MouseLeave="OnLaserPreviewMouseLeave"
-                                 Height="30" Width="80">
+                                 Height="30" Width="50">
                                     <Button.Style>
                                         <Style TargetType="Button">
-                                            <Setter Property="Content" Value="Preview OFF" />
+                                            <Setter Property="Content" Value="OFF" />
                                             <Style.Triggers>
                                                 <Trigger Property="IsPressed" Value="True">
-                                                    <Setter Property="Content" Value="Preview ON" />
+                                                    <Setter Property="Content" Value="ON" />
                                                 </Trigger>
-
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
-                                    <Button.ToolTip>Hold for laser preview (M4 ON), release for OFF (M5)</Button.ToolTip>
+                                    <Button.ToolTip>
+                                    <TextBlock Text="{DynamicResource LaserPreviewToolTip}"/>
+                                </Button.ToolTip>
                                 </Button>
                             </StackPanel>
                             <!--laser power-->
                             <StackPanel Grid.Row="1" Orientation="Horizontal" IsEnabled="{Binding IsLaserEnabled}" >
-                                <Label Content="Power:" VerticalContentAlignment="Center"/>
+                            <Label Content="{DynamicResource LaserPowerLabel}" VerticalContentAlignment="Center"/>
                                 <Slider x:Name="SliderPLaser" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Center" 
                             Width="130" TickPlacement="TopLeft" Maximum="{Binding MaxLaserPower}" Minimum="0"
                             IsSnapToTickEnabled="True" 
                             LargeChange="50" TickFrequency="50"
                             Height="30" BorderThickness="1" Cursor="Hand" SmallChange="10" SelectionEnd="100" 
                             Value="{Binding LaserPower, Mode=TwoWay}"
-                                        ToolTip="Ajustez la puissance laser (0 à {Binding MaxLaserPower})"/>
+                                        ToolTip="{DynamicResource LaserSliderToolTip}"/>
                                 <TextBox HorizontalAlignment="Left" Height="23" Margin="10,0,0,0" TextWrapping="Wrap" 
                              VerticalAlignment="Center" Width="40" VerticalContentAlignment="Center" IsEnabled="False" 
                              HorizontalContentAlignment="Center">
@@ -336,7 +339,7 @@
                     <!--Slider adjust Feed rate-->
                     <StackPanel Orientation="Horizontal" 
                             IsEnabled="{Binding IsSelectedKeyboard,Converter={StaticResource ConvertBool}}" >
-                        <Label Content="Feed:" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
+                        <Label Content="{DynamicResource FeedLabel}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" 
                            Margin="5 5 0 5"/>
                         <Slider Name="FeedSlider" Maximum="{Binding MaxManualFeedRate, Mode=OneWay}" Width="130" 
                             HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0" Margin="5 0 0 0"
@@ -366,7 +369,7 @@
                         <StackPanel.Resources>
                             <local:EqualityToBoolConverter x:Key="EqualityToBoolConverter" />
                         </StackPanel.Resources>
-                        <Label Content="Step:" Margin="5" VerticalContentAlignment="Center" 
+                        <Label Content="{DynamicResource StepLabel}" Margin="5" VerticalContentAlignment="Center" 
                             HorizontalContentAlignment="Center"/>
                         <RadioButton x:Name="radioButton" Content="1/10" Margin="5" Width="30" 
                                  Style="{StaticResource {x:Type ToggleButton}}" 
@@ -393,9 +396,9 @@
                     <!--Keyboard is enabled / mouth disable + metric/imperial-->
                     <StackPanel Orientation="Horizontal">
                         <CheckBox Margin="5" VerticalContentAlignment="Center" 
-                                  Content="Keyboard" 
+                                  Content="{DynamicResource KeyboardCheckBox}" 
                                   IsChecked="{Binding IsSelectedKeyboard}"
-                                  ToolTip="Enable/disable Keyboard">
+                                  ToolTip="{DynamicResource KeyboardToolTip}">
                             <CheckBox.Style>
                                 <Style TargetType="CheckBox">
                                     <Setter Property="Background" Value="LightGray" />
@@ -407,10 +410,10 @@
                                 </Style>
                             </CheckBox.Style>
                         </CheckBox>
-                        <CheckBox Margin="5" VerticalContentAlignment="Center" Content="Metric (mm)" 
+                        <CheckBox Margin="5" VerticalContentAlignment="Center" Content="{DynamicResource MetricCheckBox}" 
                                   IsEnabled="{Binding IsSelectedKeyboard,Converter={StaticResource ConvertBool}}"
                               IsChecked="{Binding IsSelectedMetric}"
-                                  ToolTip="Metric/Inch">
+                                  ToolTip="{DynamicResource MetricToolTip}">
                             <CheckBox.Style>
                                 <Style TargetType="CheckBox">
                                     <Setter Property="Background" Value="LightGray" />

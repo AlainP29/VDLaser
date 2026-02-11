@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Localization;
 using Serilog;
 using Serilog.Events;
 using Serilog.Filters;
+using System.Globalization;
+using System.Reflection;
+using System.Resources;
 using System.Windows;
 using VDLaser.Core.Gcode.Interfaces;
 using VDLaser.Core.Gcode.Parsers;
@@ -29,6 +33,7 @@ namespace VDLaser
 
         public App()
         {
+            #region Logging Configuration with Serilog
             Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
 
@@ -74,6 +79,7 @@ namespace VDLaser
         ))
 
     .CreateLogger();
+            #endregion
 
             _host = Host.CreateDefaultBuilder().UseSerilog()
                 .ConfigureServices(services =>
@@ -127,10 +133,19 @@ namespace VDLaser
                     services.AddTransient<SerialPortSettingView>();
                     services.AddTransient<PlotterView>();
                     services.AddTransient<MachineStateView>();
-                    services.AddSingleton<MainWindow>(); 
+                    services.AddSingleton<MainWindow>();
+                    
                 })
                 .Build();
             ServiceProvider = _host.Services; 
+        }
+        public void SwitchLanguage(string lang)
+        {
+            var dict = new ResourceDictionary();
+            dict.Source = new Uri($"Resources/Languages/Strings.{lang}.xaml", UriKind.Relative);
+
+            Application.Current.Resources.MergedDictionaries.Clear();
+            Application.Current.Resources.MergedDictionaries.Add(dict);
         }
 
         protected override async void OnStartup(StartupEventArgs e)

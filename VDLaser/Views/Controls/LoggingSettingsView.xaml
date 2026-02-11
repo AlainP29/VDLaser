@@ -7,11 +7,11 @@
              mc:Ignorable="d">
     <GroupBox Header="Diagnostic" Style="{StaticResource GroupBoxStyleVD}">
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Niveau Logs : " Margin="0,0,0,5"/>
-                <ComboBox Grid.Column="1" Width="80" Margin="0 0 0 5"
+            <TextBlock Text="{DynamicResource loggingModeLabel}" Margin="0,0,0,5"/>
+                <ComboBox Grid.Column="1" Width="80" Margin="5 0 0 5"
                           SelectedItem="{Binding SelectedProfile}"
                           ItemsSource="{Binding LogProfileValues}"
-                          ToolTip="Mode Normal par défaut pour les utilisateurs"/>
+                          ToolTip="{DynamicResource loggingModeToolTip}"/>
         </StackPanel>
     </GroupBox>
 </UserControl>

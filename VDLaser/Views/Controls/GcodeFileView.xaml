@@ -6,7 +6,7 @@
              xmlns:vm="clr-namespace:VDLaser.ViewModels.Controls;assembly=VDLaser.ViewModels"
              xmlns:local="clr-namespace:VDLaser.Converters"
              mc:Ignorable="d">
-    <GroupBox Header="G-Code file" Style="{StaticResource GroupBoxStyleVD}">
+    <GroupBox Header="{DynamicResource FileGroupBox}" Style="{StaticResource GroupBoxStyleVD}">
         <Grid Background="#FFE5E5E5" Margin="5">
             <!-- Ajout d'un margin global pour l'espacement -->
             <Grid.ColumnDefinitions>
@@ -61,33 +61,34 @@
             <!-- Boutons (Row 0) -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,5">
                 <Button Height="30" Width="30" 
-                        ToolTip="Charger un fichier G-Code" 
+                        ToolTip="{DynamicResource FileToolTip}" 
                         Command="{Binding OpenFileCommand}" 
                         Margin="5">
                     <Image Source="/resources/Assets/iconOpenFile40.png" Height="20" Width="20"/>
                 </Button>
                 <Button Height="30" Width="30" 
-                        ToolTip="Parcourir les limites du projet sans graver" 
+                        ToolTip="{DynamicResource FrameToolTip}" 
                         Command="{Binding RunFrameCommand}" 
                         Margin="5">
                     <Image Source="/resources/Assets/iconFrame40.png" Height="20" Width="20"/>
                 </Button>
                 <Button Height="30" Width="30" 
-                        ToolTip="Démarrer ou reprendre l'envoi du fichier" 
+                        ToolTip="{DynamicResource StartFileToolTip}" 
                         Command="{Binding StartJobCommand}" 
                         Margin="5">
                     <!-- Désactiver si non connecté -->
                     <Image Source="/resources/Assets/iconPlay40.png" Height="20" Width="20"/>
                 </Button>
                 <Button Height="30" Width="30" 
-                        ToolTip="{Binding PauseToolTip}" 
+                        ToolTip="{Binding PauseFileToolTip}" 
                         Command="{Binding TogglePauseJobCommand}"
                         Margin="5">
 
                     <!-- Ajout de Command ; désactiver si pas en cours -->
                     <Image Source="{Binding PauseIcon}" Height="20" Width="20"/>
                 </Button>
-                <Button Height="30" Width="30" ToolTip="Arrêter l'envoi du fichier" 
+                <Button Height="30" Width="30" 
+                        ToolTip="{DynamicResource StopFileToolTip}" 
                         Command="{Binding StopJobCommand}" 
                         Margin="5">
                     <Image Source="/resources/Assets/iconStopFile40.png" Height="20" Width="20"/>
@@ -95,14 +96,16 @@
             </StackPanel>
             <!-- Total lines, RX, Buffer (Row 1) -->
             <StackPanel Grid.Row="1" Orientation="Horizontal">
-                <Label Content="Total Lignes :" VerticalAlignment="Center"/>
-                <TextBox Text="{Binding TotalLines}" MinWidth="30" Height="25"
-                         IsReadOnly="True" 
-                         IsEnabled="False"/>
-                <Label Content="Exécutées :" VerticalAlignment="Center"/>
-                <TextBox Text="{Binding LinesExecuted}" MinWidth="30" Height="25" 
-                         IsReadOnly="True" 
-                         IsEnabled="False" />
+                <Label Content="{DynamicResource LineExecutedText}" 
+                       VerticalAlignment="Center"
+                       ToolTip="{DynamicResource LineExecutedToolTip}"/>
+                <Label Content="{Binding LinesExecuted}" 
+                         Width="30" Height="25" HorizontalContentAlignment="Right"/>
+                <Label Content="/" VerticalAlignment="Center"/>
+                <Label Content="{Binding TotalLines}" 
+                         MinWidth="30" Height="25"/>
+                
+                
             </StackPanel>
             <StackPanel Grid.Row="2" Orientation="Horizontal" >
                 <Label Content="RX :" VerticalAlignment="Center" />
@@ -119,19 +122,18 @@
             </StackPanel>
             <!-- Zone de gravure (Row 3) -->
             <StackPanel Grid.Row="3" Orientation="Horizontal">
-                <TextBlock Text="Zone de gravure :" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding WidthHeight}"/>
+                <TextBlock Text="{DynamicResource EngraveAreaLabel}" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding WidthHeight}" VerticalAlignment="Center"/>
             </StackPanel>
            <!-- Temps restant (Row 4) -->
             <StackPanel Grid.Row="4" Orientation="Horizontal">
-                <Label Content="Temps restant :"
+                <Label Content="{DynamicResource EstimatedTimeText}"
                        VerticalContentAlignment="Center"/>
                 <TextBlock Text="{Binding EstimatedJobTime, StringFormat={}{0}, Mode=OneWay}" 
-                           Width="70" 
                            HorizontalAlignment="Center"
                        VerticalAlignment="Center" 
                            TextAlignment="Center" 
-                           ToolTip="Estimation dynamique basée sur l'exécution GRBL"/>
+                           ToolTip="{DynamicResource EstimatedTimeToolTip}"/>
             </StackPanel>
             <!-- ProgressBar (Row 5) -->
             <Grid Grid.Row="5" Margin="0,5" Width="200" Height="20">

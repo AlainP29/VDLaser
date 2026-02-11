@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         xmlns:local="clr-namespace:VDLaser.Views.Controls"
+        xmlns:set="clr-namespace:VDLaser.Views.Settings"
         xmlns:conv="clr-namespace:VDLaser.Converters"
         xmlns:vm="clr-namespace:VDLaser.Views.Settings"
         xmlns:main="clr-namespace:VDLaser.ViewModels.Main;assembly=VDLaser.ViewModels"
@@ -13,6 +14,7 @@
         Title="VDLaser - impression laser 2D" Height="700" Width="1100"
         Icon="/Resources/Assets/Favicon-VD.png"
         x:Name="Root">
+    
     <Grid x:Name="MainGrid"  Background="#FFE5E5E5" >
         <Grid.RowDefinitions>
             <RowDefinition Height="7*"/>
@@ -21,22 +23,22 @@
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
             <UniformGrid DockPanel.Dock="Top" Columns="6" Height="50">
-                <ToggleButton Content="Home" Style="{StaticResource TabButtonStyleVD}"
+                <ToggleButton Content="{DynamicResource HomeTabItem}" Style="{StaticResource TabButtonStyleVD}"
                         IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Home}"
                         Command="{Binding SelectTabCommand}" CommandParameter="Home" />
-                <ToggleButton Content="Jogging" Style="{StaticResource TabButtonStyleVD}"
+                <ToggleButton Content="{DynamicResource JoggingTabItem}" Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Jogging}"
                       Command="{Binding SelectTabCommand}" CommandParameter="Jogging" />
-                <ToggleButton Content="File" Style="{StaticResource TabButtonStyleVD}"
+                <ToggleButton Content="{DynamicResource FileTabItem}" Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=File}"
                       Command="{Binding SelectTabCommand}" CommandParameter="File" />
-                <ToggleButton Content="Plotter" Style="{StaticResource TabButtonStyleVD}"
+                <ToggleButton Content="{DynamicResource PlotterTabItem}" Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Plotter}"
                       Command="{Binding SelectTabCommand}" CommandParameter="Plotter" />
-                <ToggleButton Content="Console" Style="{StaticResource TabButtonStyleVD}"
+                <ToggleButton Content="{DynamicResource ConsoleTabItem}" Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Console}"
                     Command="{Binding SelectTabCommand}" CommandParameter="Console" />
-                <ToggleButton Content="Settings" Style="{StaticResource TabButtonStyleVD}"
+                <ToggleButton Content="{DynamicResource SettingsTabItem}" Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Settings}"
                       Command="{Binding SelectTabCommand}" CommandParameter="Settings" />
             </UniformGrid>
@@ -112,8 +114,11 @@
                             <local:ControleView/>
                             <local:LoggingSettingsView/>
                             <local:GcodeSettingsView/>
+                            <set:LanguageSelectorView LanguageChanged="OnLanguageChanged"/>
                         </StackPanel>
-                        <local:GrblSettingsView/>
+                        <StackPanel Orientation="Vertical">
+                            <local:GrblSettingsView/>
+                        </StackPanel>
                     </StackPanel>
                 </Viewbox>
             </Grid>
@@ -149,7 +154,7 @@
             <StatusBarItem>
                 <Viewbox MaxHeight="20">
                 <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="État logiciel: " FontWeight="Bold"/>
+                        <TextBlock Text="{DynamicResource SoftwareStatusBar}" FontWeight="Bold"/>
                     <TextBlock Text="{Binding UiState, Converter={StaticResource MachineStateToTextConverter}, 
                                TargetNullValue='Not Connected',
                                FallbackValue='Not Connected'}" />
@@ -203,13 +208,13 @@
             <StatusBarItem>
                 <Viewbox MaxHeight="20">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="WCS: " FontWeight="Bold"/>
+                        <TextBlock Text="WCS " FontWeight="Bold"/>
                         <TextBlock Text="{Binding MachineStateVM.WorkX, StringFormat='X: {0:F2} mm'}" Margin="0,0,10,0"/>
                         <TextBlock Text="{Binding MachineStateVM.WorkY, StringFormat='Y: {0:F2} mm'}" Margin="0,0,10,0"/>
-                        <TextBlock Text="Feed : " FontWeight="Bold"/>
-                        <TextBlock Text="{Binding MachineStateVM.FeedRate, StringFormat='X: {0:F2} rpm'}" Margin="0,0,10,0"/>
-                        <TextBlock Text="Power : " FontWeight="Bold"/>
-                        <TextBlock Text="{Binding MachineStateVM.LaserPower, StringFormat='Y: {0:F2} mW'}" Margin="0,0,10,0"/>
+                        <TextBlock Text="{DynamicResource FeedLabel}" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding MachineStateVM.FeedRate, StringFormat=' {0:F2} rpm'}" Margin="0,0,10,0"/>
+                        <TextBlock Text="{DynamicResource LaserPowerLabel}" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding MachineStateVM.LaserPower, StringFormat=' {0:F2} mW'}" Margin="0,0,10,0"/>
                     </StackPanel>
                 </Viewbox>
             </StatusBarItem>

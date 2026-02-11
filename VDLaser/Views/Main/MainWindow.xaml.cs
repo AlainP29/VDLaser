@@ -38,7 +38,11 @@ namespace VDLaser.Views.Main
                 await viewModel.DisconnectCommand.ExecuteAsync(null);
             }
         }
-        
+        private void OnLanguageChanged(string lang)
+        {
+            ((App)Application.Current).SwitchLanguage(lang);
+        }
 
-}
+
+    }
 }

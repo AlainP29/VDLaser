@@ -90,7 +90,7 @@ namespace VDLaser.ViewModels.Controls
         // Propriétés d'affichage pour les dimensions
         public string DimensionsX => Stats != null ? $"{Stats.MinX:F2} à {Stats.MaxX:F2} mm" : "-";
         public string DimensionsY => Stats != null ? $"{Stats.MinY:F2} à {Stats.MaxY:F2} mm" : "-";
-        public string WidthHeight => Stats != null ? $"{Stats.Width:F2} x {Stats.Height:F2} mm" : "-";
+        public string WidthHeight => Stats != null ? $"{Stats.Width:F0} x {Stats.Height:F0}" : "-";
         public bool IsPaused => _gcodeJobService.IsPaused;
         public bool IsJobRunning => _gcodeJobService.IsRunning;
         public bool IsJobNotRunning => !_gcodeJobService.IsRunning;

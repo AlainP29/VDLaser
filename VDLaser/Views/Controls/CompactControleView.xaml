@@ -10,18 +10,18 @@
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center"
                             VerticalAlignment="Top" >
                 <Button Content="Kill alarm" Margin="5" Width="75" Style="{StaticResource ControlStyleVD }" Height="40"
-                        ToolTip="Unlock $X, used to get your machine going again after pressing reset" Background="Orange"
+                        ToolTip="{DynamicResource KillAlarmToolTip}" Background="Orange"
                         Command="{Binding KillAlarmCommand, Mode=OneWay}"/>
                 <Button Content="Soft reset" Margin="5" Width="75" Style="{StaticResource ControlStyleVD}"
-                        ToolTip="Soft reset, it stop any axis mouvement" Background="Orange" Height="40"
+                        ToolTip="{DynamicResource SoftResetToolTip}" Background="Orange" Height="40"
                         Command="{Binding SoftResetCommand, Mode=OneWay}"/>
 
                 <Button Width="75" Margin="5" Content="Pause"
-                            ToolTip="Pause cycle" Height="40"
+                            ToolTip="{DynamicResource PauseToolTip}" Height="40"
                             Command="{Binding FeedHoldCommand, Mode=OneWay}"
                             Style="{StaticResource PauseButtonStyleVD}"/>
-                <Button Width="75" Margin="5" Content="Resume" Style="{StaticResource ControlStyleVD}"
-                            ToolTip="Start/Resume cycle after a pause" Height="40"
+                <Button Width="75" Margin="5" Content="{DynamicResource ResumeButton}" Style="{StaticResource ControlStyleVD}"
+                            ToolTip="{DynamicResource ResumeToolTip}" Height="40"
                             Command="{Binding StartCycleCommand, Mode=OneWay}"/>
             </StackPanel>
         </Border>

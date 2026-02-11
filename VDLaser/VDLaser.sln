@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VDLaser.ViewModels", "..\VD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VDLaser.Tests", "..\VDLaser.Tests\VDLaser.Tests.csproj", "{77091FC5-3FC1-4C82-9494-DA56E518465F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VDLaser.Common", "..\VDLaser.Common\VDLaser.Common.csproj", "{7407F602-3467-6D20-FB35-475E865AE501}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{77091FC5-3FC1-4C82-9494-DA56E518465F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77091FC5-3FC1-4C82-9494-DA56E518465F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77091FC5-3FC1-4C82-9494-DA56E518465F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7407F602-3467-6D20-FB35-475E865AE501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7407F602-3467-6D20-FB35-475E865AE501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7407F602-3467-6D20-FB35-475E865AE501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7407F602-3467-6D20-FB35-475E865AE501}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

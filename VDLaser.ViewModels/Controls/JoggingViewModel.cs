@@ -47,7 +47,7 @@ namespace VDLaser.ViewModels.Controls
         [ObservableProperty]
         private bool _isLaserPreviewActive;
         [ObservableProperty]
-        private string _laserPreviewStatusMessage= "Laser désactivé.";
+        private string _laserPreviewStatusMessage= "Laser disabled.";
         [ObservableProperty]
         private double _manualFeedRate = 300;
         [ObservableProperty]
@@ -600,7 +600,7 @@ namespace VDLaser.ViewModels.Controls
                 return;
 
             _isLaserPreviewActive = false;
-            LaserPreviewStatusMessage = "Laser enable";
+            LaserPreviewStatusMessage = "Laser enabled";
             _log.Warning("[JoggingViewModel] LASER - Preview Stop");
 
             // Laser OFF
@@ -631,11 +631,11 @@ namespace VDLaser.ViewModels.Controls
             _log.Warning("[JoggingViewModel] LASER - Enabled = {State}", IsLaserEnabled);
             if (IsLaserEnabled)
             {
-                LaserPreviewStatusMessage = "Laser enable";
+                LaserPreviewStatusMessage = "Laser enabled";
             }
             else
             {
-                LaserPreviewStatusMessage = "Laser disable";
+                LaserPreviewStatusMessage = "Laser disabled";
             }
         }
 
@@ -654,7 +654,7 @@ namespace VDLaser.ViewModels.Controls
                     _ = _coreService.SendCommandAsync("M5");
                 }
                 LaserPower = 0;
-                LaserPreviewStatusMessage = "Laser désactivé.";
+                LaserPreviewStatusMessage = "Laser disabled.";
             }
 
 

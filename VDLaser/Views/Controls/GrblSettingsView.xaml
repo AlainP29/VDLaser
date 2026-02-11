@@ -7,7 +7,7 @@
              xmlns:gcode="clr-namespace:VDLaser.Core.Gcode;assembly=VDLaser.Core"
              xmlns:local="clr-namespace:VDLaser.Converters"
              mc:Ignorable="d">
-    <GroupBox Header="Grbl settings" Margin="5" IsEnabled="True" Style="{StaticResource GroupBoxStyleVD}">
+    <GroupBox Header="{DynamicResource GrblSettingsGroupBox}" Margin="5" IsEnabled="True" Style="{StaticResource GroupBoxStyleVD}">
         <Grid Margin="0,10,0,0" Background="#FFE5E5E5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -55,7 +55,7 @@
                         <StackPanel Grid.Column="6">
                             <Button Margin="0 0 0 0"  Command="{Binding LoadSettingsCommand, Mode=OneWay}" 
                                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    ToolTip="Refresh Grbl settings"
+                                    ToolTip="{DynamicResource GrblRefreshButton}"
                                     IsEnabled="{Binding DataContext.IsConnected, RelativeSource={RelativeSource AncestorType=Window}}">
                                 <StackPanel Height="20" Width="20">
                                     <Image Source="/Resources/Assets/iconRefresh40.png"/>
@@ -81,10 +81,10 @@
                         <StackPanel Orientation="Horizontal" Grid.Row="0">
                             <Button Content="?" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding CurrentStatusCommand, Mode=OneWay}"
-                                    ToolTip="Status Report Query"/>
+                                    ToolTip="{DynamicResource GrblStatusReportToolTip}"/>
                             <Button Content="$" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding HelpCommand, Mode=OneWay}"
-                                    ToolTip="Grbl print a help message"/>
+                                    ToolTip="{DynamicResource GrblHelpToolTip}"/>
                             <Button Content="$#" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding ParametersCommand, Mode=OneWay}"
                                     ToolTip="View gcode parameters"/>
@@ -93,23 +93,23 @@
                         <StackPanel Orientation="Horizontal" Grid.Row="1">
                             <Button Content="$N" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding StartupBlocksCommand, Mode=OneWay}"
-                                    ToolTip="View startup blocks"/>
+                                    ToolTip="{DynamicResource GrblStartupToolTip}"/>
                             <Button Content="$I" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding BuildInfoCommand, Mode=OneWay}"
-                                    ToolTip="View build info" />
+                                    ToolTip="{DynamicResource GrblBuildToolTip}" />
                             <Button Content="$C" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding CheckCommand, Mode=OneWay}"
-                                    ToolTip="Check gcode mode"/>
+                                    ToolTip="{DynamicResource GrblCheckToolTip}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Grid.Row="2">
                             <Button Content="$X" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding KillAlarmCommand, Mode=OneWay}"/>
                             <Button Content="$G" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding ParserStateCommand, Mode=OneWay}"
-                                    ToolTip="View gcode parser state" />
+                                    ToolTip="{DynamicResource GrblGcodeModeToolTip}" />
                             <Button Content="$SLP" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="40" 
                                     Command="{Binding SleepCommand, Mode=OneWay}"
-                                    ToolTip="Enable Sleep Mode" />
+                                    ToolTip="{DynamicResource GrblSleepToolTip}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Grid.Row="3">
                             <Button Content="ResetX" Margin="5" 
@@ -134,7 +134,7 @@
                             <Button Content="$RST=$" HorizontalAlignment="Left" 
                                     Margin="5" VerticalAlignment="Top" 
                                     Width="70" 
-            ToolTip="Restore Grbl settings and data to defaults" 
+            ToolTip="{DynamicResource GrblDefaultToolTip}" 
             Command="{Binding HelpCommand, Mode=OneWay}"/>
                         </StackPanel>
                     </Grid>
@@ -159,12 +159,32 @@
                     <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ScrollBarColorKey}}"/>
                 </DataGrid.VerticalGridLinesBrush>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="30" />
-                    <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="50" />
-                    <DataGridTextColumn Header="Valeur" Binding="{Binding Value}" Width="45" />
-                    <DataGridTextColumn Header="Unité" Binding="{Binding Unit}" Width="60" />
-                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="150" />
-                    <DataGridTextColumn Header="Commentaire" Binding="{Binding Comment}" Width="*" />
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="30"/>
+                    <DataGridTextColumn  Binding="{Binding Name}" Width="50">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource GrblNameDataGrid}"/>
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Binding="{Binding Value}" Width="45">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource GrblValueDataGrid}"/>
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Binding="{Binding Unit}" Width="60">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource GrblUnitDataGrid}"/>
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Binding="{Binding Description}" Width="150">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource GrblDescriptionDataGrid}"/>
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Binding="{Binding Comment}" Width="*">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource GrblCommentDataGrid}"/>
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
