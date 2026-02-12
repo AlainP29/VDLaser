@@ -13,6 +13,7 @@ using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Grbl.Models;
 using VDLaser.Core.Interfaces;
 using VDLaser.ViewModels.Base;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static VDLaser.Core.Gcode.Services.GcodeJobService;
 using static VDLaser.ViewModels.Controls.GcodeSettingsViewModel;
 
@@ -40,6 +41,8 @@ namespace VDLaser.ViewModels.Controls
         private TimeSpan _pausedDuration = TimeSpan.Zero;
         private DateTime? _pauseStartTime;
         private bool JobSuccess=false;
+        private bool _isDisplayingError = false;
+        private bool _isRecoveryExecuted = false;
         #endregion
 
         #region Observable Properties
@@ -301,7 +304,55 @@ namespace VDLaser.ViewModels.Controls
             OnPropertyChanged(nameof(PauseIcon));
             OnPropertyChanged(nameof(PauseToolTip));
         }
+        [RelayCommand(CanExecute = nameof(CanRecover))]
+        private async Task RecoverFromErrorAsync()
+        {
+            try
+            {
+                _isRecoveryExecuted= true;
+                _log.Information("[GcodeFileViewModel][JOB] Initiation of the recovery procedure.");
 
+                await _grblCoreService.SendCommandAsync("M5");
+                await _grblCoreService.SendCommandAsync("$X");
+
+                _commandQueue.ClearQueue();
+
+                await _grblCoreService.SendCommandAsync("G90 G0 X0 Y0");
+
+                _log.Information("[GcodeFileViewModel][JOB] Machine secured and returned to Origin.");
+
+                await _dialogService.ShowInfoAsync(
+            "The security procedure has been executed:\n" +
+            "- Laser off (M5)\n" +
+            "- Alarm unlocked ($X)\n" +
+            "- Return to origin (G0 X0 Y0)",
+            "Recovery complete");
+                _isDisplayingError = false;
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[GcodeFileViewModel][JOB] Error during retrieval.", ex);
+                _isRecoveryExecuted= false;
+                await _dialogService.ShowErrorAsync("[GcodeFileViewModel][JOB] Error during retrieval : " + ex.Message);
+            }
+            finally
+            {
+                LinesExecuted = 0;
+                EstimatedJobTime="00:00:00";
+                RecoverFromErrorCommand.NotifyCanExecuteChanged();
+            }
+        }
+        /// <summary>
+        /// Can recover if the job is not running, there was a job in progress (LinesExecuted > 0) 
+        /// and we are in an error state (e.g., GRBL is in Alarm/Error state). 
+        /// This allows the user to attempt a recovery without needing to reset the entire application. 
+        /// The actual check for GRBL's error state would be done in the command execution, but this method ensures we only enable recovery when it makes sense.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanRecover()
+        {
+            return !_gcodeJobService.IsRunning && !JobSuccess && LinesExecuted > 0 && !_isRecoveryExecuted;
+        }
         #endregion
 
         #region Private Methods
@@ -424,8 +475,24 @@ namespace VDLaser.ViewModels.Controls
                 GcodeLines[CurrentLineIndex - 1].IsSent = true;
             }
         }
-        private void OnJobStateChanged(object? sender, EventArgs e)
+        private async void OnJobStateChanged(object? sender, EventArgs e)
         {
+            if (!_gcodeJobService.IsRunning && LinesExecuted > 0 && LinesExecuted < TotalLines && !JobSuccess)
+            {
+                if (!_isDisplayingError && !_isRecoveryExecuted)
+                {
+                    _isDisplayingError = true;
+                    await _grblCoreService.SendCommandAsync("M5");
+                    _log.Warning("[GcodeFileViewModel[SAFETY] Job interrupted abnormally. M5 order sent automatically..");
+                    await _dialogService.ShowErrorAsync("Strict mode interrupted the work due to a GRBL error. The laser was shut down. Clic on Recovery button only if the path to origin is cleared",
+                        "Critical Stop");
+                }
+            }
+            else if (_gcodeJobService.IsRunning)
+            {
+                _isDisplayingError = false;
+                _isRecoveryExecuted= false;
+            }
             var dispatcher = System.Windows.Application.Current?.Dispatcher;
 
             if (dispatcher != null)
@@ -443,6 +510,7 @@ namespace VDLaser.ViewModels.Controls
                     OnPropertyChanged(nameof(IsJobNotRunning));
                     OnPropertyChanged(nameof(PauseIcon));
                     OnPropertyChanged(nameof(PauseToolTip));
+                    RecoverFromErrorCommand.NotifyCanExecuteChanged();
                 });
             }
         }

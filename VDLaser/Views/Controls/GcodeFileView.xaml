@@ -18,14 +18,15 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <!-- Boutons -->
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="40"/>
                 <!-- Total lines -->
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="40"/>
                 <!-- Total lines, RX, Buffer -->
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="40"/>
                 <!-- Dimensions (Zone de gravure) -->
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="40"/>
                 <!-- ProgressBar -->
+                <RowDefinition Height="30"/>
                 <RowDefinition Height="*"/>
                 <!-- Espace flexible si needed -->
             </Grid.RowDefinitions>
@@ -175,6 +176,16 @@
                        HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Black" FontWeight="Bold"/>
                 <!-- Overlay % centré -->
             </Grid>
+            <StackPanel Grid.Row="6">
+                <Button Content="{DynamicResource RecoveryFileButton}"
+                        Command="{Binding RecoverFromErrorCommand}"
+                        Background="Orange"
+                        Width="70"
+                        Margin="5"
+                        ToolTip="{DynamicResource RecoveryFileToolTip}"
+                        HorizontalAlignment="Center">
+                </Button>
+            </StackPanel>
         </Grid>
     </GroupBox>
 </UserControl>

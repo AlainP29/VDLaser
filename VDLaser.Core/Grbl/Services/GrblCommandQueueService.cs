@@ -191,6 +191,21 @@ namespace VDLaser.Core.Grbl.Services
             }
             while (_signal.WaitAsync(0).Result) { }
         }
+        public void ClearQueue()
+        {
+            lock (_sync)
+            {
+                int count = _queue.Count;
+                _queue.Clear();
+
+                _commandLengths.Clear();
+                _currentRxBytes = 0;
+
+                RxBufferSizeChanged?.Invoke(this, 0);
+
+                _log.Information("[GrblCommandQueueService] Queue emptied ({Count} commands deleted).", count);
+            }
+        }
         private void NotifyLaserState(string command)
         {
             if (TryParseLaserPower(command, out int power))
@@ -218,7 +233,6 @@ namespace VDLaser.Core.Grbl.Services
             }
             _log.Debug("[GrblCommandQueueService] Laser Mode and Power notified for command: {Command}", command);
         }
-
 
         private static bool TryParseLaserPower(string command, out int power)
         {

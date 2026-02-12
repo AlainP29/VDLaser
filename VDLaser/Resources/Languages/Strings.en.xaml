@@ -51,6 +51,8 @@
     <sys:String x:Key="EngraveAreaLabel">Engraving area:</sys:String>
     <sys:String x:Key="EstimatedTimeToolTip">Dynamic estimation based on GRBL execution</sys:String>
     <sys:String x:Key="FileGroupBox">G-Code file</sys:String>
+    <sys:String x:Key="RecoveryFileButton">Recovery</sys:String>
+    <sys:String x:Key="RecoveryFileToolTip">Recovery and reset after an error in strict mode. Cuts the laser, unlocks GRBL and returns to X0 Y0.</sys:String>
     <!--PlotterView-->
     <sys:String x:Key="CenterPlotterButton">Centering</sys:String>
     <sys:String x:Key="CenterPlotterToolTip">Centering and auto-zooming of the pattern</sys:String>

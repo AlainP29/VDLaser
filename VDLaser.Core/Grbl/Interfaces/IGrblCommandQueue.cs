@@ -29,6 +29,7 @@ namespace VDLaser.Core.Grbl.Interfaces
         event Action<bool>? LaserStateCommandSent;
 
         void Reset();
+        void ClearQueue();
         void FlushCurrentAsOk(string reason);
     }
 

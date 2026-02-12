@@ -153,7 +153,7 @@ public sealed class GcodeJobService : IGcodeJobService
                             effectiveErrorCode,
                             ErrorHandlingMode,
                             line);
-
+                        Stop();
                         success = false;
                         break;
                     }
@@ -263,9 +263,16 @@ public sealed class GcodeJobService : IGcodeJobService
             return;
 
         _cts?.Cancel();
+
+        if (_commandTaskSource != null && !_commandTaskSource.Task.IsCompleted)
+        {
+            _commandTaskSource.TrySetCanceled();
+        }
+
+        IsRunning = false;
         _commandQueue.Reset();
         StateChanged?.Invoke(this, EventArgs.Empty);
-        _log.Information("[JOB][STATE] Stop demandé.");
+        _log.Information("[GcodeJobService][STATE] Stop demandé.");
     }
     #endregion
 
@@ -302,15 +309,20 @@ public sealed class GcodeJobService : IGcodeJobService
         bool isError = e.Response?.StartsWith("error:") == true;
         int errorCode = -1;
 
-        if (isError && errorCode >= 0)
+        if (isError)
         {
             if (int.TryParse(e.Response.Split(':')[1], out int code))
             {
                 errorCode = code;
                 e.ErrorCode = code;
-                _commandTaskSource?.TrySetResult(e.ErrorCode);
             }
+            _commandTaskSource?.TrySetResult(e.ErrorCode);
         }
+        else if (e.Response == "ok")
+        {
+            _commandTaskSource?.TrySetResult(0);
+        }
+
         if (IsRunning && e.Source == "Job")
         {
             bool shouldIncrement = !isError || _ignorableErrorCodes.Contains(errorCode);
