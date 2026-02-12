@@ -35,6 +35,9 @@ namespace VDLaser.Views.Controls
             if (DataContext is not JoggingViewModel vm)
                 return;
 
+            if (!vm.IsSelectedKeyboard) 
+                return;
+
             if (e.IsRepeat)
                 return;
 
@@ -42,15 +45,19 @@ namespace VDLaser.Views.Controls
             {
                 case Key.Up:
                     await vm.JogUpStartCommand.ExecuteAsync(null);
+                    e.Handled = true;
                     break;
                 case Key.Down:
                     await vm.JogDownStartCommand.ExecuteAsync(null);
+                    e.Handled = true;
                     break;
                 case Key.Left:
                     await vm.JogLeftStartCommand.ExecuteAsync(null);
+                    e.Handled = true;
                     break;
                 case Key.Right:
                     await vm.JogRightStartCommand.ExecuteAsync(null);
+                    e.Handled = true;
                     break;
             }
         }

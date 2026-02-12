@@ -213,11 +213,28 @@ namespace VDLaser.ViewModels.Controls
                 ResponseStatus = RespStatus.Ok;  // Ajout
             }
         }
-       
+        partial void OnIsSelectedKeyboardChanged(bool value)
+        {
+            if (value)
+            {
+                ManualFeedRate = 1000;
+                _log.Information("[JoggingViewModel] Keyboard activated : Feed rate = 1000.");
+            }
+            else
+            { 
+                ManualFeedRate = 300; 
+                _log.Information("[JoggingViewModel] Keyboard deactivated : Feed rate reset to 300."); 
+            }
+            JogUpStartCommand.NotifyCanExecuteChanged();
+            JogDownStartCommand.NotifyCanExecuteChanged();
+            JogLeftStartCommand.NotifyCanExecuteChanged();
+            JogRightStartCommand.NotifyCanExecuteChanged();
+        }
         partial void OnSelectedLaserChanged(int value)
         {
             LaserPower = value;  // Met à jour le Slider quand ComboBox change
             _log.Information("[Laser] Puissance présélectionnée : {Power}", value);
+
         }
         // Dans votre logique de réception des réglages ($$) de la machine
         private void OnSettingsReceived()
@@ -372,7 +389,7 @@ namespace VDLaser.ViewModels.Controls
                 return;
             }
 
-            _log.Information("[Jogging] Feedrate = {Feed}", ManualFeedRate);
+            _log.Information("[JoggingViewModel] Feedrate = {Feed}", ManualFeedRate);
 
             if (!_coreService.IsConnected)
                 return;
@@ -474,7 +491,7 @@ namespace VDLaser.ViewModels.Controls
         /// Commandes clavier (KeyDown / KeyUp)
         /// </summary>
         /// <returns></returns>
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogUpStart()
         {
             await StartContinuousJogAsync(0, 1);
@@ -485,7 +502,7 @@ namespace VDLaser.ViewModels.Controls
         {
             await StopContinuousJogAsync();
         }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogDownStart()
         {
             await StartContinuousJogAsync(0, -1);
@@ -496,7 +513,7 @@ namespace VDLaser.ViewModels.Controls
         {
             await StopContinuousJogAsync();
         }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogLeftStart()
         {
             await StartContinuousJogAsync(-1, 0);
@@ -507,7 +524,7 @@ namespace VDLaser.ViewModels.Controls
         {
             await StopContinuousJogAsync();
         }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogRightStart()
         {
             await StartContinuousJogAsync(1, 0);
@@ -518,7 +535,7 @@ namespace VDLaser.ViewModels.Controls
         {
             await StopContinuousJogAsync();
         }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogSWStart()
         {
             await StartContinuousJogAsync(-1, -1);
@@ -528,7 +545,7 @@ namespace VDLaser.ViewModels.Controls
         {
             await StopContinuousJogAsync();
         }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogNWStart()
         {
             await StartContinuousJogAsync(-1, 1);
@@ -538,7 +555,7 @@ namespace VDLaser.ViewModels.Controls
         {
             await StopContinuousJogAsync();
         }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogSEStart()
         {
             await StartContinuousJogAsync(1,-1);
@@ -548,7 +565,7 @@ namespace VDLaser.ViewModels.Controls
         {
             await StopContinuousJogAsync();
         }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogNEStart()
         {
             await StartContinuousJogAsync(1, 1);
@@ -695,7 +712,7 @@ namespace VDLaser.ViewModels.Controls
         /// Increase the motion speed with keyboard
         /// </summary>
         /// <param name="parameter"></param>
-        [RelayCommand(CanExecute = nameof(CanExecuteLaserCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private void IncreaseFeedRate(bool parameter)
         {
             ManualFeedRate += 10;
@@ -705,7 +722,7 @@ namespace VDLaser.ViewModels.Controls
         /// Decrease the motion speed with keyboard
         /// </summary>
         /// <param name="parameter"></param>
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        [RelayCommand(CanExecute = nameof(CanJog))]
         private void DecreaseFeedRate(bool parameter)
         {
             ManualFeedRate -= 10;
@@ -715,6 +732,11 @@ namespace VDLaser.ViewModels.Controls
         {
             bool canExecute = _coreService.IsConnected;// && ResponseStatus == RespStatus.Ok;
             return canExecute;
+        }
+        private bool CanJog()
+        { 
+            bool canExecute = IsSelectedKeyboard && _coreService.IsConnected && _coreService.State.MachineState == GrblState.MachState.Idle; 
+            return canExecute; 
         }
         private bool CanExecuteLaserCommand()
         {
