@@ -184,7 +184,23 @@ public sealed class GcodeJobService : IGcodeJobService
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, timeoutCts.Token);
 
-            while (_linesSent < _totalLines) { await Task.Delay(100, _cts.Token); }
+            while (_linesSent < _totalLines)
+            {
+                try { 
+                await Task.Delay(100, _cts.Token);
+            }
+                catch (Exception ex) when (ex is OperationCanceledException || ex is TaskCanceledException)
+                {
+                        _log.Warning(
+                            "[JOB][WARNING] Wait cancelled.",ex);
+                    break;
+                }
+                catch (ObjectDisposedException)
+                {
+                    _log.Warning("[JOB][WARNING] The cancellation token has been destroyed.");
+                    break;
+                }
+            }
 
             var executionTimeout = DateTime.UtcNow.AddSeconds(60);
             while (_linesExecuted < _totalLines)

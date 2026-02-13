@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using System.IO.Ports;
 using VDLaser.Core.Console;
@@ -16,7 +16,7 @@ namespace VDLaser.Core.Grbl.Services
     /// <summary>
     /// Core service for managing GRBL device communication over a serial port.
     /// </summary>
-    public class GrblCoreService : IGrblCoreService, IDisposable, INotifyPropertyChanged
+    public partial class GrblCoreService : ObservableObject, IGrblCoreService, IDisposable 
     {
         #region Fields & Properties
         private readonly ISerialPortService _config;
@@ -34,7 +34,6 @@ namespace VDLaser.Core.Grbl.Services
         public event EventHandler? StatusUpdated;
         public event EventHandler<IReadOnlyCollection<GrblSetting>>? SettingsUpdated;
         public event EventHandler<GrblInfo>? InfoUpdated;
-        public event PropertyChangedEventHandler? PropertyChanged; // Ajout pour notifications
         
         public event EventHandler<bool>? ConnectionStateChanged;
         public event EventHandler? StatusLineReceived;
@@ -44,19 +43,12 @@ namespace VDLaser.Core.Grbl.Services
         public GrblInfo GrblInfo => _grblInfo;
 
         public bool IsLaserPower { get; private set; } = false;
+        [ObservableProperty]
         private bool _hasLoadedSettings = false;
-        public bool HasLoadedSettings
-        {
-            get => _hasLoadedSettings;
-            private set
-            {
-                _hasLoadedSettings = value;
-                OnPropertyChanged(nameof(HasLoadedSettings));
-            }
-        }
+        
         private TaskCompletionSource<bool>? _grblHandshakeTcs;
         private readonly GrblRxRingBuffer _rxRingBuffer = new();
-
+        private readonly SemaphoreSlim _serialSemaphore = new SemaphoreSlim(1, 1);
         #endregion
 
         #region Constructor
@@ -77,8 +69,7 @@ namespace VDLaser.Core.Grbl.Services
             _consoleParser= consoleParser ?? throw new ArgumentNullException(nameof(consoleParser));
             _serial = serialOverride;//injection mock pour tests unitaires
 
-            _log.Information("[GrblCoreService] Initialized");
-            _consoleParser = consoleParser;
+            _log.Information("[CORE] Initialized");
         }
         #endregion
 
@@ -108,9 +99,8 @@ namespace VDLaser.Core.Grbl.Services
             _serial = new SerialPortConnection(port);
             _serial.DataReceived += SerialPort_DataReceived;
 
-            _log.Information("[GrblCoreService] SerialPort ready on {Port}", _config.PortName);
+            _log.Information("[CORE] SerialPort ready on {Port}", _config.PortName);
         }
-
 
         /// <summary>
         /// Asynchronously connects to the GRBL device using the configured serial port settings.
@@ -123,31 +113,32 @@ namespace VDLaser.Core.Grbl.Services
                 return;
             if (string.IsNullOrWhiteSpace(_config.PortName))
             {
-                _log.Error("[GrblCoreService] Connection aborted: No COM port defined in configuration.");
+                _log.Error("[CORE] Connection aborted: No COM port defined in configuration.");
                 throw new GrblConnectionException(
                     GrblConnectionError.PortNotDefined,
-                    "Aucun port COM sélectionné");
+                    "No COM port selected");
             }
-            InitializeSerialPort();
+            if (_serial == null)
+                InitializeSerialPort();
 
             try
             {
-                _log.Information("[GrblCoreService] Opening connection to GRBL on {Port} ({Baud} baud)...", _config.PortName, _config.BaudRate);
+                _log.Information("[CORE] Opening connection to GRBL on {Port} ({Baud} baud)...", _config.PortName, _config.BaudRate);
                 await Task.Run(() => _serial!.Open());
             }
             catch (UnauthorizedAccessException ex)
             {
                 throw new GrblConnectionException(
                     GrblConnectionError.PortBusy,
-                    $"Le port {_config.PortName} est déjà utilisé",
+                    $"The port {_config.PortName} is already in use",
                     ex);
             }
             catch (IOException ex)
             {
-                _log.Error("[GrblCoreService] Failed to open serial port {Port}", _config.PortName);
+                _log.Error("[CORE] Failed to open serial port {Port}", _config.PortName);
                 throw new GrblConnectionException(
                     GrblConnectionError.PortNotAvailable,
-                    $"Impossible d’ouvrir le port {_config.PortName}",
+                    $"The port cannot be opened {_config.PortName}",
                     ex);
             }
 
@@ -165,7 +156,7 @@ namespace VDLaser.Core.Grbl.Services
             {
                 throw new GrblConnectionException(
                     GrblConnectionError.NoResponse,
-                    "Aucune réponse de la machine",
+                    "No response from the machine",
                     ex);
             }
 
@@ -176,19 +167,17 @@ namespace VDLaser.Core.Grbl.Services
                 
                 if (completed != _grblHandshakeTcs.Task || !_grblHandshakeTcs.Task.Result)
             {
-                _log.Error("[GrblCoreService] Handshake Timeout: Machine did not respond with 'Grbl X.X' or [VER:]");
+                _log.Error("[CORE] Handshake Timeout: Machine did not respond with 'Grbl X.X' or [VER:]");
                 throw new GrblConnectionException(
             GrblConnectionError.NotAGrblDevice,
-            "Le périphérique connecté n’est pas une machine GRBL");
+            "The connected device is not a GRBL machine");
             }
             await GetSettingsAsync();
             HasLoadedSettings = true;
-            _log.Information("[GrblCoreService] Connected on {port}",_config.PortName);
+            _log.Information("[CORE] Connected on {port}", _config.PortName);
             await SendCommandAsync("M5 S0");
             OnPropertyChanged(nameof(IsConnected));
             ConnectionStateChanged?.Invoke(this, true);
-
-
         }
 
         /// <summary>
@@ -211,13 +200,13 @@ namespace VDLaser.Core.Grbl.Services
                     _serial!.DataReceived -= SerialPort_DataReceived;
                     _serial!.Close();
                 });
-                _serviceProvider.GetRequiredService<IGrblCommandQueue>().Reset();
+                _serviceProvider.GetRequiredService<IGrblCommandQueue>().Reset();//No DI to avoid circular reference, get directly from provider
 
-                _log.Information("[GrblCoreService] Disconnected");
+                _log.Information("[CORE] Disconnected");
             }
             catch (Exception ex)
             {
-                _log.Error("[GrblCoreService] Disconnection failed: {Message}", ex.Message);
+                _log.Error("[CORE] Disconnection failed: {Message}", ex.Message);
                 throw;
             }
             finally
@@ -244,7 +233,7 @@ namespace VDLaser.Core.Grbl.Services
         {
             if (line.StartsWith("[VER:") || line.StartsWith("Grbl"))
             {
-                _log.Debug("[GrblCoreService] Handshake signature detected: {Line}", line);
+                _log.Debug("[CORE] Handshake signature detected: {Line}", line);
                 DataReceived?.Invoke(this, new DataReceivedEventArgs(line));
                 _grblHandshakeTcs?.TrySetResult(true);
             }
@@ -256,8 +245,10 @@ namespace VDLaser.Core.Grbl.Services
                     _state.MachineState = MachState.Alarm;
                     _state.MachineStatusColor = System.Windows.Media.Brushes.Red;
                     StatusUpdated?.Invoke(this, EventArgs.Empty);
-                    _log.Warning("[GrblCoreService] Forced state to Alarm on RX after an alarm: {Line}", line);
-                    var polling = _serviceProvider.GetRequiredService<IStatusPollingService>();
+
+                    _log.Warning("[CORE] Forced state to Alarm on RX after an alarm: {Line}", line);
+
+                    var polling = _serviceProvider.GetRequiredService<IStatusPollingService>();//No DI to avoid circular reference, get directly from provider
                     polling.ForcePoll();
                     Task.Delay(100).Wait();
                 }
@@ -272,10 +263,14 @@ namespace VDLaser.Core.Grbl.Services
                     //StatusUpdated?.Invoke(this, EventArgs.Empty);
                     
                 }
-                _log.Warning("[GrblCoreService] Error non bloquante: {Line}", line);
+                _log.Warning("[CORE] Error non bloquante: {Line}", line);
                 return;
             }
-            _log.Debug("[GrblCoreService DispatchLine Entry] Processing line: {Line}", line);
+            if (!line.StartsWith("<") && _log.IsCncEnabled)
+            {
+                _log.Debug("[CNC][CORE][RAW RX] {Line}", line);
+            }
+            _log.Debug("[CORE] DispatchLine Entry - Processing line: {Line}", line);
             
             foreach (var parser in _parsers)
             {
@@ -308,19 +303,27 @@ namespace VDLaser.Core.Grbl.Services
         /// <exception cref="InvalidOperationException"></exception>
         public async Task SendCommandAsync(string command)
         {
-            if (!IsConnected) throw new InvalidOperationException("[GrblCoreService] Not connected");
+            if (!IsConnected) throw new InvalidOperationException("[CORE] Not connected");
 
-            if (_log.IsCncEnabled)
+            await _serialSemaphore.WaitAsync();
+            try
             {
-                _log.Debug("[CNC][CORE][TX] {Command}", command);
+                if (_log.IsCncEnabled)
+                {
+                    _log.Debug("[CNC][CORE][TX] {Command}", command);
+                }
+
+                _consoleParser.BeginCommand(command);
+                if (_consoleParser.CurrentPendingCommand != null)
+                    _consoleParser.CurrentPendingCommand.Source = ConsoleSource.Manual;
+
+                await Task.Run(() => _serial?.WriteLine(command));
             }
-
-            _consoleParser.BeginCommand(command);
-            if (_consoleParser.CurrentPendingCommand != null) 
-                _consoleParser.CurrentPendingCommand.Source = ConsoleSource.Manual;
-
-            await Task.Run(() => _serial?.WriteLine(command));
-        }
+            finally
+            {
+                _serialSemaphore.Release();
+            }
+         }
 
         /// <summary>
         /// Realtime TX command to GRBL
@@ -331,14 +334,21 @@ namespace VDLaser.Core.Grbl.Services
         public async Task SendRealtimeCommandAsync(byte command)
         {
             if (!IsConnected)
-                throw new InvalidOperationException("[GrblCoreService] Not connected.");
+                throw new InvalidOperationException("[CORE] Not connected.");
 
-            if (command!= 0x3F)
+            await _serialSemaphore.WaitAsync();
+            try { 
+            if (command != 0x3F)
             {
-                _log.Information("[GrblCoreService TX RT] 0x{Cmd:X2}", command);
+                _log.Information("[CORE][TX RT] 0x{Cmd:X2}", command);
             }
 
             await Task.Run(() => _serial?.Write(new[] { command }, 0, 1));
+        }
+            finally
+            {
+                _serialSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -352,11 +362,10 @@ namespace VDLaser.Core.Grbl.Services
             if (!_serial.IsOpen)
                 return;
 
-            _log.Information("[GrblCoreService TX] {Cmd}", command);
+            _log.Information("[CORE][TX] {Cmd}", command);
 
             _serial!.WriteLine(command);
         }
-
 
         public Task HomeAsync() => SendCommandAsync("$H");
         public Task UnlockAsync() => SendCommandAsync("$X");
@@ -409,33 +418,20 @@ namespace VDLaser.Core.Grbl.Services
 
                     if (_log.IsSupportEnabled)
                     {
-                        _log.Debug("[SUPPORT][RX-BUFFER] {Buffer}", string.Join(" | ", _rxRingBuffer));
+                        _log.Debug("[SUPPORT][CORE][RX-BUFFER] {Buffer}", string.Join(" | ", _rxRingBuffer));
+                        _log.Debug("[SUPPORT][CORE][RAW RX] {Line}", line);
                     }
                     DataReceived?.Invoke(this, new DataReceivedEventArgs(line));
                     DispatchLine(line);
-                    if (!line.StartsWith("<"))
-                    {
-                        _log.Debug("[GrblCoreService RAW RX] {Line}", line);
-                    }
+                    
                 }
 
 
             }
             catch (Exception ex)
             {
-                _log.Error("[GrblCoreService] RX error: {Message}", ex.Message);
+                _log.Error("[CORE] RX error: {Message}", ex.Message);
             }
-        }
-        /// <summary>
-        /// Raises the <see cref="PropertyChanged"/> event to notify listeners that a property value has changed.
-        /// </summary>
-        /// <remarks>Call this method from within a property setter to notify data binding clients or
-        /// other listeners that the property value has changed. Derived classes can override this method to customize
-        /// the event invocation behavior.</remarks>
-        /// <param name="propertyName">The name of the property that changed. This value cannot be null or empty.</param>
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         /// <summary>
         /// Marks the settings as loaded.
