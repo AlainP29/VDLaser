@@ -23,24 +23,66 @@
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
             <UniformGrid DockPanel.Dock="Top" Columns="6" Height="50">
-                <ToggleButton Content="{DynamicResource HomeTabItem}" Style="{StaticResource TabButtonStyleVD}"
+                <ToggleButton Style="{StaticResource TabButtonStyleVD}"
                         IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Home}"
-                        Command="{Binding SelectTabCommand}" CommandParameter="Home" />
-                <ToggleButton Content="{DynamicResource JoggingTabItem}" Style="{StaticResource TabButtonStyleVD}"
+                        Command="{Binding SelectTabCommand}" CommandParameter="Home" >
+                    <ToggleButton.Content>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="/Resources/Assets/iconHome40.png" Width="16" Height="16" Margin="0,0,15,0"/>
+                            <TextBlock Text="{DynamicResource HomeTabItem}" Margin="0,0,5,0"/>
+                        </StackPanel>
+                    </ToggleButton.Content>
+                </ToggleButton>
+                <ToggleButton Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Jogging}"
-                      Command="{Binding SelectTabCommand}" CommandParameter="Jogging" />
-                <ToggleButton Content="{DynamicResource FileTabItem}" Style="{StaticResource TabButtonStyleVD}"
+                      Command="{Binding SelectTabCommand}" CommandParameter="Jogging">
+                    <ToggleButton.Content>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="/Resources/Assets/iconManette40.png" Width="16" Height="16" Margin="0,0,15,0"/>
+                            <TextBlock Text="{DynamicResource JoggingTabItem}" Margin="0,0,5,0"/>
+                        </StackPanel>
+                    </ToggleButton.Content>
+                </ToggleButton>
+                <ToggleButton Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=File}"
-                      Command="{Binding SelectTabCommand}" CommandParameter="File" />
-                <ToggleButton Content="{DynamicResource PlotterTabItem}" Style="{StaticResource TabButtonStyleVD}"
+                      Command="{Binding SelectTabCommand}" CommandParameter="File">
+                    <ToggleButton.Content>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="/Resources/Assets/iconProjet40.png" Width="16" Height="16" Margin="0,0,15,0"/>
+                            <TextBlock Text="{DynamicResource FileTabItem}" Margin="0,0,5,0"/>
+                        </StackPanel>
+                    </ToggleButton.Content>
+                </ToggleButton>
+                <ToggleButton Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Plotter}"
-                      Command="{Binding SelectTabCommand}" CommandParameter="Plotter" />
-                <ToggleButton Content="{DynamicResource ConsoleTabItem}" Style="{StaticResource TabButtonStyleVD}"
+                      Command="{Binding SelectTabCommand}" CommandParameter="Plotter">
+                    <ToggleButton.Content>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="/Resources/Assets/iconGraphique40.png" Width="16" Height="16" Margin="0,0,15,0"/>
+                            <TextBlock Text="{DynamicResource PlotterTabItem}" Margin="0,0,5,0"/>
+                        </StackPanel>
+                    </ToggleButton.Content>
+                </ToggleButton>
+                <ToggleButton Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Console}"
-                    Command="{Binding SelectTabCommand}" CommandParameter="Console" />
-                <ToggleButton Content="{DynamicResource SettingsTabItem}" Style="{StaticResource TabButtonStyleVD}"
+                    Command="{Binding SelectTabCommand}" CommandParameter="Console">
+                    <ToggleButton.Content>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="/Resources/Assets/iconConsole40.png" Width="16" Height="16" Margin="0,0,15,0"/>
+                            <TextBlock Text="{DynamicResource ConsoleTabItem}" Margin="0,0,5,0"/>
+                        </StackPanel>
+                    </ToggleButton.Content>
+                </ToggleButton>
+                <ToggleButton Style="{StaticResource TabButtonStyleVD}"
                       IsChecked="{Binding CurrentTab, Converter={StaticResource EqualToBoolConverter}, ConverterParameter=Settings}"
-                      Command="{Binding SelectTabCommand}" CommandParameter="Settings" />
+                      Command="{Binding SelectTabCommand}" CommandParameter="Settings">
+                    <ToggleButton.Content>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="/Resources/Assets/iconMaintenance40.png" Width="16" Height="16" Margin="0,0,15,0"/>
+                            <TextBlock Text="{DynamicResource SettingsTabItem}" Margin="0,0,5,0"/>
+                        </StackPanel>
+                    </ToggleButton.Content>
+                </ToggleButton>
             </UniformGrid>
             <Grid VerticalAlignment="Stretch" Background="#FFE5E5E5">
                 <Grid.ColumnDefinitions>
