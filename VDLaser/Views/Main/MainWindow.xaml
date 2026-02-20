@@ -172,14 +172,18 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            
-            <Separator Grid.Column="1" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="5"/>
             <Viewbox Grid.Column="0">
             <local:CompactControleView  VerticalAlignment="Center"/>
             </Viewbox>
-            <Viewbox Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <Separator Grid.Column="1" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="5"/>
+            <Viewbox Grid.Column="2" HorizontalAlignment="Left">
+                <local:ExitView VerticalAlignment="Center"/>
+            </Viewbox>
+            <Separator Grid.Column="3" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="5"/>
+            <Viewbox Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center">
             <Button 
             Content="E-STOP" 
             FontSize="16"

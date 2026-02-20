@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Windows;
-using VDLaser.ViewModels.Controls;
 using VDLaser.ViewModels.Main;
 
 namespace VDLaser.Views.Main
@@ -19,6 +18,9 @@ namespace VDLaser.Views.Main
             };
             }
             this.Language = System.Windows.Markup.XmlLanguage.GetLanguage("en-US");
+            this.Closing += (s, e) => {
+                Serilog.Log.CloseAndFlush();
+            };
         }
 
         // Événement Loaded : Initialisations post-chargement de la fenêtre
@@ -43,6 +45,13 @@ namespace VDLaser.Views.Main
             ((App)Application.Current).SwitchLanguage(lang);
         }
 
-
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (DataContext is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+            base.OnClosing(e);
+        }
     }
 }

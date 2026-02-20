@@ -103,4 +103,6 @@
     <sys:String x:Key="ConsoleDataGridDescriptionToolTip">Description</sys:String>
     <sys:String x:Key="ConsoleDataGridSourceToolTip">Source</sys:String>
     <sys:String x:Key="ConsoleDataGridSeverityToolTip">Gravité</sys:String>
+    <!--ExitView-->
+    <sys:String x:Key="ExitButton">Quitter</sys:String>
 </ResourceDictionary>

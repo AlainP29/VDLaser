@@ -34,6 +34,8 @@
             <converters:SeverityToBrushConverter x:Key="SeverityToBrushConverter"/>
             <converters:ConsoleTypeToBrushConverter x:Key="ConsoleTypeToBrushConverter"/>
             <converters:TimeSpanToStringConverter x:Key="TimeSpanToStringConverter"/>
+            <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter"/>
+            <converters:InvertValueConverter x:Key="InvertValueConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

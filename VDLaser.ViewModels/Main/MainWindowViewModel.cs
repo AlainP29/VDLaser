@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Serilog;
 using System.ComponentModel;
 using System.IO;
+using System.Windows;
 using VDLaser.Core.Gcode.Interfaces;
 using VDLaser.Core.Grbl.Errors;
 using VDLaser.Core.Grbl.Interfaces;
@@ -94,7 +96,6 @@ namespace VDLaser.ViewModels.Main
             MachineStateViewModel machineStateVM,
             GcodeSettingsViewModel gcodeSettingsVM)
         {
-            // Injection de dépendances et validation
             _grblService = grblService ?? throw new ArgumentNullException(nameof(grblService));
             _gcodeJobService=jobService?? throw new ArgumentNullException(nameof(jobService));
             _serialService=serialService?? throw new ArgumentNullException(nameof(serialService));
@@ -118,7 +119,7 @@ namespace VDLaser.ViewModels.Main
             _controleVM.PropertyChanged += OnControleVMPropertyChanged;
 
             _serialService.ConnectionLost += async (s, e) => {
-                _log.Fatal("Lien USB perdu ! Arrêt du logiciel.");
+                _log.Fatal("[Main] Lien USB perdu ! Arrêt du logiciel.");
                 await EmergencyStop();
                 await HandleAutoReconnect();
                 _dialogService.ShowErrorAsync("Le câble USB semble avoir été débranché. Le job est annulé.");
@@ -165,7 +166,7 @@ namespace VDLaser.ViewModels.Main
         {
             if (e.PropertyName == nameof(ControleViewModel.IsHomingInProgress) && _controleVM.IsHomingInProgress)
             {
-                _log.Debug("[MainWindowViewModel] Homing sequence started via ControleViewModel");
+                _log.Debug("[Main] Homing sequence started via ControleViewModel");
                 UiState = MachineUiState.Homing;
             }
 
@@ -173,7 +174,7 @@ namespace VDLaser.ViewModels.Main
             {
                 if (_controleVM.IsHomingOk)
                 {
-                    _log.Information("[MainWindowViewModel] Homing successful. Machine is now Ready.");
+                    _log.Information("[Main] Homing successful. Machine is now Ready.");
                     UiState = MachineUiState.Ready;
                 }
             }
@@ -184,7 +185,7 @@ namespace VDLaser.ViewModels.Main
         partial void OnUiStateChanged(MachineUiState value)
         {
 
-            _log.Debug("[MainWindowViewModel] Machine UI State transition to: {NewState}", value);
+            _log.Debug("[Main] Machine UI State transition to: {NewState}", value);
 
             ConnectionState = value switch
             {
@@ -206,14 +207,14 @@ namespace VDLaser.ViewModels.Main
         {
             if(e.PropertyName == nameof(IGrblCoreService.IsConnected))
                 {
-                _log.Information("[MainWindowViewModel] Serial connection established. Starting Polling Service.");
+                _log.Information("[Main] Serial connection established. Starting Polling Service.");
                 _polling.Start();
                 
             }
             if (_grblService.State.MachineState == MachState.Alarm)
             {
                 if (UiState != MachineUiState.Alarm)
-                    _log.Warning("[MainWindowViewModel] Hardware Alarm detected! Machine state locked.");
+                    _log.Warning("[Main] Hardware Alarm detected! Machine state locked.");
 
                 UiState = MachineUiState.Alarm;
             }
@@ -250,7 +251,7 @@ namespace VDLaser.ViewModels.Main
         [RelayCommand(CanExecute = nameof(CanConnect))]
         private async Task Connect()
         {
-            _log.Information("[MainWindowViewModel] Connection - Attempting to connect to {Port}...", SerialPortSettingVM.PortName);
+            _log.Information("[Main] Connection - Attempting to connect to {Port}...", SerialPortSettingVM.PortName);
 
             IsConnecting = true;
             IsLoading = true;
@@ -263,11 +264,11 @@ namespace VDLaser.ViewModels.Main
 
                 IsConnected = true;
                 UiState = MachineUiState.Connected;
-                _log.Information("[MainWindowViewModel] Connection - Successfully connected to GRBL controller.");
+                _log.Information("[Main] Connection - Successfully connected to GRBL controller.");
             }
             catch (GrblConnectionException ex)
             {
-                _log.Warning("[MainWindowViewModel] Connection {Error} - {Message}", ex.Error,ex.Message);
+                _log.Warning("[Main] Connection {Error} - {Message}", ex.Error,ex.Message);
                 IsConnected = false;
                 ConnectionState = ex.Message;
                 ConnectionError?.Invoke(this, ex.Message);
@@ -279,13 +280,13 @@ namespace VDLaser.ViewModels.Main
             }
             catch (IOException ex)
             {
-                _log.Error("[MainWindowViewModel] Connection - IO Error. Port {Port} might be in use or unavailable.", SerialPortSettingVM.PortName);
+                _log.Error("[Main] Connection - IO Error. Port {Port} might be in use or unavailable.", SerialPortSettingVM.PortName);
                 IsConnected = false;
                 ConnectionState = $"Impossible to open {SerialPortSettingVM.PortName}";
             }
             catch (Exception ex)
             {
-                _log.Fatal("[MainWindowViewModel] Connection - Unexpected error during connection attempt: {Message}", ex);
+                _log.Fatal("[Main] Connection - Unexpected error during connection attempt: {Message}", ex);
                 IsConnected = false;
                 ConnectionState = "Fatal Connection error";
             }
@@ -301,7 +302,7 @@ namespace VDLaser.ViewModels.Main
         [RelayCommand(CanExecute = nameof(CanDisconnect))]
         private async Task Disconnect()
         {
-            _log.Information("[MainWindowViewModel] Connection - User requested disconnection.");
+            _log.Information("[Main] Connection - User requested disconnection.");
 
             if (!IsConnected) return;
 
@@ -315,7 +316,7 @@ namespace VDLaser.ViewModels.Main
             }
             catch (Exception ex)
             {
-                _log.Error("[MainWindowViewModel] Connection - Error during clean disconnect.");
+                _log.Error("[Main] Connection - Error during clean disconnect.");
             }
             finally
             {
@@ -330,7 +331,7 @@ namespace VDLaser.ViewModels.Main
         public async Task EmergencyStop()
         {
 
-            _log.Warning("[MainWindowViewModel] Safety - EMERGENCY STOP TRIGGERED BY USER.");
+            _log.Warning("[Main] Safety - EMERGENCY STOP TRIGGERED BY USER.");
 
             try
             {
@@ -346,11 +347,11 @@ namespace VDLaser.ViewModels.Main
                 await _grblService.SendCommandAsync("M5");
 
                 UiState = MachineUiState.EmergencyStop;
-                _log.Information("[MainWindowViewModel] Safety - Emergency Stop sequence sent successfully.");
+                _log.Information("[Main] Safety - Emergency Stop sequence sent successfully.");
             }
             catch (Exception ex)
             {
-                _log.Fatal("[MainWindowViewModel] Safety - FAILED TO SEND EMERGENCY STOP COMMAND!");
+                _log.Fatal("[Main] Safety - FAILED TO SEND EMERGENCY STOP COMMAND!");
             }
         }
 
@@ -359,14 +360,14 @@ namespace VDLaser.ViewModels.Main
             if (_isAttemptingReconnect) return;
             _isAttemptingReconnect = true;
             UiState = MachineUiState.Reconnecting;
-            _log.Warning("[MainWindowViewModel] Mode reconnexion automatique activé...");
+            _log.Warning("[Main] Mode reconnexion automatique activé...");
 
             // On récupère le nom du port qui vient d'être perdu
             string lostPort = _serialService.PortName;
 
             while (IsConnected)
             {
-                _log.Information("[MainWindowViewModel] Tentative de reconnexion sur {Port}...", lostPort);
+                _log.Information("[Main] Tentative de reconnexion sur {Port}...", lostPort);
 
                 // 1. Vérifier si le port est de nouveau visible dans Windows
                 if (_serialService.IsPortAvailable(lostPort))
@@ -377,7 +378,7 @@ namespace VDLaser.ViewModels.Main
                         _serialService.Open();
                         if (IsConnected)
                         {
-                            _log.Information("[MainWindowViewModel] Reconnexion réussie !");
+                            _log.Information("[Main] Reconnexion réussie !");
                             _isAttemptingReconnect = false;
 
                             // Optionnel : On peut tenter un Reset GRBL pour repartir propre
@@ -387,11 +388,11 @@ namespace VDLaser.ViewModels.Main
                     }
                     catch (UnauthorizedAccessException)
                     {
-                        _log.Warning("[MainWindowViewModel] Accès refusé à {Port} (encore utilisé par le système). Nouvelle tentative...", _serialService.PortName);
+                        _log.Warning("[Main] Accès refusé à {Port} (encore utilisé par le système). Nouvelle tentative...", _serialService.PortName);
                     }
                     catch (Exception ex)
                     {
-                        _log.Error("[MainWindowViewModel] Erreur lors de la réouverture : {Msg}", ex.Message);
+                        _log.Error("[Main] Erreur lors de la réouverture : {Msg}", ex.Message);
                     }
                 }
 
@@ -407,7 +408,7 @@ namespace VDLaser.ViewModels.Main
         private void SelectTab(string tabName)
         {
             CurrentTab = tabName;
-            _log.Debug("[MainWindowViewModel] Navigation vers l'onglet : {Tab}", tabName);
+            _log.Debug("[Main] Navigation vers l'onglet : {Tab}", tabName);
         }
         private void OnGrblErrorReceived(object? sender, int errorCode)
         {
@@ -447,7 +448,41 @@ namespace VDLaser.ViewModels.Main
                 case "Settings": IsSettingsViewVisible = true; break;
             }
 
-            _log.Debug("[MainWindowViewModel] Switched view to: {ViewName}", viewName);
+            _log.Debug("[Main] Switched view to: {ViewName}", viewName);
+        }
+        [RelayCommand]
+        private async Task QuitApplication()
+        {
+            bool confirm = await _dialogService.AskConfirmationAsync(
+        "Do you want to quit the application?",
+        "Exit VDLaser");
+
+            if (!confirm) return;
+
+            try
+            {
+                if (_gcodeJobService.IsRunning)
+                {
+                    _log.Warning("[Main] Quit - A job is currently running. Stopping job before exit.");
+                    _gcodeJobService.Stop();
+                }
+                if (_grblService.IsConnected)
+                {
+                    _grblService.SendCommandAsync("M5").Wait(500);
+                    await _grblService.DisconnectAsync();
+                }
+                _log.Information("[Main] Application exit requested by user.");
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[Main] Error during application exit: {Message}", ex);
+            }
+            finally
+            {
+                Serilog.Log.CloseAndFlush();
+                System.Windows.Application.Current.Shutdown();
+            }
+            
         }
         protected override void Dispose(bool disposing)
         {

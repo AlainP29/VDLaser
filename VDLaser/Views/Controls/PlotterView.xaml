@@ -20,51 +20,52 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="9*"/>
                     <RowDefinition Height="14*"/>
-                    <RowDefinition Height="15"/>
+                    <RowDefinition Height="20"/>
                 </Grid.RowDefinitions>
                 <!-- StackPanel pour boutons -->
                 <StackPanel Grid.Column="0" Orientation="Vertical" 
                             Margin="5,0,5,0" 
-                            VerticalAlignment="Center" Height="230" Grid.RowSpan="2">
+                            VerticalAlignment="Center">
                     <Button Content="{DynamicResource CenterPlotterButton}" 
                             Command="{Binding AutoCenterCommand}" 
                             ToolTip="{DynamicResource CenterPlotterToolTip}"
-                             Width="70"
+                             Width="80"
                             Margin="0,0,0,5"/>
                     <Button Content="{DynamicResource SetOriginPlotterButton}" Command="{Binding SetOriginCommand}" 
                             ToolTip="{DynamicResource SetOriginPlotterToolTip}" 
-                            Margin="0,0,0,5"/>
+                            Margin="0,0,0,5"
+                            Width="80"/>
                     <Button Content="{DynamicResource ResetPlotterButton}"
                             Command="{Binding ResetViewCommand}"
                             ToolTip="{DynamicResource ResetPlotterToolTip}"
-                            Width="70"
+                            Width="80"
                             Margin="0"/>
-                    <TextBlock Text="{Binding ToolPathGeometry.Figures.Count, StringFormat='Segments: {0}'}"
-           Grid.Row="0" Grid.Column="0"
-           Foreground="Black"
-           HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0"/>
-                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Margin="5,0,5,0" Height="127">
-                        <Button Margin="0,0,0,5" 
-                        Width="60"
-                        Content="{Binding IsSimulating,
-                        Converter={StaticResource BooleanToStringConverter},
-                        ConverterParameter=Stop|Start}"
-                        Command="{Binding ToggleSimulationCommand}">
-                        </Button>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Margin="5,0,5,0" Height="127">
+                        
                         <Label Content="{DynamicResource SimulationPlotterLabel}"/>
+                    <StackPanel Orientation="Horizontal">
                         <Slider Minimum="0.5" Maximum="10" Value="{Binding SimulationSpeed}" 
-            TickFrequency="0.5" IsSnapToTickEnabled="True" Margin="0"/>
+            TickFrequency="0.5" IsSnapToTickEnabled="True" Margin="0 0 5 0" Width="50"/>
                         <TextBlock Text="{Binding SimulationSpeed, StringFormat={}{0:F1}x}" 
                Foreground="Black" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{Binding MachinepositionPointSize}" HorizontalAlignment="Center" Foreground="Black" Margin="0,5,0,0"/>
-
-                        <CheckBox x:Name="ColorToggle" Content="{DynamicResource ColorPlotterCheckBox}" Margin="0" Width="54"/>
-                        <TextBlock Text="{Binding MachinepositionPointSize}" HorizontalAlignment="Center" Foreground="Black" Margin="0,5,0,0"/>
                     </StackPanel>
-
-                </StackPanel>
+                    <Button Margin="0,5,0,5"
+                            Content="{Binding IsSimulating,
+                            Converter={StaticResource BooleanToStringConverter},
+                            ConverterParameter=Stop|Start}"
+                            Command="{Binding ToggleSimulationCommand}">
+                    </Button>
+                    <CheckBox x:Name="ColorToggle" Content="{DynamicResource ColorPlotterCheckBox}" 
+                              Margin="0" Width="54"/>
+                    </StackPanel>
+                <!-- Axis -->
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="0" Foreground="CornflowerBlue" 
+                            FontSize="10" 
+                            FontWeight="Bold"/>
                 <!-- Labels Y -->
-                <ItemsControl Grid.Row="0" Grid.Column="1" ItemsSource="{Binding YAxisLabels}" HorizontalContentAlignment="Right" Grid.RowSpan="2">
+                <ItemsControl Grid.Column="1" ItemsSource="{Binding YAxisLabels}" 
+                              HorizontalContentAlignment="Left" Grid.RowSpan="2">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <UniformGrid Columns="1"/>
@@ -72,13 +73,18 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding StringFormat={}{0:F0}}" VerticalAlignment="Center" Margin="0,0,5,0" 
-                                       Foreground="CornflowerBlue" FontSize="10" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding StringFormat={}{0:F0}}" 
+                                       VerticalAlignment="Center" 
+                                       Margin="0,0,5,0" 
+                                       Foreground="CornflowerBlue" 
+                                       FontSize="10" 
+                                       FontWeight="Bold"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
                 <!-- Labels X -->
-                <ItemsControl Grid.Row="2" Grid.Column="2" ItemsSource="{Binding XAxisLabels}">
+                <ItemsControl Grid.Row="2" Grid.Column="2" ItemsSource="{Binding XAxisLabels}"
+                              HorizontalContentAlignment="Left" VerticalAlignment="Center">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <UniformGrid Rows="1"/>
@@ -86,25 +92,32 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" HorizontalAlignment="Center" Margin="0,5,0,0"
-                                       Foreground="CornflowerBlue" FontSize="10" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding}" 
+                                       HorizontalAlignment="Center" 
+                                       Margin="0,5,0,0"
+                                       Foreground="CornflowerBlue" 
+                                       FontSize="10" 
+                                       FontWeight="Bold"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
                 <!-- Canvas principal -->
-                <Grid Grid.Row="0" Grid.Column="2" x:Name="CanvasContainer" ClipToBounds="True" Grid.RowSpan="2" MinWidth="500">
+                <Grid Grid.Row="0" Grid.Column="2" x:Name="CanvasContainer" ClipToBounds="True" 
+                      Grid.RowSpan="2" Width="400" Height="300">
                     <Grid.Background>
                         <VisualBrush TileMode="Tile" 
                                      Viewbox="0,0,1,1" 
                                      Viewport="0,0,10,10" 
                                      ViewportUnits="Absolute">
                             <VisualBrush.Visual>
-                                <Rectangle x:Name="TileRect" Height="5" Width="5" Stroke="AliceBlue" StrokeThickness="0.1">
+                                <Rectangle x:Name="TileRect" Height="5" Width="5" Stroke="AliceBlue" 
+                                           StrokeThickness="0.1">
                                     <Rectangle.Style>
                                         <Style TargetType="Rectangle">
                                             <Setter Property="Fill" Value="Black"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsChecked, ElementName=ColorToggle}" Value="True">
+                                                <DataTrigger Binding="{Binding IsChecked, ElementName=ColorToggle}" 
+                                                             Value="True">
                                                     <Setter Property="Fill" Value="White"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
@@ -114,17 +127,22 @@
                             </VisualBrush.Visual>
                         </VisualBrush>
                     </Grid.Background>
-                    <Canvas x:Name="ViewportCanvas" Grid.Row="0"
-                Loaded="ViewportCanvas_Loaded"
-                SizeChanged="ViewportCanvas_SizeChanged"
-                MouseWheel="ViewportCanvas_MouseWheel"
-                MouseLeftButtonDown="ViewportCanvas_MouseLeftButtonDown"
-                MouseMove="ViewportCanvas_MouseMove"
-                MouseLeftButtonUp="ViewportCanvas_MouseLeftButtonUp"
-                RenderTransformOrigin="0,0" Grid.RowSpan="2"
+                    <Canvas x:Name="ViewportCanvas" Grid.Row="0" Grid.RowSpan="2"
+                            Width="{Binding CanvasWidth, Mode=OneWay}"
+                            Height="{Binding CanvasHeight, Mode=OneWay}"
+                            Loaded="ViewportCanvas_Loaded"
+                            SizeChanged="ViewportCanvas_SizeChanged"
+                            MouseWheel="ViewportCanvas_MouseWheel"
+                            MouseLeftButtonDown="ViewportCanvas_MouseLeftButtonDown"
+                            MouseMove="ViewportCanvas_MouseMove"
+                            MouseLeftButtonUp="ViewportCanvas_MouseLeftButtonUp"
+                            MouseEnter="ViewportCanvas_MouseEnter"
+                            MouseLeave="ViewportCanvas_MouseLeave"
+                            RenderTransformOrigin="0,0"
                             SnapsToDevicePixels="False"
                             UseLayoutRounding="False"
-                            Background="Transparent">
+                            Background="Transparent"
+                            ClipToBounds="True">
                         <Canvas.Style>
                             <Style TargetType="Canvas">
                                 <Setter Property="RenderOptions.EdgeMode" Value="Aliased" />
@@ -144,7 +162,8 @@
                                 </Style.Triggers>
                             </Style>
                         </Canvas.Style>
-                        <Canvas.RenderTransform>
+                        <Grid>
+                        <Grid.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform
                         ScaleX="{Binding Viewport.Scale, Mode=OneWay}"
@@ -155,27 +174,7 @@
                         X="{Binding Viewport.TranslationX, Mode=OneWay}"
                         Y="{Binding Viewport.TranslationY, Mode=OneWay}" />
                             </TransformGroup>
-                        </Canvas.RenderTransform>
-                        
-                        <!-- highLight -->
-                        <Ellipse Width="6" Height="6" 
-         Fill="Red" 
-         Stroke="White" 
-         StrokeThickness="1"
-         IsHitTestVisible="False"
-         Visibility="{Binding HighlightPoint, Converter={StaticResource NullToVisibilityConverter}}">
-                            <Ellipse.RenderTransform>
-                                <TranslateTransform X="{Binding HighlightPoint.X}" 
-                            Y="{Binding HighlightPoint.Y}" />
-                            </Ellipse.RenderTransform>
-                            <Ellipse.Margin>-3,-3,0,0</Ellipse.Margin>
-                        </Ellipse>
-                        <Path
-                            Data="{Binding HighlightSegmentGeometry}"
-                            Stroke="Red"
-                            StrokeThickness="2"
-                            StrokeDashArray="2 2"
-                            IsHitTestVisible="False"/>
+                        </Grid.RenderTransform>
                         <!-- Bounding box -->
                         <Path Data="{Binding BoundingBoxGeometry}"
                               Stroke="Yellow"
@@ -190,31 +189,81 @@
                             StrokeThickness="{Binding IsInteracting, Converter={StaticResource ThicknessConverter}}"
                             StrokeDashArray="2,2"
                             Panel.ZIndex="10"
-                              IsHitTestVisible="False"/>
+                              IsHitTestVisible="False"
+                              Opacity="{Binding IsHovered, Converter={StaticResource BooleanToOpacityConverter}}"/>
                         <!-- Tool path -->
                         <Path Data="{Binding EngravePathGeometry}" 
-              Stroke="DodgerBlue" 
-              StrokeThickness="1"
-              StrokeStartLineCap="Round" 
-              StrokeEndLineCap="Round" 
-              Panel.ZIndex="10"
-              SnapsToDevicePixels="True"
+                              Stroke="DodgerBlue" 
+                              StrokeThickness="1"
+                              StrokeStartLineCap="Round" 
+                              StrokeEndLineCap="Round" 
+                              Panel.ZIndex="10"
+                              SnapsToDevicePixels="True"
                               IsHitTestVisible="False"/>
                         <!-- Triangle pour simulation (tool head) -->
                         <Polygon Points="-5,-3 0,0 -5,3" Fill="Green" Panel.ZIndex="20">
-                            <Polygon.RenderTransform>
+                                <Polygon.LayoutTransform>
+                                    <ScaleTransform 
+            ScaleX="{Binding Viewport.Scale, Converter={StaticResource InvertValueConverter}}" 
+            ScaleY="{Binding Viewport.Scale, Converter={StaticResource InvertValueConverter}}" />
+                                </Polygon.LayoutTransform>
+                                <Polygon.RenderTransform>
                                 <MatrixTransform x:Name="ToolMatrixTransform" />
                             </Polygon.RenderTransform>
                         </Polygon>
                         <!-- Cercle bleu pour position réelle de la machine (corrigé) -->
-                        <Ellipse Width="{Binding MachinePositionPointSize}" Height="{Binding MachinePositionPointSize}" Fill="{Binding LaserHeadBrush}" Opacity="0.8" Panel.ZIndex="15"
-                 Canvas.Left="{Binding MachinePositionPoint.X, Converter={StaticResource OffsetConverter}, ConverterParameter=0}"
-                 Canvas.Top="{Binding MachinePositionPoint.Y, Converter={StaticResource OffsetConverter}, ConverterParameter=-2}" />
-                        <Ellipse Width="6" Height="6" Fill="Yellow" Stroke="Red" StrokeThickness="1"
-         Canvas.Left="{Binding HighlightPoint.X, Converter={StaticResource OffsetConverter}, ConverterParameter=-3}"
-         Canvas.Top="{Binding HighlightPoint.Y, Converter={StaticResource OffsetConverter}, ConverterParameter=-3}"
-         Panel.ZIndex="100">
-                            <Ellipse.Style>
+                            <Ellipse Width="{Binding MachinePositionPointSize}" 
+                                 Height="{Binding MachinePositionPointSize}" 
+                                 Fill="{Binding LaserHeadBrush}" 
+                                 Opacity="0.8" 
+                                 Panel.ZIndex="15"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top" >
+                                <Ellipse.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform 
+                                            ScaleX="{Binding Viewport.Scale, Converter={StaticResource InvertValueConverter}}" 
+                                            ScaleY="{Binding Viewport.Scale, Converter={StaticResource InvertValueConverter}}"
+                                            CenterX="-1" CenterY="-1"/>
+                                        <TranslateTransform 
+                                        X="{Binding MachinePositionPoint.X}" 
+                                        Y="{Binding MachinePositionPoint.Y}"/>
+                                    </TransformGroup>
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                            <!-- highLight -->
+                            <!-- Segment-->
+                            <Ellipse Width="6" Height="6" 
+        Fill="Red" 
+        Stroke="White" 
+        StrokeThickness="1"
+        IsHitTestVisible="False"
+                                     Validation.ErrorTemplate="{x:Null}"
+        Visibility="{Binding HighlightPoint, Converter={StaticResource NullToVisibilityConverter}}">
+                                <Ellipse.RenderTransform>
+                                    <TranslateTransform 
+            X="{Binding HighlightPoint.X}" 
+            Y="{Binding HighlightPoint.Y}" />
+                                </Ellipse.RenderTransform>
+                                <Ellipse.Margin>-3,-3,0,0</Ellipse.Margin>
+                            </Ellipse>
+                            <Path
+    Data="{Binding HighlightSegmentGeometry}"
+    Stroke="Red"
+    StrokeThickness="2"
+    StrokeDashArray="2 2"
+    IsHitTestVisible="False"/>
+                            <!--Point-->
+                            <Ellipse Width="10" Height="10" 
+                                     Fill="Yellow" 
+                                     Stroke="Red" 
+                                     StrokeThickness="1"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top"
+                                     Panel.ZIndex="100"
+                                     IsHitTestVisible="False"
+                                     Validation.ErrorTemplate="{x:Null}">
+                                <Ellipse.Style>
                                 <Style TargetType="Ellipse">
                                     <Setter Property="Visibility" Value="Visible"/>
                                     <Style.Triggers>
@@ -224,7 +273,19 @@
                                     </Style.Triggers>
                                 </Style>
                             </Ellipse.Style>
-                        </Ellipse>
+                                <Ellipse.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform 
+                ScaleX="{Binding Viewport.Scale, Converter={StaticResource InvertValueConverter}}" 
+                ScaleY="{Binding Viewport.Scale, Converter={StaticResource InvertValueConverter}}"
+                CenterX="-1" CenterY="-1" />
+                                        <TranslateTransform 
+                                            X="{Binding HighlightPoint.X}" 
+                                            Y="{Binding HighlightPoint.Y}" />
+                                    </TransformGroup>
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                        </Grid>
                     </Canvas>
                 </Grid>
             </Grid>

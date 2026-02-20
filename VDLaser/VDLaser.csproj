@@ -7,6 +7,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Assets\iconConsole40.png" />
+    <None Remove="Resources\Assets\iconGraphique40.png" />
+    <None Remove="Resources\Assets\iconHome40.png" />
+    <None Remove="Resources\Assets\iconMaintenance40.png" />
+    <None Remove="Resources\Assets\iconManette40.png" />
+    <None Remove="Resources\Assets\iconProjet40.png" />
+  </ItemGroup>
 	
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -27,15 +36,33 @@
     <Resource Include="Resources\Assets\Favicon-VD.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\Assets\iconConsole40.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\Assets\iconEStop40.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\Assets\iconFrame40.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\Assets\iconGraphique40.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Assets\iconHome40.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Assets\iconMaintenance40.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Assets\iconManette40.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\Assets\iconOpenFile40.png" />
     <Resource Include="Resources\Assets\iconPause40.png" />
     <Resource Include="Resources\Assets\iconPlay40.png" />
+    <Resource Include="Resources\Assets\iconProjet40.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\Assets\iconRefresh40.png" />
     <Resource Include="Resources\Assets\iconStop40.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -49,6 +76,10 @@
     <Page Update="Resources\Styles\VDStyle.xaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Windows\" />
   </ItemGroup>
 
 </Project>

@@ -147,20 +147,20 @@ namespace VDLaser.Core.Gcode.Services
 
                 Point targetPoint = new Point(targetX - offsetX, targetY - offsetY);
 
-                // CORRECTION : Si c'est G0 ou si on n'a pas encore de figure, on en crée une.
                 if (currentG == 0 || currentFigure == null)
                 {
                     currentFigure = new PathFigure { StartPoint = targetPoint, IsFilled = false };
                     geometry.Figures.Add(currentFigure);
                 }
-                else if (currentG == 1) // G1
+                else if (currentG == 1)
                 {
                     currentFigure.Segments.Add(new LineSegment(targetPoint, true));
                 }
-                else if (currentG == 2 || currentG == 3) // G2/G3
+                else if (currentG == 2 || currentG == 3)
                 {
                     var arc = CreateArc(curX, curY, targetX, targetY, cmd.I ?? 0, cmd.J ?? 0, currentG == 3, offsetX, offsetY);
                     currentFigure.Segments.Add(arc);
+                    if(currentG==3) _log.Information("[DebugArc] Traitement d'un arc G3 (Anti-horaire)");
                 }
 
                 curX = targetX;
@@ -169,27 +169,28 @@ namespace VDLaser.Core.Gcode.Services
             }
             return geometry;
         }
-        private ArcSegment CreateArc(double startX, double startY, double endX, double endY, double i, double j, bool isCounterClockwise, double offsetX, double offsetY)
+        private ArcSegment CreateArc(double startX, double startY, double endX, double endY, double i, double j, bool isClockwise, double offsetX, double offsetY)
         {
             double centerX = startX + i - offsetX;
             double centerY = startY + j - offsetY;
             double radius = Math.Sqrt(Math.Pow((startX - offsetX) - centerX, 2) + Math.Pow((startY - offsetY) - centerY, 2));
+            
             return new ArcSegment
             {
                 Point = new Point(endX - offsetX, endY - offsetY),
                 Size = new Size(radius, radius),
-                //SweepDirection = isCounterClockwise ? SweepDirection.Counterclockwise : SweepDirection.Counterclockwise,
-                SweepDirection = isCounterClockwise ? SweepDirection.Counterclockwise : SweepDirection.Clockwise,
-                IsLargeArc = IsLargeArc(startX, startY, endX, endY, centerX + offsetX, centerY + offsetY, isCounterClockwise)
+                //SweepDirection = isCounterClockwise ? SweepDirection.Clockwise : SweepDirection.Counterclockwise,
+                SweepDirection = isClockwise ? SweepDirection.Clockwise : SweepDirection.Counterclockwise,
+                IsLargeArc = IsLargeArc(startX, startY, endX, endY, centerX + offsetX, centerY + offsetY, isClockwise)
             };
         }
-        private bool IsLargeArc(double startX, double startY, double endX, double endY, double centerX, double centerY, bool isCCW)
+        private bool IsLargeArc(double startX, double startY, double endX, double endY, double centerX, double centerY, bool isCW)
         {
             double angleStart = Math.Atan2(startY - centerY, startX - centerX);
             double angleEnd = Math.Atan2(endY - centerY, endX - centerX);
             double diff = angleEnd - angleStart;
 
-            if (isCCW)
+            if (isCW)
             {
                 if (diff <= 0) diff += 2 * Math.PI;
             }
@@ -197,7 +198,7 @@ namespace VDLaser.Core.Gcode.Services
             {
                 if (diff >= 0) diff -= 2 * Math.PI;
             }
-            return Math.Abs(diff) > Math.PI;
+            return Math.Abs(diff) > (Math.PI + 0);
         }
     }
 }
