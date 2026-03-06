@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
-using Serilog;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
@@ -13,14 +12,13 @@ using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Grbl.Models;
 using VDLaser.Core.Interfaces;
 using VDLaser.ViewModels.Base;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using static VDLaser.Core.Gcode.Services.GcodeJobService;
 using static VDLaser.ViewModels.Controls.GcodeSettingsViewModel;
 
 namespace VDLaser.ViewModels.Controls
 {
     /// <summary>
-    /// G
+    /// Manages the loading, display, and execution of G-code files, including job control (start, pause, stop) and real-time progress tracking.
     /// </summary>
     public partial class GcodeFileViewModel : ViewModelBase
     {
@@ -34,7 +32,7 @@ namespace VDLaser.ViewModels.Controls
         private readonly ConsoleViewModel _consoleViewModel;
         #endregion
 
-        #region Champs de suivi (Job)
+        #region Job properties
         private CancellationTokenSource? _jobTokenSource;
         private DateTime _jobStartTime;
         private TimeSpan _estimatedTotalTime;
@@ -104,6 +102,7 @@ namespace VDLaser.ViewModels.Controls
         public string PauseToolTip => IsPaused ? "Reprendre la gravure" : "Mettre en pause";
         public string PauseIcon => IsPaused ? "/Resources/Assets/iconResume40.png" : "/Resources/Assets/iconPause40.png";
         #endregion
+
         public GcodeFileViewModel(IGcodeFileService gcodeFileService,
             IGcodeJobService gcodeJobService, IGrblCommandQueue commandQueue, ILogService log, IGrblCoreService grblCoreService, IDialogService dialogService, ConsoleViewModel consoleViewModel)
         {
@@ -115,7 +114,6 @@ namespace VDLaser.ViewModels.Controls
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(log));
             _consoleViewModel= consoleViewModel ?? throw new ArgumentNullException(nameof(consoleViewModel));
 
-            // Inscription aux événements
             _gcodeJobService.ProgressChanged += OnJobProgressChanged;
             _grblCoreService.StatusUpdated += OnGrblStatusUpdated;
             _gcodeJobService.ExecutionProgressChanged += OnJobExecutionChanged;
@@ -124,52 +122,61 @@ namespace VDLaser.ViewModels.Controls
 
             WeakReferenceMessenger.Default.Register<ErrorModeChangedMessage>(this, (sender, msg) =>
             {
-                // Optionnel : Mettre à jour une propriété locale si besoin pour UI
-                _log.Debug("[GcodeFileViewModel] Mode synchronisé : {Mode}", msg.Mode);
+                _log.Debug("[GcodeFileVM] Sync mode : {Mode}", msg.Mode);
             });
         }
 
         #region Commands
         /// <summary>
-        /// Ouvre une boîte de dialogue pour sélectionner et charger un fichier G-code.
+        /// Open a file dialog to select a G-code file, then load and parse it. This command is disabled while a job is running or during framing to prevent conflicts.
         /// </summary>
+        /// <returns></returns>
         [RelayCommand(CanExecute = nameof(CanLoadOrFrame))]
         private async Task OpenFileAsync()
         {
+            LogContextual(_log, "OpenFileAsync", "Opening file dialog");
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Filter = "G-Code files (*.nc;*.gcode;*.txt)|*.nc;*.gcode;*.txt|All files (*.*)|*.*"
+                Filter = "G-Code files (*.nc;*.gcode)|*.nc;*.gcode|All files (*.*)|*.*"
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
                 await LoadGcodeAsync(openFileDialog.FileName);
+                LogContextual(_log, "OpenFileAsync", $"Loaded: {FileName}");
             }
         }
         /// <summary>
-        /// Démarre l'exécution du job G-code actuel.
+        /// Starts the execution of the loaded G-code job asynchronously.
         /// </summary>
+        /// <remarks>The job will only start if a G-code file is loaded and the machine is connected. If
+        /// these conditions are not met, an error dialog is displayed and the job does not start. Progress and job
+        /// state are updated throughout execution. If the job is cancelled or an error occurs, the operation is safely
+        /// terminated and the user is notified. This method is intended to be used as a command in UI
+        /// scenarios.</remarks>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         [RelayCommand(CanExecute = nameof(CanStart))]
         public async Task StartJobAsync()
         {
+            LogContextual(_log, "StartJob", $"Starting job: {FileName}");
             if (GcodeLines.Count == 0)
             {
-                _log.Warning("[GcodeFileViewModel] Impossible de démarrer: Aucun fichier");
-                await _dialogService.ShowErrorAsync("Veuillez d'abord charger un fichier G-code.", "Aucun fichier");
+                _log.Warning("[GcodeFileVM] No file");
+                await _dialogService.ShowErrorAsync("Please load a gcode file.", "No file");
                 return;
             }
 
             if (!_grblCoreService.IsConnected)
             {
-                _log.Warning("[GcodeFileViewModel] Impossible de démarrer: Erreur de connexion");
-                await _dialogService.ShowErrorAsync("La machine n'est pas connectée.", "Erreur de connexion");
+                _log.Warning("[GcodeFileViewModel] Not possible to start: Connection error");
+                await _dialogService.ShowErrorAsync("The machine is not connected.", "Connection error");
                 return;
             }
             _jobTokenSource = new CancellationTokenSource();
             _consoleViewModel.BeginJob();
             try
             {
-                _log.Information("[GcodeFileViewModel] Démarrage du job G-code : {Total} lignes.", TotalLines);
+                _log.Information("[GcodeFileVM] Start job G-code : {Total} lines.", TotalLines);
                 ResetJobState();
 
                 var rawLines = GcodeLines.Select(item => item.RawLine).ToList();
@@ -179,65 +186,71 @@ namespace VDLaser.ViewModels.Controls
                     ProgressPercentage = 100;
                     _consoleViewModel.EndJob(true);
                     JobSuccess = jobSuccess;
-                    _log.Information("[GcodeFileViewModel] Job G-code terminé avec succès.");
+                    _log.Information("[GcodeFileVM] G-code Job success.");
                 }
                 else
                 {
-                    _log.Warning("[GcodeFileViewModel] Job G-code interrompu ou terminé avec des erreurs.");
+                    _log.Warning("[GcodeFileVM] G-code Job stopped or finished with errors.");
                     ProgressPercentage = 0;
                     _consoleViewModel.EndJob(false);
                 }
             }
             catch (OperationCanceledException)
             {
-                _log.Information("[GcodeFileViewModel] Job annulé par l'utilisateur.");
+                _log.Error("[GcodeFileVM] User stopped Job.");
                 _consoleViewModel.EndJob(false);
             }
             catch (Exception ex)
             {
-                _log.Error("[GcodeFileViewModel] Erreur fatale lors de l'exécution du job : {Message}", ex.Message);
+                _log.Error("[GcodeFileVM] Fatal error during job execution : {Message}", ex.Message);
                 ProgressPercentage = 0;
-                await _dialogService.ShowErrorAsync($"Erreur durant l'exécution : {ex.Message}");
+                await _dialogService.ShowErrorAsync($"Error during executionn : {ex.Message}");
                 _consoleViewModel.EndJob(false);
             }
             finally
             {
                 ActualTotalTime = DateTime.UtcNow - _jobStartTime - _pausedDuration;
-                //JobSuccess = jobSuccess && _consoleViewModel.ErrorCount == 0;  // Utilise ErrorCount de console pour erreurs non bloquantes
                 ErrorCount = _consoleViewModel.ErrorCount;
                 GenerateEngravingReport();
                 _consoleViewModel.EndJob(JobSuccess);
                 CleanupJob();
             }
         }
-        /// <summary> 
-        /// Arrête l'exécution en cours et réinitialise le service de job. 
+        /// <summary>
+        /// Stops the currently running job immediately if a job is active.
         /// </summary>
+        /// <remarks>This method cancels the ongoing job operation and signals any associated services to
+        /// halt processing. Can only be executed when a job is running, as determined by the IsJobRunning property.
+        /// Calling this method when no job is active has no effect.</remarks>
         [RelayCommand(CanExecute = nameof(IsJobRunning))]
         public void StopJob()
         {
+            LogContextual(_log, "StopJob", "User requested immediate stop");
             if (_jobTokenSource == null) return;
 
             _gcodeJobService.Stop();
             _jobTokenSource.Cancel();
-            
-            _log.Information("[GcodeFileViewModel] Action - Demande d'arrêt du job reçue.");
         }
-        /// <summary> Met l'exécution du job en pause. </summary>
+        /// <summary>
+        /// Put the current job on hold, allowing for a temporary pause in execution. Can only be executed when a job is actively running and not already paused. When invoked, this method signals the job service to enter a paused state, which should halt the sending of G-code commands to the machine until resumed. The UI should reflect the paused state through properties like PauseIcon and PauseToolTip, which are updated after pausing.
+        /// </summary>
         [RelayCommand(CanExecute = nameof(CanPause))]
         public void PauseJob()
-        { 
+        {
+            LogContextual(_log, "PauseJob", "User requested job pause");
+
             _gcodeJobService.Pause();
             OnPropertyChanged(nameof(PauseIcon));
             OnPropertyChanged(nameof(PauseToolTip));
-            _log.Information("[GcodeFileViewModel] Action - Mise en pause du job en cours.");
         }
-        /// <summary> Reprend l'exécution du job mis en pause. </summary>
+        /// <summary>
+        /// Resumes a paused job, allowing execution to continue from the point it was paused. Can only be executed when a job is actively running and currently in a paused state. When invoked, this method signals the job service to exit the paused state and resume sending G-code commands to the machine. The UI should update accordingly to reflect the resumed state through properties like PauseIcon and PauseToolTip, which are updated after resuming.
+        /// </summary>
         [RelayCommand(CanExecute = nameof(CanResume))]
         public void ResumeJob()
         {
+            LogContextual(_log, "ResumeJob", "User resume current job");
             _gcodeJobService.Resume();
-            _log.Information("[GcodeFileViewModel] Action - Reprise du job en cours.");
 
         }
         /// <summary>
@@ -246,9 +259,11 @@ namespace VDLaser.ViewModels.Controls
         [RelayCommand(CanExecute = nameof(CanLoadOrFrame))]
         public async Task RunFrameAsync()
         {
+            LogContextual(_log, "RunFrameAsync", "User requested a framing");
+
             if (Stats == null || !_grblCoreService.IsConnected)
             {
-                _log.Warning("[GcodeFileViewModel] Framing impossible : Stats nulles ou GRBL déconnecté.");
+                _log.Warning("[GcodeFileVM] Framing impossible : Stats null ou GRBL disconnected.");
                 return;
             }
 
@@ -256,7 +271,6 @@ namespace VDLaser.ViewModels.Controls
             IsFraming = true;
             try
             {
-                _log.Information("[GcodeFileViewModel] Début de la séquence de cadrage (Framing)");
                 ProgressPercentage = 0;
                 await _commandQueue.EnqueueAsync("G90", "Frame");
                 _grblCoreService.RaiseDataReceived($">> G90");
@@ -282,12 +296,10 @@ namespace VDLaser.ViewModels.Controls
                 ProgressPercentage = 100;
 
                 _grblCoreService.RaiseDataReceived($">> M5");
-
-                _log.Information("[GcodeFileViewModel] Séquence de cadrage terminée.");
             }
             catch (Exception ex)
             {
-                _log.Error("[GcodeFileViewModel] Erreur lors du framing : {Message}", ex.Message);
+                _log.Error("[GcodeFileVM] Error during framing : {Message}", ex.Message);
             }
             finally
             {
@@ -297,7 +309,8 @@ namespace VDLaser.ViewModels.Controls
         }
         [RelayCommand]
         public void TogglePauseJob()
-        {             if (IsPaused)
+        {             
+            if (IsPaused)
                 ResumeJob();
             else
                 PauseJob();
@@ -310,7 +323,7 @@ namespace VDLaser.ViewModels.Controls
             try
             {
                 _isRecoveryExecuted= true;
-                _log.Information("[GcodeFileViewModel][JOB] Initiation of the recovery procedure.");
+                _log.Information("[GcodeFileVM][JOB] Initiation of the recovery procedure.");
 
                 await _grblCoreService.SendCommandAsync("M5");
                 await _grblCoreService.SendCommandAsync("$X");
@@ -319,7 +332,7 @@ namespace VDLaser.ViewModels.Controls
 
                 await _grblCoreService.SendCommandAsync("G90 G0 X0 Y0");
 
-                _log.Information("[GcodeFileViewModel][JOB] Machine secured and returned to Origin.");
+                _log.Information("[GcodeFileVM][JOB] Machine secured and returned to Origin.");
 
                 await _dialogService.ShowInfoAsync(
             "The security procedure has been executed:\n" +
@@ -331,9 +344,9 @@ namespace VDLaser.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                _log.Error("[GcodeFileViewModel][JOB] Error during retrieval.", ex);
+                _log.Error("[GcodeFileVM][JOB] Error during retrieval.", ex);
                 _isRecoveryExecuted= false;
-                await _dialogService.ShowErrorAsync("[GcodeFileViewModel][JOB] Error during retrieval : " + ex.Message);
+                await _dialogService.ShowErrorAsync("[GcodeFileVM][JOB] Error during retrieval : " + ex.Message);
             }
             finally
             {
@@ -356,9 +369,6 @@ namespace VDLaser.ViewModels.Controls
         #endregion
 
         #region Private Methods
-        /// <summary>
-        /// Charge et analyse le contenu d'un fichier G-code.
-        /// </summary>
         private async Task LoadGcodeAsync(string filePath)
         {
             try
@@ -366,7 +376,6 @@ namespace VDLaser.ViewModels.Controls
                 var result = await _gcodeFileService.LoadAsync(filePath);
                 FileName = Path.GetFileName(filePath);
                 Stats = result.Stats;
-                _log.Information("[GcodeFileViewModel] Rawlines count : {line} ", result.RawLines.Count);
                 var tempList = new List<GcodeItemViewModel>();
                 int lineNumber = 1;
 
@@ -380,23 +389,19 @@ namespace VDLaser.ViewModels.Controls
                         tempList.Add(new GcodeItemViewModel(lineNumber++, rawLine, command,_log));
                     }
                 }
-                _log.Information("[GcodeFileViewModel] Avant set GcodeLines - Count: {Count}", GcodeLines.Count);
                 GcodeLines.Clear();
                 GcodeLines = new ObservableCollection<GcodeItemViewModel>(tempList);
-                _log.Information("[GcodeFileViewModel] Après set GcodeLines - Count: {Count}", GcodeLines.Count);
                 TotalLines = GcodeLines.Count;
                 
                 RefreshUIProperties();
-                _log.Information("[GcodeFileViewModel] Fichier G-code chargé : {FilePath} ({Lines} lignes)", filePath, GcodeLines.Count);
             }
             catch (Exception ex)
             {
-                _log.Error("[GcodeFileViewModel] Erreur lors du chargement du fichier G-code : {Message}", ex.Message);
-                await _dialogService.ShowErrorAsync($"Impossible de lire le fichier :\n{ex.Message}", "Erreur de chargement");
+                _log.Error("[GcodeFileVM] Erro when loading G-code file : {Message}", ex.Message);
+                await _dialogService.ShowErrorAsync($"Impossible to load file :\n{ex.Message}", "Error during loading");
             }
 
         }
-        /// <summary> Réinitialise les variables de suivi temporel avant un nouveau job. </summary>
         private void ResetJobState()
         {
             _jobStartTime = DateTime.UtcNow;
@@ -410,14 +415,12 @@ namespace VDLaser.ViewModels.Controls
             ActualTotalTime = TimeSpan.Zero;
             _consoleViewModel.ResetErrorsForJob();
         }
-        /// <summary> Libère les ressources du job et réinitialise les indicateurs visuels des lignes. </summary>
         private void CleanupJob()
         {
             _jobTokenSource?.Dispose();
             _jobTokenSource = null;
             foreach (var item in GcodeLines) item.IsSent = false;
         }
-        /// <summary> Notifie l'UI que les propriétés dépendantes des Stats ont changé. </summary>
         private void RefreshUIProperties()
         {
             OnPropertyChanged(nameof(DimensionsX));
@@ -426,7 +429,6 @@ namespace VDLaser.ViewModels.Controls
             OnPropertyChanged(nameof(EstimatedJobTime));
             OnPropertyChanged(nameof(GcodeLines));
         }
-        /// <summary> Calcule le temps restant en fonction de la progression réelle. </summary>
         private void UpdateRemainingTime(int linesExecuted, int totalLines)
         {
             if (totalLines == 0 || linesExecuted == 0)
@@ -457,7 +459,6 @@ namespace VDLaser.ViewModels.Controls
             double bufferAdjustment = (double)estimatedRemainingLines / TotalLines;
             timeProgress = Math.Max(timeProgress, 1.0 - bufferAdjustment);
 
-            // On ne laisse pas le temps dépasser la progression réelle de l'envoi
             double sendProgress = ProgressPercentage / 100.0;
             if (timeProgress > sendProgress) timeProgress = sendProgress;
 
@@ -483,7 +484,7 @@ namespace VDLaser.ViewModels.Controls
                 {
                     _isDisplayingError = true;
                     await _grblCoreService.SendCommandAsync("M5");
-                    _log.Warning("[GcodeFileViewModel[SAFETY] Job interrupted abnormally. M5 order sent automatically..");
+                    _log.Warning("[GcodeFileVM] [SAFETY] Job interrupted abnormally. M5 order sent automatically.");
                     await _dialogService.ShowErrorAsync("Strict mode interrupted the work due to a GRBL error. The laser was shut down. Clic on Recovery button only if the path to origin is cleared",
                         "Critical Stop");
                 }
@@ -573,19 +574,20 @@ namespace VDLaser.ViewModels.Controls
         private void GenerateEngravingReport()
         {
             var report = new StringBuilder();
-            report.AppendLine($"Rapport de gravure pour {FileName}:");
-            report.AppendLine($"Succès : {(JobSuccess ? "Oui" : $"Non (avec {_consoleViewModel.ErrorCount} erreurs non bloquantes)")}");
-            report.AppendLine($"Temps total réel : {ActualTotalTime:hh\\:mm\\:ss}");
-            report.AppendLine($"Lignes exécutées : {LinesExecuted}/{TotalLines}");
+            report.AppendLine($"Job report for {FileName}:");
+            report.AppendLine($"Success : {(JobSuccess ? "Yes" : $"No (with {_consoleViewModel.ErrorCount} completed with error)")}");
+            report.AppendLine($"Total time : {ActualTotalTime:hh\\:mm\\:ss}");
+            report.AppendLine($"Lines executed : {LinesExecuted}/{TotalLines}");
             if (_consoleViewModel.ErrorCount > 0)
             {
-                report.AppendLine("Erreurs détaillées :");
+                report.AppendLine("Error details :");
                 foreach (var msg in _consoleViewModel.ErrorMessages)  // Si ajoutée
                     report.AppendLine($"- {msg}");
-                report.AppendLine($"Dernière erreur : {_consoleViewModel.LastErrorMessage}");
+                report.AppendLine($"Last error : {_consoleViewModel.LastErrorMessage}");
             }
 
-            _log.Information("[GcodeFileViewModel] {Report}", report.ToString());
+            _log.Information("[GcodeFileVM] {Report}", report.ToString());
+            LogContextual(_log, "JobReport", report.ToString());
         }
         
         #endregion

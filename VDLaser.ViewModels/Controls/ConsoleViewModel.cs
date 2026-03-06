@@ -14,47 +14,49 @@ using VDLaser.ViewModels.Base;
 
 namespace VDLaser.ViewModels.Controls
 {
+    /// <summary>
+    /// Represents the view model for the console interface, providing collections and commands for displaying,
+    /// filtering, and exporting console messages in both raw and structured formats.
+    /// </summary>
+    /// <remarks>ConsoleViewModel manages the state and presentation of console output, including error
+    /// tracking, filtering options, and export functionality. It supports both raw and structured message modes,
+    /// allowing users to view and interact with console data according to their preferences. The view model integrates
+    /// with services for logging, parsing, and core communication, and exposes commands for clearing and exporting
+    /// console logs. Thread safety is maintained for UI updates via SynchronizationContext. This class implements
+    /// IDisposable to detach event handlers and release resources when no longer needed.</remarks>
     public partial class ConsoleViewModel : ViewModelBase, IDisposable
     {
+        #region Fields & Dependencies
         private readonly ILogService _log;
         private readonly IConsoleParserService _parser;
         private readonly IGrblCoreService _coreService;
         private readonly SynchronizationContext? _syncContext;
         private bool _disposed;
+        #endregion
 
-        // ============================================================
-        //  COLLECTIONS
-        // ============================================================
-
+        #region Collections
         public ObservableCollection<string> RawLines { get; } = new();
         public ObservableCollection<ConsoleItem> StructuredLines { get; } = new();
         public ObservableCollection<string> ErrorMessages { get; } = new();
         public ICollectionView RawView { get; }
         public ICollectionView StructuredView { get; }
+        #endregion
 
-        // ============================================================
-        //  MODES
-        // ============================================================
-
+        #region UI Properties
         [ObservableProperty]
         private bool _isRawMode = false;
-
         public bool IsStructuredMode => !IsRawMode;
-
-        // ============================================================
-        //  PARAMÈTRES
-        // ============================================================
-
         [ObservableProperty]
         private int _maxLines = 500;
-
         [ObservableProperty]
         private bool _isAutoScrollPaused;
+        [ObservableProperty]
+        private int _errorCount;
+        [ObservableProperty]
+        private string _lastErrorMessage = "No error";
+        #endregion
 
-        // ============================================================
-        //  FILTRES CHECKBOX
-        // ============================================================
-
+        #region Filter Properties
         [ObservableProperty] private bool _showCommands = true;
         [ObservableProperty] private bool _showResponses = true;
         [ObservableProperty] private bool _showStatus = false;
@@ -63,21 +65,8 @@ namespace VDLaser.ViewModels.Controls
         [ObservableProperty] private bool _showSystem = true;
         [ObservableProperty] private bool _showJob = true;
         [ObservableProperty] private bool _showDebug = false;
-
-        // ============================================================
-        //  ERREURS
-        // ============================================================
-
-        [ObservableProperty]
-        private int _errorCount;
-
-        [ObservableProperty]
-        private string _lastErrorMessage = "Aucune erreur";
-
-        // ============================================================
-        //  CONSTRUCTEUR
-        // ============================================================
-
+        #endregion
+        
         public ConsoleViewModel(
             IGrblCoreService coreService,
             ILogService log,
@@ -93,25 +82,12 @@ namespace VDLaser.ViewModels.Controls
             StructuredView.Filter = o => FilterItem((ConsoleItem)o);
 
             _coreService.DataReceived += OnDataReceived;
+            _log.Information("[ConsoleVM] Initialized");
         }
 
-        // ============================================================
-        //  DISPOSE
-        // ============================================================
 
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
 
-            _coreService.DataReceived -= OnDataReceived;
-            _disposed = true;
-        }
-
-        // ============================================================
-        //  RÉCEPTION DES DONNÉES
-        // ============================================================
-
+        #region Data Processing
         private void OnDataReceived(object? sender, DataReceivedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(e.Text))
@@ -124,11 +100,15 @@ namespace VDLaser.ViewModels.Controls
             var item = _parser.ParseStructured(raw);
             if (item != null)
                 _syncContext?.Post(_ => AddStructured(item), null);
-        }
 
-        // ============================================================
-        //  AJOUT DES LIGNES
-        // ============================================================
+            // Ensure UI updates happen on the main thread
+            /*Application.Current.Dispatcher.BeginInvoke(() =>
+            {
+                AddRaw(raw);
+                var item = _parser.ParseStructured(raw);
+                if (item != null) AddStructured(item);
+            });*/
+        }
 
         private void AddRaw(string line)
         {
@@ -155,10 +135,6 @@ namespace VDLaser.ViewModels.Controls
             EnforceVisibleLimit();
         }
 
-        // ============================================================
-        //  FILTRAGE STRUCTURÉ
-        // ============================================================
-
         private bool FilterItem(ConsoleItem item)
         {
             if (string.IsNullOrWhiteSpace(item.Message) && string.IsNullOrWhiteSpace(item.Response)) 
@@ -183,20 +159,18 @@ namespace VDLaser.ViewModels.Controls
             if (MaxLines <= 0)
                 return;
 
-            // On récupère les lignes visibles selon le filtre
             var visible = StructuredLines.Where(item => FilterItem(item)).ToList();
 
             int overflow = visible.Count - MaxLines;
             if (overflow <= 0)
                 return;
 
-            // On supprime les plus anciennes visibles
             for (int i = 0; i < overflow; i++)
             {
                 StructuredLines.Remove(visible[i]);
             }
         }
-
+        #endregion
         partial void OnShowCommandsChanged(bool value) => StructuredView.Refresh();
         partial void OnShowResponsesChanged(bool value) => StructuredView.Refresh();
         partial void OnShowStatusChanged(bool value) => StructuredView.Refresh();
@@ -206,25 +180,22 @@ namespace VDLaser.ViewModels.Controls
         partial void OnShowJobChanged(bool value) => StructuredView.Refresh();
         partial void OnShowDebugChanged(bool value) => StructuredView.Refresh();
 
-        // ============================================================
-        //  COMMANDES
-        // ============================================================
-
+        #region commands
         [RelayCommand]
         private void ClearConsole()
         {
+            LogContextual(_log, "ClearConsole", "User cleared console history");
             RawLines.Clear();
             StructuredLines.Clear();
             ErrorCount = 0;
-            LastErrorMessage = "Aucune erreur";
+            LastErrorMessage = "No error";
             IsAutoScrollPaused = false;
         }
 
         [RelayCommand]
         private void ExportConsole()
         {
-            _log.Information("[Console] Exporting logs...");
-
+            LogContextual(_log, "ExportConsole", "Opening save dialog");
             var dialog = new SaveFileDialog
             {
                 Filter = "Text file (*.txt)|*.txt",
@@ -233,7 +204,7 @@ namespace VDLaser.ViewModels.Controls
 
             if (dialog.ShowDialog() != true)
             {
-                _log.Debug("[ConsoleViewModel] Export cancelled by user.");
+                _log.Debug("[ConsoleVM] Export cancelled by user.");
                 return;
             }
 
@@ -243,13 +214,11 @@ namespace VDLaser.ViewModels.Controls
 
                 if (IsRawMode)
                 {
-                    // Export RAW
                     foreach (var line in RawLines)
                         sb.AppendLine(line);
                 }
                 else
                 {
-                    // Export STRUCTURÉ
                     foreach (var item in StructuredLines)
                     {
                         if(item.Type!= ConsoleMessageType.Status)
@@ -262,7 +231,7 @@ namespace VDLaser.ViewModels.Controls
                 File.WriteAllText(dialog.FileName, sb.ToString(), Encoding.UTF8);
 
                 _log.Information(
-                    "[ConsoleViewModel] Successfully exported {LineCount} lines to {Path}",
+                    "[ConsoleVM] Successfully exported {LineCount} lines to {Path}",
                     IsRawMode ? RawLines.Count : StructuredLines.Count,
                     dialog.FileName
                 );
@@ -275,7 +244,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                _log.Error("[ConsoleViewModel] Failed to export logs to file:", ex);
+                _log.Error("[ConsoleVM] Failed to export logs to file:", ex);
 
                 StructuredLines.Add(new ConsoleItem(
                     "Failed to export console logs.",
@@ -283,22 +252,34 @@ namespace VDLaser.ViewModels.Controls
                 ));
             }
         }
+        #endregion
 
+        #region Helpers & Job Lifecycle
         public void ResetErrorsForJob()
         {
             ErrorCount = 0;
-            LastErrorMessage = "Aucune erreur";
+            LastErrorMessage = "No errors";
         }
         public void BeginJob()
         {
-            AddStructured(new ConsoleItem("Début du job de gravure", ConsoleMessageType.Job));
+            AddStructured(new ConsoleItem("Job started", ConsoleMessageType.Job));
             ResetErrorsForJob();
         }
 
         public void EndJob(bool success)
         {
-            AddStructured(new ConsoleItem(success ? "Fin du job : Succès" : "Fin du job : Avec erreurs", ConsoleMessageType.Job));
+            AddStructured(new ConsoleItem(success ? "Job finished: Success" : "Job finished: Failed", ConsoleMessageType.Job));
         }
-    }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing) _coreService.DataReceived -= OnDataReceived;
+                _disposed = true;
+            }
+            base.Dispose(disposing);
+        }
+        #endregion
+    }
 }
