@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.Localization;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows;
 using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Grbl.Models;
@@ -12,21 +10,25 @@ using VDLaser.ViewModels.Base;
 namespace VDLaser.ViewModels.Controls
 {
     /// <summary>
-    /// Gère les commandes de contrôle direct de la machine (Homing, Jog, Reset, Alarme).
+    /// Manages direct machine control commands (Homing, Jog, Reset, Alarm).
     /// </summary>
-    public partial class ControleViewModel : ViewModelBase
+    public partial class ControleViewModel : ViewModelBase, IDisposable
     {
-        #region Fields & Properties
+        #region Fields & Dependencies
         private readonly ILogService _log;
         private readonly IGrblCoreService _coreService;
         private readonly IStatusPollingService _polling;
+        #endregion
 
+        #region Observable Properties
         [ObservableProperty]
         private bool _isHomingInProgress = false;
         [ObservableProperty]
-        public bool _isHomingOk = false; // Exemple de propriété pour activer/désactiver la commande
+        public bool _isHomingOk = false;
         [ObservableProperty]
-        public bool _isKillAlarmAvailable = true; // Propriété pour activer/désactiver la commande KillAlarm
+        public bool _isAlarmActive = false;
+        [ObservableProperty]
+        public bool _isKillAlarmAvailable = true;
         [ObservableProperty]
         private string _initializationStatus = "Initializing...";
         [ObservableProperty]
@@ -34,26 +36,62 @@ namespace VDLaser.ViewModels.Controls
         [ObservableProperty]
         private string _localizedToolTip = string.Empty;
         #endregion
+
         public ControleViewModel(IGrblCoreService coreService, 
             ILogService log,IStatusPollingService polling)
         {
             _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
             _polling = polling ?? throw new ArgumentNullException(nameof(polling));
-            _log.Information("[ControleViewModel] Initialized");
 
+            _log.Information("[ControleVM] Initialized");
+            _log.ProfileChanged += OnProfileChanged;
             _coreService.PropertyChanged += OnCoreServicePropertyChanged;
             _coreService.StatusUpdated += OnMachineStatusUpdated;
         }
-        #region Logic : Service Events
+
+        #region Events Handlers
+        private void OnProfileChanged(object? sender, LogProfile newProfile)
+        {
+            Application.Current.Dispatcher.Invoke(() => RefreshAllCommands());
+        }
         private void OnCoreServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(IGrblCoreService.IsConnected))
             {
-                _log.Debug("[ControleViewModel] Connection state changed: {IsConnected}", _coreService.IsConnected);
+                _log.Debug("[ControleVM] Connection state changed: {IsConnected}", _coreService.IsConnected);
                 RefreshAllCommands();
                 IsHomingInProgress = false;
             }
+        }
+        private void OnMachineStatusUpdated(object? sender, EventArgs e)
+        {
+            var currentState = _coreService.State;
+            if (currentState == null) return;
+
+            IsPaused = (currentState.MachineState == GrblState.MachState.Hold);
+
+            IsAlarmActive = currentState.MachineState == GrblState.MachState.Alarm;
+
+            if (IsHomingInProgress && currentState.MachineState == GrblState.MachState.Idle)
+            {
+                IsHomingOk = true;
+                IsHomingInProgress = false;
+                _log.Information("[ControleVM] Homing sequence completed successfully. Machine is now referenced.");
+            }
+            else if (IsAlarmActive)
+            {
+                if (IsHomingOk)
+                {
+                    _log.Warning("[ControleVM] Alarm detected: Homing status invalidated.");
+                    IsHomingOk = false;
+                }
+            }
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                RefreshAllCommands();
+            });
         }
         private void RefreshAllCommands()
         {
@@ -66,67 +104,98 @@ namespace VDLaser.ViewModels.Controls
             Home2Command.NotifyCanExecuteChanged();
             SetWorkZeroCommand.NotifyCanExecuteChanged();
         }
-        private void OnMachineStatusUpdated(object? sender, EventArgs e)
-        {
-            // On récupère l'état actuel depuis le service
-            // GrblCoreService met à jour son objet State avant de déclencher l'événement
-            var currentState = _coreService.State;
-
-            if (currentState != null)
-            {
-                // On met à jour IsPaused si la machine est en mode "Hold"
-                // Cela déclenchera automatiquement l'animation dans le XAML
-                IsPaused = (currentState.MachineState == GrblState.MachState.Hold);
-
-                // Debug optionnel pour vérifier la réception dans la console de sortie
-                // _log.Debug($"[Controle] Status Updated: {currentState.MachineState} (IsPaused: {IsPaused})");
-            }
-        }
         #endregion
 
-        #region Commands : Machine Motion (Homing / Jog)
+        #region Commands - Motion
+        /// <summary>
+        /// Executes the Homing cycle ($H).
+        /// </summary>
+        /// <returns></returns>
         [RelayCommand(CanExecute = nameof(CanHoming))]
         private async Task Homing()
         {
-            _log.Information("[ControleViewModel] Action - User triggered Homing ($H).");
+            LogContextual(_log, "Homing", "User triggered $H cycle");
             IsHomingInProgress = true;
-            
-
             try
             {
                 await _coreService.SendCommandAsync("$H");
             }
             catch (Exception ex)
             {
-                _log.Error("[ControleViewModel] Action - Failed to send Homing command", ex);
+                _log.Error("[ControleVM] Action - Failed to send Homing command", ex.Message);
                 IsHomingInProgress = false;
             }
             finally
             {
-
                 HomingCommand.NotifyCanExecuteChanged();
             }
         }
-        [RelayCommand(CanExecute = nameof(CanExecuteRealTimeCommand))]
+
+        /// <summary>
+        /// Defines the current position as Work Zero (G10 L20 P1 X0 Y0).
+        /// </summary>
+        /// <returns></returns>
+        [RelayCommand(CanExecute = nameof(CanExecuteGCodeCommand))]
         public async Task SetWorkZeroAsync()
         {
             if (!_coreService.IsConnected) return;
 
-            _log.Information("[Action] Setting Work Zero (G10 L20 P1 X0 Y0).");
+            LogContextual(_log, "SetWorkZero", "G10 L20 P1 X0 Y0");
             try
             {
                 await _coreService.SendCommandAsync("G10 L20 P1 X0 Y0");
-
-                _log.Information("[ControleViewModel] Action - Work Zero successfully defined.");
             }
             catch (Exception ex)
             {
-                _log.Error("[ControleViewModel] Action - Failed to set Work Zero.");
+                _log.Error("[ControleVM] Action - Failed to set Work Zero.");
             }
         }
+        /// <summary>
+        /// Write Grbl 'G28' command to go to the pre-defined position 1 set by G28.1 command.
+        /// </summary>
+        /// <returns></returns>
+        [RelayCommand(CanExecute = nameof(CanExecuteGCodeCommand))]
+        private async Task Home1()
+        {
+            LogContextual(_log, "Home1", "User triggered pre-defined 1 command G28 sent");
+            try
+            {
+                await _coreService.SendCommandAsync("G28");
+            }
+            catch
+            {
+                _log.Error("[ControleVM] Failed to send pre-defined 1 G28 command");
+            }
+            finally
+            {
+                Home1Command.NotifyCanExecuteChanged();
+            }
+        }
+        /// <summary>
+        /// Write Grbl 'G30' command to go to the pre-defined position 2 set by G30.1 command.
+        /// </summary>
+        /// <returns></returns>
+        [RelayCommand(CanExecute = nameof(CanExecuteGCodeCommand))]
+        private async Task Home2()
+        {
+            LogContextual(_log, "Home2", "User triggered pre-defined 2 command G30.");
+            try
+            {
+                await _coreService.SendCommandAsync("G30");
+            }
+            catch
+            {
+                _log.Error("[ControleVM] Action - Failed to send pre-defined 2 G30 command");
+            }
+            finally
+            {
+                Home2Command.NotifyCanExecuteChanged();
+            }
+        }
+
         #endregion
 
-        #region Commands : Real-Time & Safety
+        #region Commands - Real-Time & Safety
         /// <summary>
         /// Write Grbl '$X' command to kill alarm mode. In real-time command and canexecuterealTimeCommand in order to kill alarm
         /// </summary>
@@ -134,7 +203,7 @@ namespace VDLaser.ViewModels.Controls
         [RelayCommand(CanExecute = nameof(CanKillAlarm))]
         private async Task KillAlarm()
         {
-            _log.Warning("[ControleViewModel] Safety - User attempting to Kill Alarm ($X).");
+            LogContextual(_log, "KillAlarm", "User attempting to Kill Alarm ($X).");
             IsKillAlarmAvailable = false;
             try
             {
@@ -142,7 +211,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch
             {
-                _log.Error("[ControleViewModel] Safety - Failed to send kill alarm command");
+                _log.Error("[ControleVM] Safety - Failed to send kill alarm command");
             }
             finally
             {
@@ -160,14 +229,14 @@ namespace VDLaser.ViewModels.Controls
         [RelayCommand(CanExecute = nameof(CanExecuteRealTimeCommand))]
         private async Task SoftReset()
         {
-            _log.Information("[ControleViewModel] Safety - User triggered Soft Reset (0x18).");
+            LogContextual(_log, "SoftReset", "User attempting Soft Reset (0x18).");
             try
             {
                 await SoftResetAsync();
             }
             catch
             {
-                _log.Error("[ControleViewModel] Safety - Failed to send soft reset command");
+                _log.Error("[ControleVM] Safety - Failed to send soft reset command");
             }
             finally
             {
@@ -179,20 +248,41 @@ namespace VDLaser.ViewModels.Controls
         /// </summary>
         /// <returns></returns>
         [RelayCommand(CanExecute = nameof(CanExecuteRealTimeCommand))]
-        private async Task StartCycle()
-        {
-            _log.Information("[ControleViewModel] RealTime - Start/Resume (~) sent.");
-            await SendRealtimeWithLog(126, "Start/Resume");
-        }
+        private async Task StartCycle() => await SendRealtimeWithLog(126, "Cycle Start/Resume (~)");
         /// <summary>
         /// Writes Grbl "!" real-time command (ascii dec 33) to pause the machine motion X, Y and Z (not spindle or laser).
         /// </summary>
         /// <returns></returns>
         [RelayCommand(CanExecute = nameof(CanExecuteRealTimeCommand))]
-        private async Task FeedHold()
+        private async Task FeedHold() => await SendRealtimeWithLog(33, "Feed Hold (!)");
+        #endregion
+
+        #region Dynamic Access Control (Modes & Safety)
+        /// <summary>
+        /// Allows/disallows real-time command. These commands can be sent at anytime,
+        /// anywhere, and Grbl will immediately respond, no matter what it's doing.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanExecuteRealTimeCommand() => _coreService.IsConnected;
+        /// <summary>
+        /// Critical safety: $X (Kill Alarm) is primarily a SUPPORT/MAINTENANCE tool.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanKillAlarm()
         {
-            _log.Debug("[ControleViewModel] RealTime - Feed Hold (!) sent.");
-            await SendRealtimeWithLog(33, "Feed Hold");
+            return IsKillAlarmAvailable && _coreService.IsConnected;
+        }
+        private bool CanHoming() => _coreService.IsConnected && !IsHomingInProgress;
+        /// <summary>
+        /// Determines if G-Code movement commands (Home 1/2, Set Zero) are allowed.
+        /// </summary>
+        private bool CanExecuteGCodeCommand()
+        {
+            if (!_coreService.IsConnected) return false;
+
+            if (_log.CurrentProfile == LogProfile.Support) return true;
+
+            return IsHomingOk;
         }
         #endregion
 
@@ -200,54 +290,13 @@ namespace VDLaser.ViewModels.Controls
         private async Task SendRealtimeWithLog(byte command, string label)
         {
             try
-            { 
+            {
+                _log.Debug("[ControleVM] Sending Real-time: {Label} (0x{Cmd:X2})", label, command);
                 await _coreService.SendRealtimeCommandAsync(command);
             }
             catch (Exception ex)
             { 
-                _log.Error("[ControleViewModel] RealTime - Failed to send {Label}", label); 
-            }
-        }
-        /// <summary>
-        /// Write Grbl 'G28' command to go to the pre-defined position 1 set by G28.1 command.
-        /// </summary>
-        /// <returns></returns>
-        [RelayCommand(CanExecute = nameof(CanHoming))]
-        private async Task Home1()
-        {
-            _log.Information("[ControleViewModel] Action - User triggered pre-defined 1 command G28 sent");
-            try
-            {
-                await _coreService.SendCommandAsync("G28");
-            }
-            catch
-            {
-                _log.Error("[ControleViewModel] Failed to send pre-defined 1 G28 command");
-            }
-            finally
-            {
-                Home1Command.NotifyCanExecuteChanged();
-            }
-        }
-        /// <summary>
-        /// Write Grbl 'G30' command to go to the pre-defined position 2 set by G30.1 command.
-        /// </summary>
-        /// <returns></returns>
-        [RelayCommand(CanExecute = nameof(CanHoming))]
-        private async Task Home2()
-        {
-            _log.Information("[ControleViewModel] Action - User triggered pre-defined 2 command G30.");
-            try
-            {
-                await _coreService.SendCommandAsync("G30");
-            }
-            catch
-            {
-                _log.Error("[ControleViewModel] Action - Failed to send pre-defined 2 G30 command");
-            }
-            finally
-            {
-                Home2Command.NotifyCanExecuteChanged();
+                _log.Error("[ControleVM] RealTime - Failed to send {Label}", label); 
             }
         }
         private async Task UnlockAlarmAsync()
@@ -255,7 +304,7 @@ namespace VDLaser.ViewModels.Controls
             var result = MessageBox.Show(
                 "Attention : La commande $X (Kill Alarm) déverrouille l'alarme sans résoudre la cause. " +
                 "Cela peut entraîner une perte de position de la machine et des risques de sécurité. " +
-                "Voulez-vous continuer ? Assurez-vous de faire un homing ($H) ensuite."+
+                "Voulez-vous continuer ? Assurez-vous de faire un homing ($H) ensuite." +
                 "Soft-Reset peut-être nécessaire avant la commande $X pour acquiter l'alarme",
                 "Avertissement - Déverrouillage Alarme",
                 MessageBoxButton.YesNo,
@@ -263,16 +312,15 @@ namespace VDLaser.ViewModels.Controls
 
             if (result == MessageBoxResult.Yes)
             {
-                _log.Information("[ControleViewModel] Safety - User confirmed Alarm Unlock ($X).");
                 await _coreService.SendCommandAsync("$X");
                 await _coreService.SendRealtimeCommandAsync((byte)'?');
-                await Task.Delay(200); // Attends réponse
-                _polling.ForcePoll(); // Reset pending pour retenter immédiatement
-                _log.Information("[ControleViewModel] Forced poll after $X.");
+                await Task.Delay(200);
+                _polling.ForcePoll();
+                _log.Information("[ControleVM] Safety - User confirmed Alarm Unlock ($X) and forced poll after $X.");
             }
             else
             {
-                _log.Information("[ControleViewModel] Safety - Alarm Unlock cancelled by user.");
+                _log.Information("[ControleVM] Safety - Alarm Unlock cancelled by user.");
             }
         }
         private async Task SoftResetAsync()
@@ -287,31 +335,23 @@ namespace VDLaser.ViewModels.Controls
 
             if (result == MessageBoxResult.Yes)
             {
-                _log.Information("[ControleViewModel] Safety - User confirmed Soft Reset (0x18).");
-                //await _coreService.SendRealtimeCommandAsync(24);
                 await _coreService.SendRealtimeCommandAsync(0x18);
+                _log.Information("[ControleVM] Safety - User confirmed Soft Reset (0x18).");
             }
             else
             {
-                _log.Information("[ControleViewModel] Safety - Commande Soft Reset canceled.");
+                _log.Information("[ControleVM] Safety - Soft Reset canceled.");
             }
         }
         #endregion
-        /// <summary>
-        /// Allows/disallows real-time command. These commands can be sent at anytime,
-        /// anywhere, and Grbl will immediately respond, no matter what it's doing
-        /// </summary>
-        /// <returns></returns>
-        private bool CanExecuteRealTimeCommand() => _coreService.IsConnected;
-        private bool CanKillAlarm() => IsKillAlarmAvailable && _coreService.IsConnected;
-        private bool CanHoming() => _coreService.IsConnected;// && _coreService.HasLoadedSettings; button is always disabled
-        private bool CanExecuteGCodeCommand() => (_coreService.IsConnected && IsHomingOk);// && _coreService.HasLoadedSettings;
-        
+
         public void Dispose()
         {
-            _log.Debug("[Controle] Disposing ControleViewModel.");
+            _log.Debug("[ControleVM] Disposing resources.");
+            _log.ProfileChanged -= OnProfileChanged;
             _coreService.PropertyChanged -= OnCoreServicePropertyChanged;
             _coreService.StatusUpdated -= OnMachineStatusUpdated;
+            GC.SuppressFinalize(this);
         }
     }
 }

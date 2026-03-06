@@ -1,9 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using VDLaser.Core.Interfaces;
 
 namespace VDLaser.ViewModels.Base
 {
     public abstract class ViewModelBase : ObservableObject, IDisposable
     {
+        protected void LogContextual(ILogService log, string action, string details = "")
+        {
+            string vmName = this.GetType().Name.Replace("ViewModel", "VM");
+
+            log.Information("[{VmName}] Action: {Action} | Mode: {Mode} | Details: {Details}",
+                vmName, action, log.CurrentProfile, details);
+        }
         private bool _disposed = false;
         public void Dispose()
         {

@@ -9,7 +9,7 @@ namespace VDLaser.Core.Interfaces
     public interface ILogService
     {
         LogProfile CurrentProfile { get; }
-
+        event EventHandler<LogProfile> ProfileChanged;
         void SetProfile(LogProfile profile);
 
         bool IsCncEnabled { get; }

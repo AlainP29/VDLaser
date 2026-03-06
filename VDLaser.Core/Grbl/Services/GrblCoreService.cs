@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using System.IO.Ports;
+using System.Windows;
 using VDLaser.Core.Console;
 using VDLaser.Core.Grbl.Errors;
 using VDLaser.Core.Grbl.Interfaces;
@@ -237,62 +238,64 @@ namespace VDLaser.Core.Grbl.Services
                 DataReceived?.Invoke(this, new DataReceivedEventArgs(line));
                 _grblHandshakeTcs?.TrySetResult(true);
             }
-
-            if (line.StartsWith("ALARM:", StringComparison.OrdinalIgnoreCase))
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                if (int.TryParse(line.Split(':')[1], out int code))
+                if (line.StartsWith("ALARM:", StringComparison.OrdinalIgnoreCase))
                 {
-                    _state.MachineState = MachState.Alarm;
-                    _state.MachineStatusColor = System.Windows.Media.Brushes.Red;
-                    StatusUpdated?.Invoke(this, EventArgs.Empty);
+                    if (int.TryParse(line.Split(':')[1], out int code))
+                    {
+                        _state.MachineState = MachState.Alarm;
+                        _state.MachineStatusColor = System.Windows.Media.Brushes.Red;
+                        StatusUpdated?.Invoke(this, EventArgs.Empty);
 
-                    _log.Warning("[CORE] Forced state to Alarm on RX after an alarm: {Line}", line);
+                        _log.Warning("[CORE] Forced state to Alarm on RX after an alarm: {Line}", line);
 
-                    var polling = _serviceProvider.GetRequiredService<IStatusPollingService>();//No DI to avoid circular reference, get directly from provider
-                    polling.ForcePoll();
-                    Task.Delay(100).Wait();
+                        var polling = _serviceProvider.GetRequiredService<IStatusPollingService>();//No DI to avoid circular reference, get directly from provider
+                        polling.ForcePoll();
+                        Task.Delay(100).Wait();
+                    }
+                    return;
                 }
-                return;
-            }
-            if (line.StartsWith("error:", StringComparison.OrdinalIgnoreCase))
-            {
-                if (int.TryParse(line.Split(':')[1], out int code))
+                if (line.StartsWith("error:", StringComparison.OrdinalIgnoreCase))
                 {
-                    //_state.MachineState = MachState.Alarm;
-                    //_state.AlarmCode = code; // Ajoute si besoin une prop dans GrblState
-                    //StatusUpdated?.Invoke(this, EventArgs.Empty);
-                    
+                    if (int.TryParse(line.Split(':')[1], out int code))
+                    {
+                        //_state.MachineState = MachState.Alarm;
+                        //_state.AlarmCode = code; // Ajoute si besoin une prop dans GrblState
+                        //StatusUpdated?.Invoke(this, EventArgs.Empty);
+
+                    }
+                    _log.Warning("[CORE] Error non bloquante: {Line}", line);
+                    return;
                 }
-                _log.Warning("[CORE] Error non bloquante: {Line}", line);
-                return;
-            }
-            if (!line.StartsWith("<") && _log.IsCncEnabled)
-            {
-                _log.Debug("[CNC][CORE][RAW RX] {Line}", line);
-            }
-            _log.Debug("[CORE] DispatchLine Entry - Processing line: {Line}", line);
-            
-            foreach (var parser in _parsers)
-            {
-                if (!parser.CanParse(line))
-                    continue;
-
-                parser.Parse(line, _state);
-
-                if (parser is GrblStateParser)
+                if (!line.StartsWith("<") && _log.IsCncEnabled)
                 {
-                    OnPropertyChanged(nameof(State));
-                    StatusUpdated?.Invoke(this, EventArgs.Empty);
-                    StatusLineReceived?.Invoke(this, EventArgs.Empty);
-
+                    _log.Debug("[CNC][CORE][RAW RX] {Line}", line);
                 }
-                else if (parser is GrblSettingsParser)
+                _log.Debug("[CORE] DispatchLine Entry - Processing line: {Line}", line);
+
+                foreach (var parser in _parsers)
                 {
-                    SettingsUpdated?.Invoke(this, _state.Settings.Values.ToList());
-                }
+                    if (!parser.CanParse(line))
+                        continue;
 
-                return;
-            }
+                    parser.Parse(line, _state);
+
+                    if (parser is GrblStateParser)
+                    {
+                        OnPropertyChanged(nameof(State));
+                        StatusUpdated?.Invoke(this, EventArgs.Empty);
+                        StatusLineReceived?.Invoke(this, EventArgs.Empty);
+
+                    }
+                    else if (parser is GrblSettingsParser)
+                    {
+                        SettingsUpdated?.Invoke(this, _state.Settings.Values.ToList());
+                    }
+
+                    return;
+                }
+            });
         }
 
         /// <summary>
@@ -408,12 +411,13 @@ namespace VDLaser.Core.Grbl.Services
         {
             try
             {
-                if (_serial?.IsOpen != true)
-                    return;
+                if (_serial?.IsOpen != true) return;
 
                 while (_serial.BytesToRead > 0)
                 {
-                    var line = _serial.ReadLine().Trim();
+                    var line = _serial.ReadLine()?.Trim();
+                    if (string.IsNullOrEmpty(line)) continue;
+
                     _rxRingBuffer.Push(line);
 
                     if (_log.IsSupportEnabled)
@@ -421,12 +425,11 @@ namespace VDLaser.Core.Grbl.Services
                         _log.Debug("[SUPPORT][CORE][RX-BUFFER] {Buffer}", string.Join(" | ", _rxRingBuffer));
                         _log.Debug("[SUPPORT][CORE][RAW RX] {Line}", line);
                     }
-                    DataReceived?.Invoke(this, new DataReceivedEventArgs(line));
-                    DispatchLine(line);
-                    
+                    Application.Current.Dispatcher.BeginInvoke(() => {
+                        DataReceived?.Invoke(this, new DataReceivedEventArgs(line));
+                        DispatchLine(line);
+                    });
                 }
-
-
             }
             catch (Exception ex)
             {

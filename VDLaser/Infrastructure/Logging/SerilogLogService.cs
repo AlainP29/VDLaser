@@ -11,7 +11,7 @@ namespace VDLaser.Infrastructure.Logging
     public sealed class SerilogLogService : ILogService
     {
         private volatile LogProfile _profile = LogProfile.Normal;
-
+        public event EventHandler<LogProfile>? ProfileChanged;
         public LogProfile CurrentProfile => _profile;
 
         public bool IsCncEnabled => _profile >= LogProfile.Cnc;
@@ -19,8 +19,11 @@ namespace VDLaser.Infrastructure.Logging
 
         public void SetProfile(LogProfile profile)
         {
+            if (_profile == profile) return;
             _profile = profile;
             Log.Information("[SYSTEM][LOG] Profil actif : {Profile}", profile);
+
+            ProfileChanged?.Invoke(this, _profile);
         }
 
         #region Standard logging API
