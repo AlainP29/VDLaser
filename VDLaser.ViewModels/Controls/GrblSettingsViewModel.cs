@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
-using VDLaser.Core.Gcode;
 using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Grbl.Models;
 using VDLaser.Core.Grbl.Parsers;
@@ -13,17 +12,24 @@ using VDLaser.ViewModels.Base;
 
 namespace VDLaser.ViewModels.Controls
 {
+    /// <summary>
+    /// Handles GRBL configuration, status querying, and hardware information display.
+    /// </summary>
     public partial class GrblSettingsViewModel : ViewModelBase
     {
+        #region Fields & Services
         private readonly ILogService _log;
         private readonly IGrblCoreService _coreService;
         private readonly GrblSettingsParser _settingsParser;
         private readonly GrblInfoParser _infoParser;
         private readonly IGrblCommandQueue _commandQueue;
+        private readonly SemaphoreSlim _loadLock = new(1, 1);
         public GcodeFileViewModel GcodeFileVM { get; }
+        #endregion
+
+        #region Properties
         private GrblState _grblState = new GrblState();
         private GrblInfo _grblInfo = new GrblInfo();
-        private readonly SemaphoreSlim _loadLock = new(1, 1);
 
         [ObservableProperty]
         private string _grblVersion = string.Empty;
@@ -45,6 +51,7 @@ namespace VDLaser.ViewModels.Controls
 
         [ObservableProperty]
         private ObservableCollection<GrblSetting> _settings = new ObservableCollection<GrblSetting>();
+        #endregion
 
         public GrblSettingsViewModel(IGrblCoreService coreService, ILogService log, IGrblCommandQueue commandQueue, GcodeFileViewModel gcodeFileVM)
         {
@@ -58,7 +65,8 @@ namespace VDLaser.ViewModels.Controls
             _coreService.DataReceived += OnGrblDataReceived;
             _coreService.PropertyChanged += OnCoreServicePropertyChanged;
             _coreService.SettingsUpdated += OnSettingsUpdated;
-            _log.Information("[SettingViewModel] Initialised (Queued enabled");
+
+            _log.Information("[SETTINGS] Initialized (Queued enabled");
         }
         /// <summary>
         /// Gestion des données reçues du GRBL. Parse seulement les lignes de settings.
@@ -148,12 +156,15 @@ namespace VDLaser.ViewModels.Controls
                 // }
             });
         }
+
+        #region Commands
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
         private async Task LoadSettingsAsync()
         {
             if (!await _loadLock.WaitAsync(0))
             {
-                _log.Information("[SettingViewModel] LoadSettings déjà en cours, ignoré");
+                LogContextual(_log, "LoadSettingsAsync", "Settings already loaded, ignored");
+
                 return;
             }
             try
@@ -164,7 +175,7 @@ namespace VDLaser.ViewModels.Controls
                 //await _commandQueue.EnqueueAsync("$I", "Settings");
                 await _commandQueue.EnqueueAsync("$$", "Settings");
                 _coreService.MarkSettingsLoaded();
-                _log.Information("[SettingViewModel] Settings loaded once");
+                LogContextual(_log, "LoadSettingsAsync", "Settings loaded once");
             }
             finally
             {
@@ -174,14 +185,14 @@ namespace VDLaser.ViewModels.Controls
         }
         private async Task LoadGrblInfoAsync()
         {
-            if (_coreService.HasLoadedSettings) // Déjà chargé, ignore ou affiche cached
+            if (_coreService.HasLoadedSettings) 
             {
-                _log.Information("[SettingViewModel] Info GRBL déjà chargée, ignoré");
+                LogContextual(_log, "LoadGrblInfoAsync", "Info GRBL already loaded, ignored");
+
                 return;
             }
 
             await _commandQueue.EnqueueAsync("$I", "Settings");
-            // Optionnel : Marquer loaded si c'est le seul appel
         }
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
         private Task LoadInfo() =>
@@ -192,60 +203,100 @@ namespace VDLaser.ViewModels.Controls
             return Task.CompletedTask; 
         }
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task ResetX() =>
-            _commandQueue.EnqueueAsync("$H", "Reset");
+        private async Task ResetX()
+        {
+            LogContextual(_log, "ResetX", "Reset axis X");
+            await _commandQueue.EnqueueAsync("$H", "Reset");
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task ResetY() =>
-            _commandQueue.EnqueueAsync("$H", "Reset");
+        private async Task ResetY()
+        {
+            LogContextual(_log, "ResetY", "Reset axis Y");
+            await _commandQueue.EnqueueAsync("$H", "Reset");
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task SetHome1() =>
-            _commandQueue.EnqueueAsync("G28.1", "Home");
+        private async Task SetHome1()
+        {
+            LogContextual(_log, "SetHome1", "Set pre-define home 1 position (G28.1)");
+            await _commandQueue.EnqueueAsync("G28.1", "Home");
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task SetHome2() =>
-            _commandQueue.EnqueueAsync("G30.1", "Home");
+        private async Task SetHome2()
+        {
+            LogContextual(_log, "SetHome2", "Set pre-define home 2 position (G30.1)");
+            await _commandQueue.EnqueueAsync("G30.1", "Home");
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGeneralCommand))]
-        private Task Help() =>
-            _commandQueue.EnqueueAsync("$", "Help");
+        private async Task Help()
+        {
+            LogContextual(_log, "Help", "Requesting help ($)");
+            await _commandQueue.EnqueueAsync("$", "Help");
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGeneralCommand))]
-        private Task Sleep() =>
-            _commandQueue.EnqueueAsync("$SLP", "System");
+        private async Task Sleep()
+        {
+            LogContextual(_log, "Sleep", "Requesting system sleep ($SLP)");
+            await _commandQueue.EnqueueAsync("$SLP", "System");
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task Check() =>
-            _commandQueue.EnqueueAsync("$C", "System");
+        private async Task Check()
+        {
+            LogContextual(_log, "Check", "Requesting system Check ($C)");
+            await _commandQueue.EnqueueAsync("$C", "System");
+        }
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
         private Task KillAlarm() =>
             _commandQueue.EnqueueAsync("$X", "System");
 
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task StartupBlocks() =>
-            _commandQueue.EnqueueAsync("$N", "System");
+        private async Task StartupBlocks()
+        {
+            LogContextual(_log, "StartupBlocks", "Requesting system startup blocks ($N)");
+            await _commandQueue.EnqueueAsync("$N", "System");
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task BuildInfo() =>
-            LoadGrblInfoAsync();
+        private async Task BuildInfo()
+        {
+            LogContextual(_log, "BuildInfo", "Querying firmware build information");
+            await LoadGrblInfoAsync();
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task ParserState() =>
-            _commandQueue.EnqueueAsync("$G", "Parser");
+        private async Task ParserState()
+        {
+            LogContextual(_log, "ParserState", "Querying G-Code parser state ($G)");
+            await _commandQueue.EnqueueAsync("$G", "Parser");
+        }
 
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]
-        private Task Parameters() =>
-            _commandQueue.EnqueueAsync("$#", "Parser");
+        private async Task Parameters()
+        {
+            LogContextual(_log, "Parameters", "Querying GRBL parameters ($#)");
+            await _commandQueue.EnqueueAsync("$#", "Parser");
+        }
 
-        // Realtime : reste direct (GRBL spec)
+        /// <summary>
+        /// Initiates a real-time status uses raw byte 63 ('?') to trigger an immediate status response from the GRBL controller, 
+        /// bypassing the normal command queue. This allows for quick updates of the machine's current state without waiting for queued commands to execute.
+        /// </summary>
         [RelayCommand(CanExecute = nameof(CanExecuteRealTimeCommand))]
         private Task CurrentStatus() =>
             _coreService.SendRealtimeCommandAsync(63);
+        #endregion
 
+        #region Predicates
         private bool CanExecuteRealTimeCommand() => _coreService.IsConnected;
         private bool CanExecuteGrblCommand() => _coreService.IsConnected && !IsLoading && _coreService.HasLoadedSettings;
         private bool CanExecuteGeneralCommand() => _coreService.IsConnected && !IsLoading;
+        #endregion
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -253,6 +304,7 @@ namespace VDLaser.ViewModels.Controls
                 _coreService.PropertyChanged -= OnCoreServicePropertyChanged;
                 _coreService.DataReceived -= OnGrblDataReceived;
                 _coreService.SettingsUpdated -= OnSettingsUpdated;
+                _loadLock.Dispose();
             }
             base.Dispose(disposing);
         }

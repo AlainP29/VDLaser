@@ -82,7 +82,7 @@ namespace VDLaser.ViewModels.Controls
             StructuredView.Filter = o => FilterItem((ConsoleItem)o);
 
             _coreService.DataReceived += OnDataReceived;
-            _log.Information("[ConsoleVM] Initialized");
+            _log.Information("[CONSOLE] Initialized");
         }
 
 
@@ -204,7 +204,7 @@ namespace VDLaser.ViewModels.Controls
 
             if (dialog.ShowDialog() != true)
             {
-                _log.Debug("[ConsoleVM] Export cancelled by user.");
+                _log.Debug("[CONSOLE] Export cancelled by user.");
                 return;
             }
 
@@ -231,7 +231,7 @@ namespace VDLaser.ViewModels.Controls
                 File.WriteAllText(dialog.FileName, sb.ToString(), Encoding.UTF8);
 
                 _log.Information(
-                    "[ConsoleVM] Successfully exported {LineCount} lines to {Path}",
+                    "[CONSOLE] Successfully exported {LineCount} lines to {Path}",
                     IsRawMode ? RawLines.Count : StructuredLines.Count,
                     dialog.FileName
                 );
@@ -244,7 +244,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                _log.Error("[ConsoleVM] Failed to export logs to file:", ex);
+                _log.Error("[CONSOLE] Failed to export logs to file:", ex);
 
                 StructuredLines.Add(new ConsoleItem(
                     "Failed to export console logs.",

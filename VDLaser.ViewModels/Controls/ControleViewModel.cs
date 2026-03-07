@@ -44,7 +44,8 @@ namespace VDLaser.ViewModels.Controls
             _log = log ?? throw new ArgumentNullException(nameof(log));
             _polling = polling ?? throw new ArgumentNullException(nameof(polling));
 
-            _log.Information("[ControleVM] Initialized");
+            _log.Information("[CONTROLE] Initialized");
+
             _log.ProfileChanged += OnProfileChanged;
             _coreService.PropertyChanged += OnCoreServicePropertyChanged;
             _coreService.StatusUpdated += OnMachineStatusUpdated;
@@ -59,7 +60,7 @@ namespace VDLaser.ViewModels.Controls
         {
             if (e.PropertyName == nameof(IGrblCoreService.IsConnected))
             {
-                _log.Debug("[ControleVM] Connection state changed: {IsConnected}", _coreService.IsConnected);
+                _log.Debug("[CONTROLE] Connection state changed: {IsConnected}", _coreService.IsConnected);
                 RefreshAllCommands();
                 IsHomingInProgress = false;
             }
@@ -77,13 +78,13 @@ namespace VDLaser.ViewModels.Controls
             {
                 IsHomingOk = true;
                 IsHomingInProgress = false;
-                _log.Information("[ControleVM] Homing sequence completed successfully. Machine is now referenced.");
+                _log.Information("[CONTROLE] Homing sequence completed successfully. Machine is now referenced.");
             }
             else if (IsAlarmActive)
             {
                 if (IsHomingOk)
                 {
-                    _log.Warning("[ControleVM] Alarm detected: Homing status invalidated.");
+                    _log.Warning("[CONTROLE] Alarm detected: Homing status invalidated.");
                     IsHomingOk = false;
                 }
             }
@@ -122,7 +123,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                _log.Error("[ControleVM] Action - Failed to send Homing command", ex.Message);
+                _log.Error("[CONTROLE] Action - Failed to send Homing command", ex.Message);
                 IsHomingInProgress = false;
             }
             finally
@@ -147,7 +148,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                _log.Error("[ControleVM] Action - Failed to set Work Zero.");
+                _log.Error("[CONTROLE] Action - Failed to set Work Zero.");
             }
         }
         /// <summary>
@@ -164,7 +165,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch
             {
-                _log.Error("[ControleVM] Failed to send pre-defined 1 G28 command");
+                _log.Error("[CONTROLE] Failed to send pre-defined 1 G28 command");
             }
             finally
             {
@@ -185,7 +186,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch
             {
-                _log.Error("[ControleVM] Action - Failed to send pre-defined 2 G30 command");
+                _log.Error("[CONTROLE] Action - Failed to send pre-defined 2 G30 command");
             }
             finally
             {
@@ -211,7 +212,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch
             {
-                _log.Error("[ControleVM] Safety - Failed to send kill alarm command");
+                _log.Error("[CONTROLE] Safety - Failed to send kill alarm command");
             }
             finally
             {
@@ -236,7 +237,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch
             {
-                _log.Error("[ControleVM] Safety - Failed to send soft reset command");
+                _log.Error("[CONTROLE] Safety - Failed to send soft reset command");
             }
             finally
             {
@@ -291,12 +292,12 @@ namespace VDLaser.ViewModels.Controls
         {
             try
             {
-                _log.Debug("[ControleVM] Sending Real-time: {Label} (0x{Cmd:X2})", label, command);
+                _log.Debug("[CONTROLE] Sending Real-time: {Label} (0x{Cmd:X2})", label, command);
                 await _coreService.SendRealtimeCommandAsync(command);
             }
             catch (Exception ex)
             { 
-                _log.Error("[ControleVM] RealTime - Failed to send {Label}", label); 
+                _log.Error("[CONTROLE] RealTime - Failed to send {Label}", label); 
             }
         }
         private async Task UnlockAlarmAsync()
@@ -347,7 +348,7 @@ namespace VDLaser.ViewModels.Controls
 
         public void Dispose()
         {
-            _log.Debug("[ControleVM] Disposing resources.");
+            _log.Debug("[CONTROLE] Disposing resources.");
             _log.ProfileChanged -= OnProfileChanged;
             _coreService.PropertyChanged -= OnCoreServicePropertyChanged;
             _coreService.StatusUpdated -= OnMachineStatusUpdated;

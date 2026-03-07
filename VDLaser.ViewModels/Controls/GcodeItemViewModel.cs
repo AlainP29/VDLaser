@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Serilog;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using VDLaser.Core.Gcode;
@@ -10,26 +8,23 @@ using VDLaser.ViewModels.Base;
 namespace VDLaser.ViewModels.Controls
 {
     /// <summary>
-    /// Représente une ligne de G-Code analysée pour l'affichage dans l'interface utilisateur.
+    /// Represents a single parsed G-Code line within a job queue.
     /// </summary>
     public sealed partial class GcodeItemViewModel : ViewModelBase
     {
         #region Fields & Properties
         private readonly ILogService _log;
+
         public int LineNumber { get; }
         public string RawLine { get; }
 
         public GcodeCommand Command { get; }
-        /// <summary>
-        /// Indique si cette ligne a été envoyée avec succès au contrôleur GRBL.
-        /// Utilisation d'ObservableProperty pour mettre à jour l'UI (ex: icône de validation).
-        /// </summary>
-        [ObservableProperty]
-        private bool _isSent;
         public Point? StartPoint { get; set; }
         public Point? EndPoint { get; set; }
         public bool IsRapid { get; set; }
 
+        [ObservableProperty]
+        private bool _isSent;
         #endregion
 
         public GcodeItemViewModel(int lineNumber, string rawLine, GcodeCommand command, ILogService log)
@@ -40,12 +35,11 @@ namespace VDLaser.ViewModels.Controls
             _log = log ?? throw new ArgumentNullException(nameof(log));
             if (string.IsNullOrEmpty(G) && string.IsNullOrEmpty(M))
             {
-                _log.Warning("[GcodeItem] Ligne {Line} sans commande G ou M détectée : {Raw}", LineNumber, RawLine);
+                _log.Warning("[GCODEITEM] Line {Line}: No G or M command detected. Raw: {Raw}", LineNumber, RawLine);
             }
         }
 
         #region UI Display Properties
-        // Ces propriétés formatent les données pour le DataGrid (Culture Invariant pour éviter les conflits virgule/point)
         public string X => Command.X?.ToString("0.###", CultureInfo.InvariantCulture) ?? "";
         public string Y => Command.Y?.ToString("0.###", CultureInfo.InvariantCulture) ?? "";
         public string F => Command.F?.ToString("0", CultureInfo.InvariantCulture) ?? "";
@@ -55,15 +49,19 @@ namespace VDLaser.ViewModels.Controls
         #endregion
 
         /// <summary>
-        /// Notifie le système que la ligne a été traitée.
+        /// Marks the line as processed/sent to the controller.
         /// </summary>
         public void MarkAsSent()
         {
             if (!IsSent)
             {
                 IsSent = true;
-                _log.Debug("[GcodeItem] Ligne {Line} envoyée au contrôleur.", LineNumber);
+                _log.Debug("[GCODEITEM] Line {Line} marked as sent.", LineNumber);
             }
+        }
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
         }
     }
 

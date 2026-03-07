@@ -122,8 +122,10 @@ namespace VDLaser.ViewModels.Controls
 
             WeakReferenceMessenger.Default.Register<ErrorModeChangedMessage>(this, (sender, msg) =>
             {
-                _log.Debug("[GcodeFileVM] Sync mode : {Mode}", msg.Mode);
+                _log.Debug("[GCODEFILE] Sync mode : {Mode}", msg.Mode);
             });
+            _log.Information("[GCODEFILE] Initialized");
+
         }
 
         #region Commands
@@ -161,14 +163,14 @@ namespace VDLaser.ViewModels.Controls
             LogContextual(_log, "StartJob", $"Starting job: {FileName}");
             if (GcodeLines.Count == 0)
             {
-                _log.Warning("[GcodeFileVM] No file");
+                _log.Warning("[GCODEFILE] No file");
                 await _dialogService.ShowErrorAsync("Please load a gcode file.", "No file");
                 return;
             }
 
             if (!_grblCoreService.IsConnected)
             {
-                _log.Warning("[GcodeFileViewModel] Not possible to start: Connection error");
+                _log.Warning("[GCODEFILE] Not possible to start: Connection error");
                 await _dialogService.ShowErrorAsync("The machine is not connected.", "Connection error");
                 return;
             }
@@ -176,7 +178,7 @@ namespace VDLaser.ViewModels.Controls
             _consoleViewModel.BeginJob();
             try
             {
-                _log.Information("[GcodeFileVM] Start job G-code : {Total} lines.", TotalLines);
+                _log.Information("[GCODEFILE] Start job G-code : {Total} lines.", TotalLines);
                 ResetJobState();
 
                 var rawLines = GcodeLines.Select(item => item.RawLine).ToList();
@@ -186,23 +188,23 @@ namespace VDLaser.ViewModels.Controls
                     ProgressPercentage = 100;
                     _consoleViewModel.EndJob(true);
                     JobSuccess = jobSuccess;
-                    _log.Information("[GcodeFileVM] G-code Job success.");
+                    _log.Information("[GCODEFILE] G-code Job success.");
                 }
                 else
                 {
-                    _log.Warning("[GcodeFileVM] G-code Job stopped or finished with errors.");
+                    _log.Warning("[GCODEFILE] G-code Job stopped or finished with errors.");
                     ProgressPercentage = 0;
                     _consoleViewModel.EndJob(false);
                 }
             }
             catch (OperationCanceledException)
             {
-                _log.Error("[GcodeFileVM] User stopped Job.");
+                _log.Error("[GCODEFILE] User stopped Job.");
                 _consoleViewModel.EndJob(false);
             }
             catch (Exception ex)
             {
-                _log.Error("[GcodeFileVM] Fatal error during job execution : {Message}", ex.Message);
+                _log.Error("[GCODEFILE] Fatal error during job execution : {Message}", ex.Message);
                 ProgressPercentage = 0;
                 await _dialogService.ShowErrorAsync($"Error during executionn : {ex.Message}");
                 _consoleViewModel.EndJob(false);
@@ -263,7 +265,7 @@ namespace VDLaser.ViewModels.Controls
 
             if (Stats == null || !_grblCoreService.IsConnected)
             {
-                _log.Warning("[GcodeFileVM] Framing impossible : Stats null ou GRBL disconnected.");
+                _log.Warning("[GCODEFILE] Framing impossible : Stats null ou GRBL disconnected.");
                 return;
             }
 
@@ -299,7 +301,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                _log.Error("[GcodeFileVM] Error during framing : {Message}", ex.Message);
+                _log.Error("[GCODEFILE] Error during framing : {Message}", ex.Message);
             }
             finally
             {
@@ -323,7 +325,7 @@ namespace VDLaser.ViewModels.Controls
             try
             {
                 _isRecoveryExecuted= true;
-                _log.Information("[GcodeFileVM][JOB] Initiation of the recovery procedure.");
+                _log.Information("[GCODEFILE][JOB] Initiation of the recovery procedure.");
 
                 await _grblCoreService.SendCommandAsync("M5");
                 await _grblCoreService.SendCommandAsync("$X");
@@ -332,7 +334,7 @@ namespace VDLaser.ViewModels.Controls
 
                 await _grblCoreService.SendCommandAsync("G90 G0 X0 Y0");
 
-                _log.Information("[GcodeFileVM][JOB] Machine secured and returned to Origin.");
+                _log.Information("[GCODEFILE][JOB] Machine secured and returned to Origin.");
 
                 await _dialogService.ShowInfoAsync(
             "The security procedure has been executed:\n" +
@@ -344,7 +346,7 @@ namespace VDLaser.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                _log.Error("[GcodeFileVM][JOB] Error during retrieval.", ex);
+                _log.Error("[GCODEFILE][JOB] Error during retrieval.", ex);
                 _isRecoveryExecuted= false;
                 await _dialogService.ShowErrorAsync("[GcodeFileVM][JOB] Error during retrieval : " + ex.Message);
             }
@@ -397,10 +399,9 @@ namespace VDLaser.ViewModels.Controls
             }
             catch (Exception ex)
             {
-                _log.Error("[GcodeFileVM] Erro when loading G-code file : {Message}", ex.Message);
+                _log.Error("[GCODEFILE] Erro when loading G-code file : {Message}", ex.Message);
                 await _dialogService.ShowErrorAsync($"Impossible to load file :\n{ex.Message}", "Error during loading");
             }
-
         }
         private void ResetJobState()
         {
@@ -484,7 +485,7 @@ namespace VDLaser.ViewModels.Controls
                 {
                     _isDisplayingError = true;
                     await _grblCoreService.SendCommandAsync("M5");
-                    _log.Warning("[GcodeFileVM] [SAFETY] Job interrupted abnormally. M5 order sent automatically.");
+                    _log.Warning("[GCODEFILE] [SAFETY] Job interrupted abnormally. M5 order sent automatically.");
                     await _dialogService.ShowErrorAsync("Strict mode interrupted the work due to a GRBL error. The laser was shut down. Clic on Recovery button only if the path to origin is cleared",
                         "Critical Stop");
                 }
@@ -581,12 +582,12 @@ namespace VDLaser.ViewModels.Controls
             if (_consoleViewModel.ErrorCount > 0)
             {
                 report.AppendLine("Error details :");
-                foreach (var msg in _consoleViewModel.ErrorMessages)  // Si ajoutée
+                foreach (var msg in _consoleViewModel.ErrorMessages)
                     report.AppendLine($"- {msg}");
                 report.AppendLine($"Last error : {_consoleViewModel.LastErrorMessage}");
             }
 
-            _log.Information("[GcodeFileVM] {Report}", report.ToString());
+            _log.Information("[GCODEFILE] {Report}", report.ToString());
             LogContextual(_log, "JobReport", report.ToString());
         }
         
