@@ -20,8 +20,13 @@ namespace VDLaser.Core.Interfaces
         List<int> ListBaudRates { get; }
         bool IsPortAvailable(string portName);
 
+        // --- Profile management ---
+        LogProfile CurrentProfile { get; }
+        void SetProfile(LogProfile profile);
+
         // --- Events ---
         event EventHandler SettingsChanged;
+        event EventHandler<LogProfile> ProfileChanged;
         event EventHandler<DataReceivedEventArgs> DataReceived;
         event EventHandler ConnectionLost;
 
@@ -29,6 +34,7 @@ namespace VDLaser.Core.Interfaces
         void InitializeSerialPort();
         void RefreshPortNames();
         IEnumerable<string> GetAvailablePorts();
+        
 
         // --- Connection ---
         void Open();
@@ -38,5 +44,7 @@ namespace VDLaser.Core.Interfaces
         void WriteLine(string line);
         void Write(byte[] buffer, int offset, int count);
         void ClearBuffer();
+
+        
     }
 }

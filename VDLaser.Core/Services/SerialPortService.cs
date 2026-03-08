@@ -14,6 +14,8 @@ namespace VDLaser.Core.Services
         private readonly ILogService _log;
         private SerialPort? _serialPort;
 
+        private LogProfile _currentProfile = LogProfile.Normal;
+
         public string PortName { get; set; } = string.Empty;
         public int BaudRate { get; set; } = 115200;
         public Parity Parity { get; set; } = Parity.None;
@@ -30,6 +32,7 @@ namespace VDLaser.Core.Services
         };
 
         public event EventHandler SettingsChanged;
+        public event EventHandler<LogProfile>? ProfileChanged;
         public event EventHandler<DataReceivedEventArgs> DataReceived;
         public event EventHandler? ConnectionLost;
 
@@ -37,6 +40,7 @@ namespace VDLaser.Core.Services
         {
             _log = log ?? throw new ArgumentNullException(nameof(log));
             RefreshPortNames();
+            SetProfile(LogProfile.Normal);
         }
 
         public void InitializeSerialPort()
@@ -133,6 +137,7 @@ namespace VDLaser.Core.Services
         }
 
         public IEnumerable<string> GetAvailablePorts() => SerialPort.GetPortNames();
+        public LogProfile CurrentProfile => _currentProfile;
 
         public void RefreshPortNames()
         {
@@ -141,7 +146,44 @@ namespace VDLaser.Core.Services
             _log.Information("[SerialPortService] ports refreshed");
 
         }
+        public void SetProfile(LogProfile profile)
+        {
+            if (_currentProfile == profile) return;
 
+            _currentProfile = profile;
+            ApplyProfileTimeouts(profile);
+
+            ProfileChanged?.Invoke(this, profile);
+
+            _log.Information("[SerialPortService] Profile switched to: {Profile}", profile);
+        }
+
+        private void ApplyProfileTimeouts(LogProfile profile)
+        {
+            switch (profile)
+            {
+                case LogProfile.Normal:
+                    ReadTimeout = 1000;
+                    WriteTimeout = 2000;
+                    break;
+                case LogProfile.Cnc:
+                    ReadTimeout = 500;
+                    WriteTimeout = 1000;
+                    break;
+                case LogProfile.Support:
+                    ReadTimeout = 2000;
+                    WriteTimeout = 5000;
+                    break;
+            }
+
+            if (_serialPort != null && _serialPort.IsOpen)
+            {
+                _serialPort.ReadTimeout = ReadTimeout;
+                _serialPort.WriteTimeout = WriteTimeout;
+            }
+            _log.Information("[SerialPortService] Timeouts ajustés pour {Profile} : Read={R}ms, Write={W}ms",
+            profile, ReadTimeout, WriteTimeout);
+        }
         public void WriteLine(string line)
         {
             if (_serialPort?.IsOpen != true) return;

@@ -6,17 +6,21 @@ using VDLaser.ViewModels.Base;
 
 namespace VDLaser.ViewModels.Controls
 {
-    /// <summary>
-    /// ViewModel de configuration du port série.
-    /// Implémente ISerialPortConfig pour être directement injecté dans GrblCoreService.
+    // <summary>
+    /// Manages the configuration of the serial communication port.
+    /// Implements settings persistence for the ISerialPortService.
     /// </summary>
     public partial class SerialPortSettingViewModel : ViewModelBase
     {
-        #region Private Fields & Observables
+        #region Fields & Services
         private readonly ILogService _log;
-
         private readonly ISerialPortService _serialService;
 
+        public event EventHandler? SettingsChanged;
+        public event EventHandler? ProfileChanged;
+        #endregion
+
+        #region Properties
         [ObservableProperty]
         private List<string> _listPortNames = new();
 
@@ -46,26 +50,28 @@ namespace VDLaser.ViewModels.Controls
         private Handshake _handshake = Handshake.None;
 
         [ObservableProperty]
-        private int _readTimeout = 500;
+        private int _readTimeout = 1000;
 
         [ObservableProperty]
         private int _writeTimeout = 2000;
 
         [ObservableProperty]
         private bool _isRefreshingPort;
-        
-        public event EventHandler? SettingsChanged;
         #endregion
+
         public SerialPortSettingViewModel(ISerialPortService serialService, ILogService log)
         {
             _serialService = serialService ?? throw new ArgumentNullException(nameof(serialService));
-            InitializeFromService();
             _log = log;
-            _log.Information("[SerialPortSettingViewModel] Initialised");
+
+            InitializeFromService();
             _serialService.SettingsChanged += OnServiceSettingsChanged;
+            _serialService.ProfileChanged += HandleProfileChanged;
+
+            LogContextual(_log, "Initialized", "Serial port settings loaded");
         }
 
-        // Init ViewModel from service state
+        #region logic
         private void InitializeFromService()
         {
             ListPortNames = new List<string>(_serialService.ListPortNames);
@@ -77,42 +83,29 @@ namespace VDLaser.ViewModels.Controls
             DataBits = _serialService.DataBits;
             StopBits = _serialService.StopBits;
             Handshake = _serialService.Handshake;
+
             ReadTimeout = _serialService.ReadTimeout;
             WriteTimeout = _serialService.WriteTimeout;
+
+            LogContextual(_log, "InitializeFromService", $"UI synchronized with Service. Port: {PortName}, Profile: {_serialService.CurrentProfile}");
         }
 
-        /// <summary>
-        /// When SerialPortService refreshes ports or updates config
-        /// </summary>
         private void OnServiceSettingsChanged(object? sender, EventArgs e)
         {
             InitializeFromService();
             SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
-
-        /// <summary>
-        /// Called by Refresh button in UI
-        /// </summary>
-        [RelayCommand]
-        public async Task RefreshPortsAsync()
+        private void HandleProfileChanged(object? sender, LogProfile profile)
         {
-            IsRefreshingPort = true;
-            try
-            {
-                await Task.Run(() => _serialService.RefreshPortNames());
-                _log.Information("[SerialPortSettingViewModel] refresh ports");
-            }
-            finally
-            {
-                IsRefreshingPort = false;
-            }
-        }
+            ReadTimeout = _serialService.ReadTimeout;
+            WriteTimeout = _serialService.WriteTimeout;
 
-        /// <summary>
-        /// Applies UI-changed settings back into SerialPortService
-        /// </summary>
+            LogContextual(_log, "TimeoutSynced", $"UI synced to {profile}: Read={ReadTimeout}ms");
+        }
         public void ApplySettings()
         {
+            LogContextual(_log, "ApplySettings", $"Port: {PortName}, Baud: {BaudRate}");
+
             _serialService.PortName = PortName;
             _serialService.BaudRate = BaudRate;
             _serialService.Parity = Parity;
@@ -123,6 +116,38 @@ namespace VDLaser.ViewModels.Controls
             _serialService.WriteTimeout = WriteTimeout;
 
             SettingsChanged?.Invoke(this, EventArgs.Empty);
+
+            LogContextual(_log, "ApplySettings", "User applied manual serial settings from UI");
+        }
+
+        #endregion
+
+        #region commands
+        [RelayCommand]
+        public async Task RefreshPortsAsync()
+        {
+            LogContextual(_log, "RefreshPorts", "Scanning available serial ports");
+            IsRefreshingPort = true;
+            try
+            {
+                await Task.Run(() => _serialService.RefreshPortNames());
+                ListPortNames = _serialService.GetAvailablePorts().ToList();
+            }
+            finally
+            {
+                IsRefreshingPort = false;
+            }
+        }
+        #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _serialService.SettingsChanged -= OnServiceSettingsChanged;
+                _serialService.ProfileChanged -= HandleProfileChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 }

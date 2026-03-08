@@ -4,10 +4,17 @@ using VDLaser.ViewModels.Base;
 
 namespace VDLaser.ViewModels.Controls
 {
+    /// <summary>
+    /// Manages the application's logging profile, determining the verbosity 
+    /// and filtering logic for system diagnostics.
+    /// </summary>
     public partial class LoggingSettingsViewModel : ViewModelBase
     {
+        #region Fields & Services
+        private readonly ILogService _log;
+        #endregion
+
         #region Properties
-        private readonly ILogService _logService;
         [ObservableProperty]
         private LogProfile _selectedProfile;
         public string CurrentProfileDisplay
@@ -15,19 +22,22 @@ namespace VDLaser.ViewModels.Controls
         public IEnumerable<LogProfile> LogProfileValues => Enum.GetValues(typeof(LogProfile)).Cast<LogProfile>();
         #endregion
 
-        public LoggingSettingsViewModel(ILogService logService)
+        public LoggingSettingsViewModel(ILogService log)
         {
-            _logService = logService;
+            _log = log;
 
             SelectedProfile = LogProfile.Normal;
-            _logService.SetProfile(SelectedProfile);
+            _log.SetProfile(SelectedProfile);
+
+            LogContextual(_log, "Initialized", $"Logging initialized with profile: {SelectedProfile}");
         }
 
         #region Events
         partial void OnSelectedProfileChanged(LogProfile value)
         {
-            _logService.SetProfile(value);
+            _log.SetProfile(value);
             OnPropertyChanged(nameof(CurrentProfileDisplay));
+            LogContextual(_log, "ProfileChanged", $"Logging profile changed to: {value}");
         }
         #endregion
     }
