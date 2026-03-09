@@ -1,12 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.ComponentModel;
-using System.Drawing;
 using System.Globalization;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Shapes;
 using VDLaser.Core.Gcode.Interfaces;
 using VDLaser.Core.Gcode.Models;
 using VDLaser.Core.Grbl.Interfaces;
@@ -21,29 +19,33 @@ using static VDLaser.Core.Gcode.Models.GcodeState;
 namespace VDLaser.ViewModels.Controls
 {
     /// <summary>
-    /// Contrôleur pour le pilotage manuel (Jogging), la gestion des unités, 
-    /// les macros utilisateur et la prévisualisation Laser.
+    /// Controller for manual machine piloting (Jogging), unit management, 
+    /// user macros, and Laser preview.
     /// </summary>
     public partial class JoggingViewModel:ViewModelBase
     {
-        #region Fields & Properties
+        #region Fields & Services
         private readonly ILogService _log;
         private readonly IGrblCoreService _coreService;
         private readonly IGcodeFileService _gcodeService;
-        private readonly  IStatusPollingService _polling; // Injecter via le constructeur si nécessaire
+        private readonly  IStatusPollingService _polling;
         private readonly GrblResponseParser _responseParser;
         private readonly KeyboardShortcutManager _shortcutManager;
         private GrblState _grblState = new GrblState();
         private GcodeState _gcodeState = new GcodeState();
+        #endregion
 
-        // Constantes de mouvement
-        private const double ContinuousJogDistance = 500;// Distance théorique pour simuler un mouvement fluide
+        #region Properties & Commands
+        private const double ContinuousJogDistance = 500;
         private const double MmToInch = 1.0 / 25.4;
         private const double InchToMm = 25.4;
-        private CancellationTokenSource _jogCts;  // Pour annulation manuelle/timeout
+        private CancellationTokenSource _jogCts;
 
         private bool _isJoggingVMInitialized;
         private bool _isJoggingContinuous;
+        #endregion
+
+        #region Observables: Settings & Units
         [ObservableProperty]
         private bool _isLaserPreviewActive;
         [ObservableProperty]
@@ -55,7 +57,7 @@ namespace VDLaser.ViewModels.Controls
         [ObservableProperty]
         private double _selectedStep = 1;
         [ObservableProperty]
-        private string _tXLine = string.Empty;// Commande manuelle saisie
+        private string _tXLine = string.Empty;
         [ObservableProperty]
         private string _rXLine = string.Empty;
         [ObservableProperty]
@@ -66,10 +68,8 @@ namespace VDLaser.ViewModels.Controls
         private bool _isSelectedKeyboard = false;
         [ObservableProperty]
         private bool _isSelectedMetric = true;
-        
         [ObservableProperty]
         private bool _isLaserEnabled = false;
-        // Configuration des Macros
         [ObservableProperty]
         private string _macro1 = "G91 G0 X-25 Y-25 F2000";
         [ObservableProperty]
@@ -86,34 +86,41 @@ namespace VDLaser.ViewModels.Controls
         private double _maxLaserPower = 2500;
         [ObservableProperty]
         private int _selectedLaser;
+        [ObservableProperty]
+        private RespStatus _responseStatus = RespStatus.Ok;
+        #endregion
+
+        #region Computed Properties
         public string FeedRateUnit => IsSelectedMetric ? "mm/min" : "in/min";
         public string DistanceUnit => IsSelectedMetric ? "mm" : "in";
         public bool IsJogEnabled => _coreService.IsConnected;
         public List<double> AvailableSteps { get; } = new() { 0.1, 0.5, 1, 5, 10 };
-        [ObservableProperty]
-        private RespStatus _responseStatus = RespStatus.Ok;
         #endregion
+
         public JoggingViewModel(IGrblCoreService coreService, ILogService log, IGcodeFileService gcodeService, IStatusPollingService polling)
         {
             _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
             _log = log ?? throw new ArgumentNullException(nameof(log));
             _gcodeService = gcodeService ?? throw new ArgumentNullException(nameof(coreService));
             _polling= polling ?? throw new ArgumentNullException(nameof(polling));
+
             _responseParser = new GrblResponseParser(_log);
             _shortcutManager = new KeyboardShortcutManager();
 
             _isJoggingVMInitialized = true;
+
             _coreService.DataReceived += OnGrblDataReceived;
             _coreService.PropertyChanged += OnCoreServicePropertyChanged;
 
-            _log.Debug("[JoggingViewModel] Initialized.");
+            LogContextual(_log, "Initialized", "Jogging and Laser control ready");
         }
-        #region Logic : Gestion des Unités & États
+
+        #region event handlers
         partial void OnIsSelectedMetricChanging(bool value)
         {
             if (!_coreService.IsConnected)
             {
-                _log.Warning("[JoggingViewModel] Metric change ignored: serial port closed");
+                LogContextual(_log, "Metric change ignored", "serial port closed");
                 IsSelectedMetric = !value;
             }
         }
@@ -123,6 +130,7 @@ namespace VDLaser.ViewModels.Controls
                 return;
 
             _coreService.SendCommandAsync(value ? "G21" : "G20");
+
             if (value)
             {
                 ManualFeedRate = Math.Round(ManualFeedRate * InchToMm, 0);
@@ -135,7 +143,7 @@ namespace VDLaser.ViewModels.Controls
                 SelectedStep = 0.1;
                 MaxManualFeedRate = Math.Round(2000 * MmToInch, 1);
             }
-            _log.Information("[JoggingViewModel] Units changed : {Unit}", value ? "Métrique (mm)" : "Impérial (in)");
+            LogContextual(_log, "UnitsChanged", $"Switched to {(value ? "Metric" : "Imperial")}");
             NotifyUnitsChanged();
         }
         private void NotifyUnitsChanged()
@@ -188,7 +196,7 @@ namespace VDLaser.ViewModels.Controls
             if (status.StartsWith("ALARM:"))
             {
                 _log.Warning("[JoggingViewModel] Runtime alarm detected in jog - Forcing poll.");
-                _polling.ForcePoll(); // Inject IStatusPollingService _polling via ctor
+                _polling.ForcePoll();
             }
 
             if (string.IsNullOrEmpty(status)) return;
@@ -236,143 +244,6 @@ namespace VDLaser.ViewModels.Controls
             _log.Information("[Laser] Puissance présélectionnée : {Power}", value);
 
         }
-        // Dans votre logique de réception des réglages ($$) de la machine
-        private void OnSettingsReceived()
-        {
-            // Si $110 est la vitesse max X
-            if (_coreService.State.Settings.TryGetValue(110, out var maxSpeed))
-            {
-                //MaxManualFeedRate = double.Parse(maxSpeed, CultureInfo.InvariantCulture);
-            }
-        }
-        #endregion
-
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
-        private async Task SendManual()
-        {
-            ResponseStatus = RespStatus.Q;  // Ajout
-            try
-            {
-                await _coreService.SendCommandAsync(TXLine);
-                _log.Information("[JoggingViewModel] TX {cmd}", TXLine);
-            }
-            catch (Exception ex)
-            {
-                _log.Error("[JoggingViewModel] Failed to load info: {Message}", ex.Message);
-                MessageBox.Show($"Erreur : {ex.Message}");  // Test
-            }
-            finally
-            {
-                SendManualCommand.NotifyCanExecuteChanged();
-                TXLine = string.Empty;
-                _log.Information("[JoggingViewModel] TX {cmd}", TXLine);
-                //ResponseStatus= RespStatus.Ok;  // Ajout
-            }
-        }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
-        private async Task SendOrigine()
-        {
-            ResponseStatus = RespStatus.Q;
-            try
-            {
-                await _coreService.SendCommandAsync(Origine);
-                _log.Information("[JoggingViewModel] TX Macro {cmd}", Origine);
-            }
-            catch (Exception ex)
-            {
-                _log.Error("[JoggingViewModel] Failed to load info: {Message}", ex.Message);
-                MessageBox.Show($"Erreur : {ex.Message}");
-            }
-            finally
-            {
-                SendMacro1Command.NotifyCanExecuteChanged();
-                ResponseStatus = RespStatus.Ok;
-            }
-        }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
-        private async Task SendMacro1()
-        {
-            ResponseStatus = RespStatus.Q;
-            try
-            {
-                await _coreService.SendCommandAsync(Macro1);
-                _log.Information("[JoggingViewModel] TX Macro {cmd}", Macro1);
-            }
-            catch (Exception ex)
-            {
-                _log.Error("[JoggingViewModel] Failed to load info: {Message}", ex.Message);
-                MessageBox.Show($"Erreur : {ex.Message}");
-            }
-            finally
-            {
-                SendMacro1Command.NotifyCanExecuteChanged();
-                ResponseStatus = RespStatus.Ok;
-            }
-        }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
-        private async Task SendMacro2()
-        {
-            ResponseStatus = RespStatus.Q;
-            try
-            {
-                await _coreService.SendCommandAsync(Macro2);
-                _log.Information("[JoggingViewModel] TX Macro {cmd}", Macro2);
-            }
-            catch (Exception ex)
-            {
-                _log.Error("[JoggingViewModel] Failed to load info: {Message}", ex.Message);
-                MessageBox.Show($"Erreur : {ex.Message}");
-            }
-            finally
-            {
-                SendMacro2Command.NotifyCanExecuteChanged();
-                ResponseStatus = RespStatus.Ok;
-            }
-
-        }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
-        private async Task SendMacro3()
-        {
-            ResponseStatus = RespStatus.Q;
-            try
-            {
-                await _coreService.SendCommandAsync(Macro3);
-                _log.Information("[JoggingViewModel] TX Macro {cmd}", Macro3);
-            }
-            catch (Exception ex)
-            {
-                _log.Error("[JoggingViewModel] Failed to load info: {Message}", ex.Message);
-                MessageBox.Show($"Erreur : {ex.Message}");
-            }
-            finally
-            {
-                SendMacro3Command.NotifyCanExecuteChanged();
-                ResponseStatus = RespStatus.Ok;
-            }
-
-        }
-        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
-        private async Task SendMacro4()
-        {
-            ResponseStatus = RespStatus.Q;
-            try
-            {
-                await _coreService.SendCommandAsync(Macro4);
-                _log.Information("[JoggingViewModel] TX Macro {cmd}", Macro4);
-            }
-            catch (Exception ex)
-            {
-                _log.Error("[JoggingViewModel] Failed to load info: {Message}", ex.Message);
-                MessageBox.Show($"Erreur : {ex.Message}");
-            }
-            finally
-            {
-                SendMacro4Command.NotifyCanExecuteChanged();
-                ResponseStatus = RespStatus.Ok;
-            }
-
-        }
-
         /// <summary>
         /// Slider feed rate changed (aucun envoi direct)
         /// Max FeedRate=2000
@@ -394,8 +265,135 @@ namespace VDLaser.ViewModels.Controls
             if (!_coreService.IsConnected)
                 return;
         }
+        #endregion
 
-        #region Logic : Mouvements (Jogging)
+        #region Commands : Send Gcode & Macros
+        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        private async Task SendManual()
+        {
+            ResponseStatus = RespStatus.Q;  // Ajout
+            try
+            {
+                await _coreService.SendCommandAsync(TXLine);
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[JOG] Failed to load info: {Message}", ex.Message);
+                MessageBox.Show($"Erreur : {ex.Message}");  // Test
+            }
+            finally
+            {
+                SendManualCommand.NotifyCanExecuteChanged();
+                TXLine = string.Empty;
+                LogContextual(_log, "SendManual", $"TX {TXLine}");
+            }
+        }
+        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        private async Task SendOrigine()
+        {
+            ResponseStatus = RespStatus.Q;
+            try
+            {
+                await _coreService.SendCommandAsync(Origine);
+                LogContextual(_log, "SendOrigine", $"TX {Origine}");
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[JOG] Failed to load info: {Message}", ex.Message);
+                MessageBox.Show($"Erreur : {ex.Message}");
+            }
+            finally
+            {
+                SendMacro1Command.NotifyCanExecuteChanged();
+                ResponseStatus = RespStatus.Ok;
+            }
+        }
+        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        private async Task SendMacro1()
+        {
+            ResponseStatus = RespStatus.Q;
+            try
+            {
+                await _coreService.SendCommandAsync(Macro1);
+                LogContextual(_log, "SendMacro1", $"TX Macro {Macro1}");
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[JOG] Failed to load info: {Message}", ex.Message);
+                MessageBox.Show($"Erreur : {ex.Message}");
+            }
+            finally
+            {
+                SendMacro1Command.NotifyCanExecuteChanged();
+                ResponseStatus = RespStatus.Ok;
+            }
+        }
+        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        private async Task SendMacro2()
+        {
+            ResponseStatus = RespStatus.Q;
+            try
+            {
+                await _coreService.SendCommandAsync(Macro2);
+                LogContextual(_log, "SendMacro2", $"TX Macro {Macro2}");
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[JOG] Failed to load info: {Message}", ex.Message);
+                MessageBox.Show($"Erreur : {ex.Message}");
+            }
+            finally
+            {
+                SendMacro2Command.NotifyCanExecuteChanged();
+                ResponseStatus = RespStatus.Ok;
+            }
+
+        }
+        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        private async Task SendMacro3()
+        {
+            ResponseStatus = RespStatus.Q;
+            try
+            {
+                await _coreService.SendCommandAsync(Macro3);
+                LogContextual(_log, "SendMacro3", $"TX Macro {Macro3}");
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[JOG] Failed to load info: {Message}", ex.Message);
+                MessageBox.Show($"Erreur : {ex.Message}");
+            }
+            finally
+            {
+                SendMacro3Command.NotifyCanExecuteChanged();
+                ResponseStatus = RespStatus.Ok;
+            }
+
+        }
+        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        private async Task SendMacro4()
+        {
+            ResponseStatus = RespStatus.Q;
+            try
+            {
+                await _coreService.SendCommandAsync(Macro4);
+                LogContextual(_log, "SendMacro4", $"TX Macro {Macro4}");
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[JOG] Failed to load info: {Message}", ex.Message);
+                MessageBox.Show($"Erreur : {ex.Message}");
+            }
+            finally
+            {
+                SendMacro4Command.NotifyCanExecuteChanged();
+                ResponseStatus = RespStatus.Ok;
+            }
+
+        }
+        #endregion
+
+        #region Logic : Move (Jogging)
         [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
         public async Task Jog(string parameter)
         {
@@ -419,7 +417,7 @@ namespace VDLaser.ViewModels.Controls
 
             sb.AppendFormat(CultureInfo.InvariantCulture, "F{0:F0}", ManualFeedRate);
 
-            _log.Debug("[JoggingViewModel] Jog incrémental : {Cmd}", sb.ToString());
+            _log.Debug("[JOG] Incremental job: {Cmd}", sb.ToString());
             await _coreService.SendCommandAsync(sb.ToString());
         }
         
@@ -436,7 +434,7 @@ namespace VDLaser.ViewModels.Controls
 
             if (_coreService.State.MachineState != GrblState.MachState.Idle)
             {
-                _log.Warning("[JoggingViewModel] Jog continu ignoré : Machine pas en Idle.");
+                _log.Warning("[JOG] Jog continuous ignored : Machine not Idle.");
                 return;
             }
 
@@ -455,13 +453,12 @@ namespace VDLaser.ViewModels.Controls
                 "$J=G91 {0} X{1:F3} Y{2:F3} F{3:F3}",
                 unitMode, x, y, feed);
 
-            _log.Information("[JoggingViewModel] START {Cmd}", cmd);
+            _log.Information("[JOG] [START] {Cmd}", cmd);
 
             ResponseStatus = RespStatus.Q;
             SendManualCommand.NotifyCanExecuteChanged();
 
-            _log.Information("[JoggingViewModel] START continu — DirX={XDir}, DirY={YDir}, Cmd={Cmd}", xDir, yDir, cmd);
-            System.Diagnostics.Debug.WriteLine($"[Debug VDLaser] Commande GRBL envoyée : {cmd}");  // Visible dans Output Window VS
+            _log.Information("[JOG] [START] continu — DirX={XDir}, DirY={YDir}, Cmd={Cmd}", xDir, yDir, cmd);
 
             await _coreService.SendCommandAsync(cmd);
 
@@ -480,7 +477,7 @@ namespace VDLaser.ViewModels.Controls
             _isJoggingContinuous = false;
 
             await _coreService.SendRealtimeCommandAsync(0x85);// Jog Cancel GRBL 1.1
-            _log.Information("[JoggingViewModel] STOP continu demandé");
+            _log.Information("[JOG] [STOP] continu demandé");
 
             if (IsLaserPreviewActive) await _coreService.SendCommandAsync("M5");
 
@@ -496,7 +493,6 @@ namespace VDLaser.ViewModels.Controls
         {
             await StartContinuousJogAsync(0, 1);
         }
-
         [RelayCommand]
         private async Task JogUpStop()
         {
@@ -507,7 +503,6 @@ namespace VDLaser.ViewModels.Controls
         {
             await StartContinuousJogAsync(0, -1);
         }
-
         [RelayCommand]
         private async Task JogDownStop()
         {
@@ -518,7 +513,6 @@ namespace VDLaser.ViewModels.Controls
         {
             await StartContinuousJogAsync(-1, 0);
         }
-
         [RelayCommand]
         private async Task JogLeftStop()
         {
@@ -529,7 +523,6 @@ namespace VDLaser.ViewModels.Controls
         {
             await StartContinuousJogAsync(1, 0);
         }
-
         [RelayCommand]
         private async Task JogRightStop()
         {
@@ -602,7 +595,7 @@ namespace VDLaser.ViewModels.Controls
                 "G91 G1 X0 Y0 F100 M3 S{0}",
                 power);
 
-            _log.Warning("[JoggingViewModel] LASER - Preview Start S{Power}", power);
+            _log.Warning("[JOG] [LASER] - Preview Start S{Power}", power);
 
             await _coreService.SendCommandAsync(cmd);
         }
@@ -618,9 +611,8 @@ namespace VDLaser.ViewModels.Controls
 
             _isLaserPreviewActive = false;
             LaserPreviewStatusMessage = "Laser enabled";
-            _log.Warning("[JoggingViewModel] LASER - Preview Stop");
+            _log.Warning("[JOG] [LASER] - Preview Stop");
 
-            // Laser OFF
             await _coreService.SendCommandAsync("M5");
         }
 
@@ -645,7 +637,7 @@ namespace VDLaser.ViewModels.Controls
         [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
         private void ToggleLaser()
         {
-            _log.Warning("[JoggingViewModel] LASER - Enabled = {State}", IsLaserEnabled);
+            _log.Warning("[JOG] [LASER] - Enabled = {State}", IsLaserEnabled);
             if (IsLaserEnabled)
             {
                 LaserPreviewStatusMessage = "Laser enabled";
@@ -655,7 +647,6 @@ namespace VDLaser.ViewModels.Controls
                 LaserPreviewStatusMessage = "Laser disabled";
             }
         }
-
         partial void OnLaserPowerChanged(double value)
         {
             if (!IsLaserEnabled)
@@ -677,7 +668,6 @@ namespace VDLaser.ViewModels.Controls
 
             StartLaserPreviewCommand.NotifyCanExecuteChanged();
         }
-
         private bool TryParseLaserMax(string line)
         {
             if (!line.StartsWith("$30="))
@@ -691,59 +681,34 @@ namespace VDLaser.ViewModels.Controls
                 CultureInfo.InvariantCulture,
                 out double max))
             {
-                _log.Warning("[JoggingViewModel] LASER - Invalid $30 format: {Line}", line);
+                _log.Warning("[JOG] [LASER] - Invalid $30 format: {Line}", line);
                 return true;
             }
 
             Application.Current.Dispatcher.Invoke(() =>
             {
                 MaxLaserPower = max;
-
+                LogContextual(_log, "SyncSettings", $"Max Power updated to {max}");
                 if (LaserPower > MaxLaserPower)
                     LaserPower = MaxLaserPower;
             });
 
-            _log.Warning("[JoggingViewModel] LASER - GRBL $30 synchronized → MaxLaserPower = {Max}", max);
+            _log.Warning("[JOG] [LASER] - GRBL $30 synchronized → MaxLaserPower = {Max}", max);
             return true;
         }
         #endregion
 
-        /// <summary>
-        /// Increase the motion speed with keyboard
-        /// </summary>
-        /// <param name="parameter"></param>
-        [RelayCommand(CanExecute = nameof(CanJog))]
-        private void IncreaseFeedRate(bool parameter)
-        {
-            ManualFeedRate += 10;
-            _log.Information("[JoggingViewModel]|F{0}", ManualFeedRate);
-        }
-        /// <summary>
-        /// Decrease the motion speed with keyboard
-        /// </summary>
-        /// <param name="parameter"></param>
-        [RelayCommand(CanExecute = nameof(CanJog))]
-        private void DecreaseFeedRate(bool parameter)
-        {
-            ManualFeedRate -= 10;
-            _log.Information("[JoggingViewModel]|F{0}", ManualFeedRate);
-        }
+        #region Helpers & Utilities
         private bool CanExecuteSendCommand()
-        {
-            bool canExecute = _coreService.IsConnected;// && ResponseStatus == RespStatus.Ok;
-            return canExecute;
-        }
-        private bool CanJog()
-        { 
-            bool canExecute = IsSelectedKeyboard && _coreService.IsConnected && _coreService.State.MachineState == GrblState.MachState.Idle; 
-            return canExecute; 
-        }
-        private bool CanExecuteLaserCommand()
         {
             bool canExecute = _coreService.IsConnected;
             return canExecute;
         }
-        // Utilitaire pour extraire la direction (1 ou -1) après la lettre de l'axe
+        private bool CanJog()
+        {
+            bool canExecute = IsSelectedKeyboard && _coreService.IsConnected && _coreService.State.MachineState == GrblState.MachState.Idle;
+            return canExecute;
+        }
         private int ExtractDirection(string p, string axis)
         {
             int index = p.IndexOf(axis) + 1;
@@ -754,13 +719,35 @@ namespace VDLaser.ViewModels.Controls
         {
             _shortcutManager.HandleKeyPress(key);
         }
+        /// <summary>
+        /// Increase the motion speed with keyboard
+        /// </summary>
+        /// <param name="parameter"></param>
+        [RelayCommand(CanExecute = nameof(CanJog))]
+        private void IncreaseFeedRate(bool parameter)
+        {
+            ManualFeedRate += 10;
+            _log.Information("[JOG]|F{0}", ManualFeedRate);
+        }
+        /// <summary>
+        /// Decrease the motion speed with keyboard
+        /// </summary>
+        /// <param name="parameter"></param>
+        [RelayCommand(CanExecute = nameof(CanJog))]
+        private void DecreaseFeedRate(bool parameter)
+        {
+            ManualFeedRate -= 10;
+            _log.Information("[JOG]|F{0}", ManualFeedRate);
+        }
+        #endregion
+
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 _coreService.DataReceived -= OnGrblDataReceived;
                 _coreService.PropertyChanged -= OnCoreServicePropertyChanged;
-                _log.Debug("[JoggingViewModel] Libération des ressources.");
             }
             base.Dispose(disposing);
         }
