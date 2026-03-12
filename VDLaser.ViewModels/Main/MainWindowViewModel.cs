@@ -1,13 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Serilog;
 using System.ComponentModel;
 using System.IO;
-using System.Windows;
 using VDLaser.Core.Gcode.Interfaces;
 using VDLaser.Core.Grbl.Errors;
 using VDLaser.Core.Grbl.Interfaces;
-using VDLaser.Core.Grbl.Models;
 using VDLaser.Core.Interfaces;
 using VDLaser.ViewModels.Base;
 using VDLaser.ViewModels.Controls;
@@ -18,26 +15,29 @@ using static VDLaser.Core.Grbl.Models.GrblState;
 namespace VDLaser.ViewModels.Main
 {
     /// <summary>
-    /// ViewModel principal gérant l'état global de l'application, 
-    /// la coordination des services GRBL et la navigation entre les sous-vues.
+    /// Core ViewModel managing the global application state, 
+    /// coordinating GRBL services, and handling main navigation.
     /// </summary>
     public partial class MainWindowViewModel : ViewModelBase
     {
+        #region Fields & Services
         private readonly ILogService _log;
-        private readonly GrblSettingsViewModel _settingVM;
         private readonly IStatusPollingService _polling;
-        private readonly ControleViewModel _controleVM;
         private readonly IGcodeJobService _gcodeJobService;
         private readonly IGrblCoreService _grblService;
         private readonly ISerialPortService _serialService;
         private readonly IDialogService _dialogService;
-        
-        private bool CanDisconnect() => IsConnected;
-        private bool CanConnect() => !IsConnecting && !IsConnected;
-        public bool CanEditSerialSettings => !IsConnected && !IsConnecting;
-        private bool CanEmergencyStop() => IsConnected;
-        private bool _isAttemptingReconnect = false;
-        #region State Properties
+
+        private readonly GrblSettingsViewModel _settingVM;
+        private readonly ControleViewModel _controleVM;
+        public SerialPortSettingViewModel SerialPortSettingVM { get; }
+        public PlotterViewModel PlotterVM { get; }
+        public LoggingSettingsViewModel LoggingSettingsVM { get; }
+        public GcodeSettingsViewModel GcodeSettingsVM { get; }
+
+        #endregion
+
+        #region Observables State Properties
         [ObservableProperty]
         private MachineUiState _uiState;
         [ObservableProperty]
@@ -48,38 +48,31 @@ namespace VDLaser.ViewModels.Main
         private int _selectedTabIndex;
         [ObservableProperty]
         private string _connectionState = "Disconnected";
-
         [ObservableProperty]
         public bool _isLoadingGlobal = false;
-
         [ObservableProperty]
         public bool _isConnecting = false;
-
         [ObservableProperty]
         public bool _isConnected = false;
-
         [ObservableProperty]
         private bool _isLoading = false;
         [ObservableProperty]
         private bool _isFileViewVisible = true;
-
         [ObservableProperty]
         private bool _isPlotterViewVisible = false;
-
         [ObservableProperty]
         private bool _isSettingsViewVisible = false;
         [ObservableProperty]
         private bool _isJoggingViewVisible = false;
         [ObservableProperty]
         private string _currentTab;
-        public event EventHandler<string>? ConnectionError;
-        public SerialPortSettingViewModel SerialPortSettingVM { get; }
-        public PlotterViewModel PlotterVM { get; }
-        public LoggingSettingsViewModel LoggingSettingsVM { get; }
-        public GcodeSettingsViewModel GcodeSettingsVM { get; }
-        public bool IsIdle => MachineState == MachState.Idle;
         #endregion
 
+        #region Computed Properties
+        public bool IsIdle => MachineState == MachState.Idle;
+        public bool CanEditSerialSettings => !IsConnected && !IsConnecting;
+        private bool _isAttemptingReconnect = false;
+        #endregion
 
         public MainWindowViewModel(
             IGrblCoreService grblService, 
@@ -100,33 +93,29 @@ namespace VDLaser.ViewModels.Main
             _gcodeJobService=jobService?? throw new ArgumentNullException(nameof(jobService));
             _serialService=serialService?? throw new ArgumentNullException(nameof(serialService));
             _polling = polling ?? throw new ArgumentNullException(nameof(polling));
-            SerialPortSettingVM = serialPortSettingVM ?? throw new ArgumentNullException(nameof(serialPortSettingVM));
             _settingVM = settingVM ?? throw new ArgumentNullException(nameof(settingVM));
             _controleVM = controleVM ?? throw new ArgumentNullException(nameof(controleVM));
+            _machineStateVM = machineStateVM ?? throw new ArgumentNullException(nameof(machineStateVM));
             _log = log ?? throw new ArgumentNullException(nameof(log));
             _dialogService=dialogService??  throw new ArgumentNullException(nameof(dialogService));
+
+            SerialPortSettingVM = serialPortSettingVM ?? throw new ArgumentNullException(nameof(serialPortSettingVM));
             PlotterVM = plotterVM ?? throw new ArgumentNullException(nameof(plotterVM));
             LoggingSettingsVM = loggingSettingsVM ?? throw new ArgumentNullException(nameof(loggingSettingsVM));
-            _machineStateVM = machineStateVM ?? throw new ArgumentNullException(nameof(machineStateVM));
             GcodeSettingsVM=gcodeSettingsVM?? throw new ArgumentNullException(nameof(gcodeSettingsVM));
 
-            _log.Information("[Main] initialized and services injected.");
-
             CurrentTab = "Home";
-            // Abonnements aux événements
+
             _settingVM.PropertyChanged += OnSettingVMPropertyChanged;
             _grblService.PropertyChanged += OnGrblServicePropertyChanged;
             _controleVM.PropertyChanged += OnControleVMPropertyChanged;
+            _serialService.ConnectionLost += OnConnectionLost;
 
-            _serialService.ConnectionLost += async (s, e) => {
-                _log.Fatal("[Main] Lien USB perdu ! Arrêt du logiciel.");
-                await EmergencyStop();
-                await HandleAutoReconnect();
-                _dialogService.ShowErrorAsync("Le câble USB semble avoir été débranché. Le job est annulé.");
-            };
+            LogContextual(_log, "Initialized", "Main Application Shell ready");
         }
 
         #region Events
+        public event EventHandler<string>? ConnectionError;
         partial void OnIsConnectedChanged(bool value)
         {
             OnPropertyChanged(nameof(CanEditSerialSettings));
@@ -143,25 +132,27 @@ namespace VDLaser.ViewModels.Main
                 IsLoading = _settingVM.IsLoading;  // Copie l'état local vers global
             }
         }
-        /// <summary>
-        /// To deactivate the UI Idle indicator when state changes.
-        /// </summary>
-        /// <param name="value"></param>
         partial void OnMachineStateChanged(MachState value)
         {
             OnPropertyChanged(nameof(IsIdle));
             if (value != MachState.Idle)
             {
                 if (SelectedTabIndex is 2 or 4)
-                    SelectedTabIndex = 3; // Plotter
+                    SelectedTabIndex = 3;
+            }
+        }
+        private void OnGrblErrorReceived(object? sender, int errorCode)
+        {
+            if (errorCode != 0)
+            {
+                CurrentTab = "File";
+
+                _dialogService.ShowErrorAsync($"Error GRBL détected : {errorCode}", "Command error");
             }
         }
         #endregion
 
         #region Logic : State Management
-        /// <summary>
-        /// Gère la transition des états de la machine en fonction du cycle de Homing.
-        /// </summary>
         private void OnControleVMPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ControleViewModel.IsHomingInProgress) && _controleVM.IsHomingInProgress)
@@ -174,14 +165,12 @@ namespace VDLaser.ViewModels.Main
             {
                 if (_controleVM.IsHomingOk)
                 {
-                    _log.Information("[Main] Homing successful. Machine is now Ready.");
+                    LogContextual(_log, "Main", "Homing successful. Machine is now Ready.");
+
                     UiState = MachineUiState.Ready;
                 }
             }
         }
-        /// <summary>
-        /// Intercepteur de changement d'état pour mettre à jour l'UI Textuelle.
-        /// </summary>
         partial void OnUiStateChanged(MachineUiState value)
         {
 
@@ -200,14 +189,12 @@ namespace VDLaser.ViewModels.Main
                 _ => "Unknown"
             };
         }
-        /// <summary>
-        /// Réagit aux changements d'état profonds venant du service GRBL (Cœur de la logique).
-        /// </summary>
         private void OnGrblServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if(e.PropertyName == nameof(IGrblCoreService.IsConnected))
                 {
-                _log.Information("[Main] Serial connection established. Starting Polling Service.");
+                LogContextual(_log, "Main", "Serial connection established. Starting Polling Service.");
+
                 _polling.Start();
                 
             }
@@ -218,27 +205,24 @@ namespace VDLaser.ViewModels.Main
 
                 UiState = MachineUiState.Alarm;
             }
-            // Automate d'état basé sur le retour GRBL
             if (e.PropertyName == nameof(IGrblCoreService.State))
             {
                 var grblRawState = _grblService.State.MachineState;
 
-                // Cas 1 : Fin de connexion, attente de Homing
                 if (grblRawState == MachState.Idle && IsLoadingGlobal &&
                     _grblService.HasLoadedSettings)
                 {
-                    //_log.Information("[MainWindowViewModel] Settings loaded. Machine requires Homing to unlock.");
+                    LogContextual(_log, "Main", "Settings loaded. Machine requires Homing to unlock.");
+
                     UiState = MachineUiState.HomingRequired;
                 }
 
-                // Cas 2 : Homing en cours (détecté par GRBL)
                 if (grblRawState == MachState.Home)
                 {
                     UiState = MachineUiState.Homing;
                     IsLoadingGlobal = false;
                 }
 
-                // Cas 3 : Machine libre
                 if (grblRawState == MachState.Idle && !IsLoadingGlobal)
                 {
                     UiState = MachineUiState.Ready;
@@ -249,9 +233,9 @@ namespace VDLaser.ViewModels.Main
 
         #region Commands : Connection / Disconnection
         [RelayCommand(CanExecute = nameof(CanConnect))]
-        private async Task Connect()
+        private async Task ConnectAsync()
         {
-            _log.Information("[Main] Connection - Attempting to connect to {Port}...", SerialPortSettingVM.PortName);
+            LogContextual(_log, "ConnectAsync", $"Attempting to connect to {SerialPortSettingVM.PortName}");
 
             IsConnecting = true;
             IsLoading = true;
@@ -264,7 +248,7 @@ namespace VDLaser.ViewModels.Main
 
                 IsConnected = true;
                 UiState = MachineUiState.Connected;
-                _log.Information("[Main] Connection - Successfully connected to GRBL controller.");
+                LogContextual(_log, "ConnectAsync", "Connection - Successfully connected to GRBL controller.");
             }
             catch (GrblConnectionException ex)
             {
@@ -300,9 +284,9 @@ namespace VDLaser.ViewModels.Main
         }
 
         [RelayCommand(CanExecute = nameof(CanDisconnect))]
-        private async Task Disconnect()
+        private async Task DisconnectAsync()
         {
-            _log.Information("[Main] Connection - User requested disconnection.");
+            LogContextual(_log, "DisconnectAsync", "Connection - User requested disconnection.");
 
             if (!IsConnected) return;
 
@@ -324,6 +308,8 @@ namespace VDLaser.ViewModels.Main
                 NotifyCommandStates();
             }
         }
+        private bool CanDisconnect() => IsConnected;
+        private bool CanConnect() => !IsConnecting && !IsConnected;
         #endregion
 
         #region Commands : Safety
@@ -347,29 +333,48 @@ namespace VDLaser.ViewModels.Main
                 await _grblService.SendCommandAsync("M5");
 
                 UiState = MachineUiState.EmergencyStop;
-                _log.Information("[Main] Safety - Emergency Stop sequence sent successfully.");
+                LogContextual(_log, "EmergencyStop", "Safety - Emergency Stop sequence sent successfully.");
             }
             catch (Exception ex)
             {
                 _log.Fatal("[Main] Safety - FAILED TO SEND EMERGENCY STOP COMMAND!");
             }
         }
+        /// <summary>
+        /// Handles critical USB disconnection. 
+        /// Triggers emergency procedures and user notification.
+        /// </summary>
+        private async void OnConnectionLost(object? sender, EventArgs e)
+        {
+            _log.Fatal("[Main] Lien USB perdu ! Arrêt du logiciel.");
 
+            try
+            {
+                await EmergencyStop();
+
+                _ = _dialogService.ShowErrorAsync("Connection Lost",
+                    "The USB cable seems to be disconnected. The current job has been cancelled.");
+
+                await HandleAutoReconnect();
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[Main] Error during connection loss handling: {Message}", ex);
+            }
+        }
         private async Task HandleAutoReconnect()
         {
             if (_isAttemptingReconnect) return;
             _isAttemptingReconnect = true;
             UiState = MachineUiState.Reconnecting;
-            _log.Warning("[Main] Mode reconnexion automatique activé...");
+            _log.Warning("[Main] Mode automatic reconnection actived...");
 
-            // On récupère le nom du port qui vient d'être perdu
             string lostPort = _serialService.PortName;
 
             while (IsConnected)
             {
-                _log.Information("[Main] Tentative de reconnexion sur {Port}...", lostPort);
+                LogContextual(_log, "HandleAutoReconnect", $"Attempting reconnection on {lostPort}");
 
-                // 1. Vérifier si le port est de nouveau visible dans Windows
                 if (_serialService.IsPortAvailable(lostPort))
                 {
                     try
@@ -379,47 +384,31 @@ namespace VDLaser.ViewModels.Main
                         if (IsConnected)
                         {
                             _log.Information("[Main] Reconnexion réussie !");
+                            LogContextual(_log, "HandleAutoReconnect", "Success!");
+
                             _isAttemptingReconnect = false;
 
-                            // Optionnel : On peut tenter un Reset GRBL pour repartir propre
                             await _grblService.SendRealtimeCommandAsync(0x18);
                             return;
                         }
                     }
                     catch (UnauthorizedAccessException)
                     {
-                        _log.Warning("[Main] Accès refusé à {Port} (encore utilisé par le système). Nouvelle tentative...", _serialService.PortName);
+                        _log.Warning("[Main] Access denied to {Port} (still in use by the system). Trying again...", _serialService.PortName);
                     }
                     catch (Exception ex)
                     {
-                        _log.Error("[Main] Erreur lors de la réouverture : {Msg}", ex.Message);
+                        _log.Error("[Main] Error during reconnection : {Msg}", ex.Message);
                     }
                 }
 
-                // 2. Attendre 2 secondes avant la prochaine tentative
                 await Task.Delay(2000);
             }
 
             _isAttemptingReconnect = false;
             UiState = MachineUiState.Connected;
         }
-
-        [RelayCommand]
-        private void SelectTab(string tabName)
-        {
-            CurrentTab = tabName;
-            _log.Debug("[Main] Navigation vers l'onglet : {Tab}", tabName);
-        }
-        private void OnGrblErrorReceived(object? sender, int errorCode)
-        {
-            if (errorCode != 0)
-            {
-                // On force l'affichage de l'onglet G-Code pour montrer l'erreur
-                CurrentTab = "File";
-
-                _dialogService.ShowErrorAsync($"Erreur GRBL détectée : {errorCode}", "Erreur de Commande");
-            }
-        }
+        private bool CanEmergencyStop() => IsConnected;
         #endregion
 
         #region Helpers
@@ -432,14 +421,11 @@ namespace VDLaser.ViewModels.Main
         [RelayCommand]
         private void ShowView(string viewName)
         {
-            // On réinitialise tout à false
             IsJoggingViewVisible = false;
             IsFileViewVisible = false;
             IsPlotterViewVisible = false;
             IsSettingsViewVisible = false;
             
-
-            // On active la vue demandée
             switch (viewName)
             {
                 case "Jogging": IsJoggingViewVisible = true; break;
@@ -451,6 +437,12 @@ namespace VDLaser.ViewModels.Main
             _log.Debug("[Main] Switched view to: {ViewName}", viewName);
         }
         [RelayCommand]
+        private void SelectTab(string tabName)
+        {
+            CurrentTab = tabName;
+            _log.Debug("[Main] Navigation to tab: {Tab}", tabName);
+        }
+        [RelayCommand]
         private async Task QuitApplication()
         {
             bool confirm = await _dialogService.AskConfirmationAsync(
@@ -458,6 +450,8 @@ namespace VDLaser.ViewModels.Main
         "Exit VDLaser");
 
             if (!confirm) return;
+
+            LogContextual(_log, "QuitApplication", "Starting shutdown sequence...");
 
             try
             {
@@ -471,7 +465,7 @@ namespace VDLaser.ViewModels.Main
                     _grblService.SendCommandAsync("M5").Wait(500);
                     await _grblService.DisconnectAsync();
                 }
-                _log.Information("[Main] Application exit requested by user.");
+                LogContextual(_log, "QuitApplication", "Application exit requested by user.");
             }
             catch (Exception ex)
             {
@@ -484,14 +478,18 @@ namespace VDLaser.ViewModels.Main
             }
             
         }
+        #endregion
+
+        #region Disposal
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _log.Debug("[MainWindowViewModel] Disposing ViewModel and cleaning events.");
                 _settingVM.PropertyChanged -= OnSettingVMPropertyChanged;
                 _grblService.PropertyChanged -= OnGrblServicePropertyChanged;
                 _controleVM.PropertyChanged -= OnControleVMPropertyChanged;
+                _serialService.ConnectionLost -= OnConnectionLost;
+                LogContextual(_log, "Disposed", "MainWindow resources released");
             }
             base.Dispose(disposing);
         }

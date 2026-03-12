@@ -8,6 +8,7 @@ namespace VDLaser.ViewModels.Settings
 {
     public partial class SoftwareSettingViewModel : ViewModelBase
     {
+        #region Fields & Properties
         private readonly ISettingService _settingService;
 
         [ObservableProperty]
@@ -15,12 +16,14 @@ namespace VDLaser.ViewModels.Settings
 
         [ObservableProperty]
         private bool _isLoading;
+        #endregion
 
         public SoftwareSettingViewModel(ISettingService settingService)
         {
             _settingService = settingService;
         }
 
+        #region Commands
         [RelayCommand]
         public async Task LoadAsync()
         {
@@ -34,5 +37,6 @@ namespace VDLaser.ViewModels.Settings
         {
             await _settingService.SaveSettingsAsync(Settings);
         }
+        #endregion
     }
 }

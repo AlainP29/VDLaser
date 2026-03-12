@@ -1,10 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System.Diagnostics;
-using System.Transactions;
-using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Input;
+﻿using System.Windows;
 using VDLaser.Core.Interfaces;
+using VDLaser.ViewModels.Base;
 
 namespace VDLaser.ViewModels.Plotter
 {
@@ -13,7 +9,7 @@ namespace VDLaser.ViewModels.Plotter
     /// Manages zoom (mouse wheel) and pan (drag) operations, with compensation for Y-axis flip.
     /// Ensures smooth and bounded interactions.
     /// </summary>
-    public sealed partial class ViewportController
+    public sealed partial class ViewportController: ViewModelBase
     {
         #region Fields
         private readonly ViewportState _viewport;
@@ -25,7 +21,7 @@ namespace VDLaser.ViewModels.Plotter
         {
             _viewport = viewport;
             _log = log;
-            _log.Information("[ViewportController] Initialized for ViewportState");
+            LogContextual(_log, "Initialized", "ViewportController ready");
         }
 
         #region Interaction Methods
@@ -42,17 +38,14 @@ namespace VDLaser.ViewModels.Plotter
             double oldScale = _viewport.Scale;
             double newScale = oldScale * zoomFactor;
 
-            // Clamp scale for stability
             newScale = Math.Max(0.5, Math.Min(10, newScale));
             if (newScale == oldScale) return; // No change if clamped to limit
 
-            // Point under mouse in world coordinates (before zoom)
             double worldX = (mousePos.X - _viewport.TranslationX) / oldScale;
             double worldY = (mousePos.Y - _viewport.TranslationY) / oldScale;
 
             _viewport.Scale = newScale;
 
-            // Adjust translation to keep the world point under the mouse position
             _viewport.TranslationX = mousePos.X - (worldX * newScale);
             _viewport.TranslationY = mousePos.Y - (worldY * newScale);
             _log.Information("[ViewportController] Zoom applied: oldScale={Old}, newScale={New}", oldScale, newScale);
@@ -82,9 +75,7 @@ namespace VDLaser.ViewModels.Plotter
 
             _viewport.TranslationX += delta.X * sensitivity;
             _viewport.TranslationY += delta.Y * sensitivity;
-            //_viewport.TranslationY -= delta.Y * sensitivity;
 
-            // Clamp translations to prevent excessive panning (adjust limits as needed)
             _viewport.TranslationX = Math.Clamp(_viewport.TranslationX, -10000, 10000);
             _viewport.TranslationY = Math.Clamp(_viewport.TranslationY, -10000, 10000);
 

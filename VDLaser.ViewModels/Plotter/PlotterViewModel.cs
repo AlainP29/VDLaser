@@ -26,22 +26,18 @@ namespace VDLaser.ViewModels.Plotter
         private readonly ILogService _log;
         private readonly ILaserStateService _laserStateService;
 
-        private bool _isUpdatingToolPath = false;
         private System.Timers.Timer? _debounceTimer;
+        public ViewportState Viewport { get; } = new();
+        public ViewportController ViewportController { get; }
         #endregion
 
         #region Properties
-        public ViewportState Viewport { get; } = new();
-        public ViewportController ViewportController { get; }
-
         [ObservableProperty]
         private double _canvasWidth = 400;
-
         [ObservableProperty]
         private double _canvasHeight = 300;
         [ObservableProperty]
         private GcodeFileViewModel _fileViewModel;
-
         [ObservableProperty]
         private PathGeometry? _toolPathGeometry;
         [ObservableProperty]
@@ -50,47 +46,39 @@ namespace VDLaser.ViewModels.Plotter
         private bool _isHovered = false;
         [ObservableProperty]
         private ObservableCollection<string> _xAxisLabels = new();
-        
         [ObservableProperty]
         private ObservableCollection<string> _yAxisLabels = new();
         [ObservableProperty]
         private Rect? _toolPathBounds;
         [ObservableProperty] private string _currentMachinePosition = "X:0 Y:0";
-
         [ObservableProperty]
         private bool _isSimulating;
         [ObservableProperty]
-        private double _simulationSpeed = 1.0; // Par défaut vitesse x1
-
-        // Propriété pour la position réelle (utilisée dans la vue pour positionner l'élément)
+        private double _simulationSpeed = 1.0;
         [ObservableProperty]
         private Point _machinePositionPoint = new Point(0, 0);
         [ObservableProperty]
         private int _machinePositionPointSize = 6;
         [ObservableProperty]
         private Point? _highlightPoint;
-        
         [ObservableProperty]
-        private PathGeometry? _rapidPathGeometry; // Gris : rapides/sans gravure
-
+        private PathGeometry? _rapidPathGeometry;
         [ObservableProperty]
-        private PathGeometry? _engravePathGeometry; // Bleu : gravure active
+        private PathGeometry? _engravePathGeometry;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(LaserHeadBrush))]
         private int _laserPower;
-
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(LaserHeadBrush))]
         private int _maxLaserPower=2500;
-
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(LaserHeadBrush))]
         private bool _isLaserOn;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(LaserHeadBrush))]
         private LaserMode _laserMode;
+        private bool _isUpdatingToolPath = false;
         #endregion
-
 
         public PlotterViewModel(GCodePlotterService plotterService, GcodeFileViewModel fileViewModel, IGrblCoreService grblService, ILogService log, ILaserStateService laserStateService)
         {
@@ -105,41 +93,7 @@ namespace VDLaser.ViewModels.Plotter
 
             InitializeSubscriptions();
             GenerateDefaultAxisLabels();
-            _log.Information("[Plotter] ViewModel successfully initialized.");
-        }
-
-        private void InitializeSubscriptions()
-        {
-            FileViewModel.PropertyChanged += OnFileViewModelPropertyChanged;
-            _grblService.StatusUpdated += OnGrblStatusUpdated;
-            _debounceTimer = new System.Timers.Timer(100); // 100ms debounce
-            _debounceTimer.Elapsed += (s, e) =>
-            {
-                _debounceTimer.Stop();
-                UpdateToolPathInternal();
-            };
-
-            _laserStateService.LaserPowerChanged += OnLaserPowerChangedEvent;
-            _laserStateService.LaserStateChanged += OnLaserStateChangedEvent;
-            _laserStateService.LaserModeChanged += OnLaserModeChangedEvent;
-
-            WeakReferenceMessenger.Default.Register<GcodeLineSelectedMessage>(this, (r, m) =>
-            {
-                if (m.X.HasValue && m.Y.HasValue && FileViewModel.Stats != null)
-                {
-                    Point newPoint = new Point(
-                        m.X.Value - FileViewModel.Stats.MinX,
-                        m.Y.Value - FileViewModel.Stats.MinY
-                    );
-
-                    HighlightPoint = newPoint;
-                }
-                else
-                {
-                    HighlightPoint = null;
-                }
-            });
-           
+            LogContextual(_log, "Initialized", "Plotter ready");
         }
 
         #region Event Handlers
@@ -190,6 +144,39 @@ namespace VDLaser.ViewModels.Plotter
         private void OnLaserPowerChangedEvent(int p) => LaserPower = p;
         private void OnLaserStateChangedEvent(bool on) => IsLaserOn = on;
         private void OnLaserModeChangedEvent(LaserMode mode) => LaserMode = mode;
+        private void InitializeSubscriptions()
+        {
+            FileViewModel.PropertyChanged += OnFileViewModelPropertyChanged;
+            _grblService.StatusUpdated += OnGrblStatusUpdated;
+            _debounceTimer = new System.Timers.Timer(100);
+            _debounceTimer.Elapsed += (s, e) =>
+            {
+                _debounceTimer.Stop();
+                UpdateToolPathInternal();
+            };
+
+            _laserStateService.LaserPowerChanged += OnLaserPowerChangedEvent;
+            _laserStateService.LaserStateChanged += OnLaserStateChangedEvent;
+            _laserStateService.LaserModeChanged += OnLaserModeChangedEvent;
+
+            WeakReferenceMessenger.Default.Register<GcodeLineSelectedMessage>(this, (r, m) =>
+            {
+                if (m.X.HasValue && m.Y.HasValue && FileViewModel.Stats != null)
+                {
+                    Point newPoint = new Point(
+                        m.X.Value - FileViewModel.Stats.MinX,
+                        m.Y.Value - FileViewModel.Stats.MinY
+                    );
+
+                    HighlightPoint = newPoint;
+                }
+                else
+                {
+                    HighlightPoint = null;
+                }
+            });
+
+        }
         #endregion
 
         #region Tool Path Update Logic
@@ -251,7 +238,7 @@ namespace VDLaser.ViewModels.Plotter
             BoundingBoxGeometry.Freeze();
 
             GenerateAxisLabels();
-            _log.Information("[Plotter] Toolpath updated with {Count} commands.", commands.Count);
+            LogContextual(_log, "UpdateToolPath", $"Toolpath updated with {commands.Count} commands.");
         }
 
         private void ResetGeometries()
@@ -265,14 +252,15 @@ namespace VDLaser.ViewModels.Plotter
 
         #region Commands
         [RelayCommand]
-            private async Task SetOriginAsync()
+        private async Task SetOriginAsync()
             {
             if (!_grblService.IsConnected) return;
 
                 try
                 {
-                    _log.Information("[Plotter] Setting machine work origin (G10 L20 X0 Y0).");
-                    await _grblService.SendCommandAsync("G10 L20 P1 X0 Y0");
+                LogContextual(_log, "UpdateToolPath", "Setting machine work origin (G10 L20 X0 Y0).");
+
+                await _grblService.SendCommandAsync("G10 L20 P1 X0 Y0");
                     await Task.Delay(500);
                     await _grblService.SendCommandAsync("?");
 
@@ -289,7 +277,6 @@ namespace VDLaser.ViewModels.Plotter
             RequestAutoCenter();
             GenerateAxisLabels();
         }
-
 
         [RelayCommand]
         public void ToggleSimulation()

@@ -1,9 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.Logging;
-using Serilog;
-using Serilog.Core;
 using System.Windows;
 using VDLaser.Core.Interfaces;
+using VDLaser.ViewModels.Base;
 
 namespace VDLaser.ViewModels.Plotter
 {
@@ -12,7 +10,7 @@ namespace VDLaser.ViewModels.Plotter
     /// Manages scale, translations, and visible size, with compensation for Y-axis flip
     /// typical in CNC coordinates (Y up) vs. WPF (Y down).
     /// </summary>
-    public partial class ViewportState : ObservableObject
+    public partial class ViewportState : ViewModelBase
     {
         #region Fields
         private readonly ILogService _log;
@@ -53,7 +51,7 @@ namespace VDLaser.ViewModels.Plotter
         public ViewportState(ILogService log)
         {
             _log = log;
-            _log.Information("[ViewportState] Initialized with scale=1.0, translations=0,0");
+            LogContextual(_log, "Initialized", "ViewportState ready with scale=1.0, translations=0,0");
         }
 
         #region Calculated Properties
@@ -90,7 +88,6 @@ namespace VDLaser.ViewModels.Plotter
         #region Property Change Handlers
         partial void OnScaleChanged(double value)
         {
-            // Clamp scale for stability
             Scale = Math.Max(0.5, Math.Min(10, value));
             OnPropertyChanged(nameof(VisibleWorldBounds));
         }
@@ -134,7 +131,6 @@ namespace VDLaser.ViewModels.Plotter
                 TranslationX = 0.0;
                 TranslationY = 0.0;
             }
-            // Add other validations if needed (e.g., translation bounds)
         }
         #endregion
     }
