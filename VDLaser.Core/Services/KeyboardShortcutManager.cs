@@ -6,34 +6,35 @@ namespace VDLaser.Core.Services
 {
     public partial class KeyboardShortcutManager : ObservableObject
     {
-        // Définition des raccourcis clavier avec ObservableProperty
+        #region Fields
         [ObservableProperty]
-        private Key _jogUpKey = Key.W; // Par défaut, "W" pour déplacer vers le haut
+        private Key _jogUpKey = Key.W;
 
         [ObservableProperty]
-        private Key _jogDownKey = Key.S; // Par défaut, "S" pour déplacer vers le bas
+        private Key _jogDownKey = Key.S;
 
         [ObservableProperty]
-        private Key _jogLeftKey = Key.A; // Par défaut, "A" pour déplacer à gauche
+        private Key _jogLeftKey = Key.A;
 
         [ObservableProperty]
-        private Key _jogRightKey = Key.D; // Par défaut, "D" pour déplacer à droite
+        private Key _jogRightKey = Key.D;
 
         [ObservableProperty]
-        private Key _increaseSpeedKey = Key.OemPlus; // "+" pour augmenter la vitesse
+        private Key _increaseSpeedKey = Key.OemPlus;
 
         [ObservableProperty]
-        private Key _decreaseSpeedKey = Key.OemMinus; // "-" pour diminuer la vitesse
+        private Key _decreaseSpeedKey = Key.OemMinus;
+        #endregion
 
-        // Commandes
+        #region commands
         public IRelayCommand JogUpCommand { get; }
         public IRelayCommand JogDownCommand { get; }
         public IRelayCommand JogLeftCommand { get; }
         public IRelayCommand JogRightCommand { get; }
         public IRelayCommand IncreaseSpeedCommand { get; }
         public IRelayCommand DecreaseSpeedCommand { get; }
+        #endregion
 
-        // Constructeur
         public KeyboardShortcutManager()
         {
             // Initialisation des commandes
@@ -76,7 +77,7 @@ namespace VDLaser.Core.Services
             // Logique pour diminuer la vitesse
         }
 
-        // Méthode pour gérer les pressions de touches et déclencher les actions correspondantes
+        #region Public Methods
         public void HandleKeyPress(Key key)
         {
             switch (key)
@@ -101,5 +102,6 @@ namespace VDLaser.Core.Services
                     break;
             }
         }
+        #endregion
     }
 }

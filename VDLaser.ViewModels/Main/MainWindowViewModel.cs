@@ -8,6 +8,7 @@ using VDLaser.Core.Grbl.Interfaces;
 using VDLaser.Core.Interfaces;
 using VDLaser.ViewModels.Base;
 using VDLaser.ViewModels.Controls;
+using VDLaser.ViewModels.Enums;
 using VDLaser.ViewModels.Plotter;
 using static VDLaser.Core.Grbl.Models.GrblState;
 

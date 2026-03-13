@@ -12,6 +12,7 @@
 	</ItemGroup>
 	
   <ItemGroup>
+    <Compile Remove="Services\KeyboardShortcutManager.cs" />
     <Compile Remove="Tools\GrblParser.cs" />
   </ItemGroup>
 

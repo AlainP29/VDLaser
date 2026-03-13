@@ -30,7 +30,6 @@ namespace VDLaser.ViewModels.Controls
         private readonly IGcodeFileService _gcodeService;
         private readonly  IStatusPollingService _polling;
         private readonly GrblResponseParser _responseParser;
-        private readonly KeyboardShortcutManager _shortcutManager;
         private GrblState _grblState = new GrblState();
         private GcodeState _gcodeState = new GcodeState();
         #endregion
@@ -105,7 +104,6 @@ namespace VDLaser.ViewModels.Controls
             _polling= polling ?? throw new ArgumentNullException(nameof(polling));
 
             _responseParser = new GrblResponseParser(_log);
-            _shortcutManager = new KeyboardShortcutManager();
 
             _isJoggingVMInitialized = true;
 
@@ -156,7 +154,6 @@ namespace VDLaser.ViewModels.Controls
         {
             if (e.PropertyName == nameof(IGrblCoreService.IsConnected))
             {
-                // Notifier toutes les commandes dépendant de IsConnected
                 SendManualCommand.NotifyCanExecuteChanged();
                 SendOrigineCommand.NotifyCanExecuteChanged();
                 SendMacro1Command.NotifyCanExecuteChanged();
@@ -165,21 +162,14 @@ namespace VDLaser.ViewModels.Controls
                 SendMacro4Command.NotifyCanExecuteChanged();
                 JogCommand.NotifyCanExecuteChanged();
                 JogUpStartCommand.NotifyCanExecuteChanged();
-                JogUpStopCommand.NotifyCanExecuteChanged();
+                JogStopCommand.NotifyCanExecuteChanged();
                 JogDownStartCommand.NotifyCanExecuteChanged();
-                JogDownStopCommand.NotifyCanExecuteChanged();
                 JogLeftStartCommand.NotifyCanExecuteChanged();
-                JogLeftStopCommand.NotifyCanExecuteChanged();
                 JogRightStartCommand.NotifyCanExecuteChanged();
-                JogRightStopCommand.NotifyCanExecuteChanged();
                 JogSWStartCommand.NotifyCanExecuteChanged();
-                JogSWStopCommand.NotifyCanExecuteChanged();
                 JogNWStartCommand.NotifyCanExecuteChanged();
-                JogNWStopCommand.NotifyCanExecuteChanged();
                 JogSEStartCommand.NotifyCanExecuteChanged();
-                JogSEStopCommand.NotifyCanExecuteChanged();
                 JogNEStartCommand.NotifyCanExecuteChanged();
-                JogNEStopCommand.NotifyCanExecuteChanged();
                 StartLaserPreviewCommand.NotifyCanExecuteChanged();
                 StopLaserPreviewCommand.NotifyCanExecuteChanged();
                 ToggleLaserCommand.NotifyCanExecuteChanged();
@@ -397,16 +387,13 @@ namespace VDLaser.ViewModels.Controls
         [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
         public async Task Jog(string parameter)
         {
-            // On initialise les déplacements à 0
             double moveX = 0;
             double moveY = 0;
             double moveZ = 0;
 
-            // Analyse du paramètre (ex: "X1Y1", "X-1Y1", "Z1")
             if (parameter.Contains("X")) moveX = ExtractDirection(parameter, "X") * SelectedStep;
             if (parameter.Contains("Y")) moveY = ExtractDirection(parameter, "Y") * SelectedStep;
             if (parameter.Contains("Z")) moveZ = ExtractDirection(parameter, "Z") * SelectedStep;
-            // Utilisation de G21 (mm) ou G20 (pouces) selon la propriété
 
             string unitMode = IsSelectedMetric ? "G21" : "G20";
             StringBuilder sb = new StringBuilder($"$J=G91 {unitMode} ");
@@ -420,13 +407,21 @@ namespace VDLaser.ViewModels.Controls
             _log.Debug("[JOG] Incremental job: {Cmd}", sb.ToString());
             await _coreService.SendCommandAsync(sb.ToString());
         }
-        
-        /// <summary>
-        /// Méthode centrale : démarrer le jogging continu
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
+        public void EmergencyStopJogging()
+        {
+            _jogCts?.Cancel();
+            _isJoggingContinuous = false;
+
+            _coreService.SendRealtimeCommand(0x85);
+            LogContextual(_log, "EmergencyStopJogging", "Continuous jog stop requested");
+            if (IsLaserPreviewActive)
+            {
+                Task.Run(() => _coreService.SendCommandAsync("M5"));
+            }
+
+            ResponseStatus = RespStatus.Ok;
+            SendManualCommand.NotifyCanExecuteChanged();
+        }
         private async Task StartContinuousJogAsync(double xDir, double yDir)
         {
             if (!_coreService.IsConnected|| _isJoggingContinuous)
@@ -453,120 +448,76 @@ namespace VDLaser.ViewModels.Controls
                 "$J=G91 {0} X{1:F3} Y{2:F3} F{3:F3}",
                 unitMode, x, y, feed);
 
-            _log.Information("[JOG] [START] {Cmd}", cmd);
+            LogContextual(_log, "StartContinuousJogAsync", $"Requesting continuous jog - {cmd}");
 
             ResponseStatus = RespStatus.Q;
             SendManualCommand.NotifyCanExecuteChanged();
 
-            _log.Information("[JOG] [START] continu — DirX={XDir}, DirY={YDir}, Cmd={Cmd}", xDir, yDir, cmd);
-
+            LogContextual(_log, "StartContinuousJogAsync", $"Continuous jog start requested - DirX={xDir}, DirY={yDir} - {cmd}");
             await _coreService.SendCommandAsync(cmd);
 
             await Task.Delay(Timeout.Infinite, _jogCts.Token).ContinueWith(_ => { });
         }
-        /// <summary>
-        /// Arrêt immédiat du jogging
-        /// </summary>
-        /// <returns></returns>
         private async Task StopContinuousJogAsync()
         {
             if (!_isJoggingContinuous)
                 return;
 
-            _jogCts?.Cancel();
-            _isJoggingContinuous = false;
-
-            await _coreService.SendRealtimeCommandAsync(0x85);// Jog Cancel GRBL 1.1
-            _log.Information("[JOG] [STOP] continu demandé");
-
-            if (IsLaserPreviewActive) await _coreService.SendCommandAsync("M5");
-
-            ResponseStatus = RespStatus.Ok;
-            SendManualCommand.NotifyCanExecuteChanged();
+            EmergencyStopJogging();
+            LogContextual(_log, "StopContinuousJogAsync", "Continuous jog stop requested");
+            await Task.CompletedTask;
         }
-        /// <summary>
-        /// Commandes clavier (KeyDown / KeyUp)
-        /// </summary>
-        /// <returns></returns>
+        [RelayCommand(CanExecute = nameof(CanExecuteSendCommand))]
+        private async Task JogStop()
+        {
+            await StopContinuousJogAsync();
+        }
+        
         [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogUpStart()
         {
             await StartContinuousJogAsync(0, 1);
-        }
-        [RelayCommand]
-        private async Task JogUpStop()
-        {
-            await StopContinuousJogAsync();
         }
         [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogDownStart()
         {
             await StartContinuousJogAsync(0, -1);
         }
-        [RelayCommand]
-        private async Task JogDownStop()
-        {
-            await StopContinuousJogAsync();
-        }
+        
         [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogLeftStart()
         {
             await StartContinuousJogAsync(-1, 0);
         }
-        [RelayCommand]
-        private async Task JogLeftStop()
-        {
-            await StopContinuousJogAsync();
-        }
+        
         [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogRightStart()
         {
             await StartContinuousJogAsync(1, 0);
         }
-        [RelayCommand]
-        private async Task JogRightStop()
-        {
-            await StopContinuousJogAsync();
-        }
+        
         [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogSWStart()
         {
             await StartContinuousJogAsync(-1, -1);
         }
-        [RelayCommand]
-        private async Task JogSWStop()
-        {
-            await StopContinuousJogAsync();
-        }
+        
         [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogNWStart()
         {
             await StartContinuousJogAsync(-1, 1);
         }
-        [RelayCommand]
-        private async Task JogNWStop()
-        {
-            await StopContinuousJogAsync();
-        }
+        
         [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogSEStart()
         {
             await StartContinuousJogAsync(1,-1);
         }
-        [RelayCommand]
-        private async Task JogSEStop()
-        {
-            await StopContinuousJogAsync();
-        }
+        
         [RelayCommand(CanExecute = nameof(CanJog))]
         private async Task JogNEStart()
         {
             await StartContinuousJogAsync(1, 1);
-        }
-        [RelayCommand]
-        private async Task JogNEStop()
-        {
-            await StopContinuousJogAsync();
         }
         #endregion
 
@@ -715,10 +666,6 @@ namespace VDLaser.ViewModels.Controls
             if (p[index] == '-') return -1;
             return 1;
         }
-        public void HandleKeyPress(Key key)
-        {
-            _shortcutManager.HandleKeyPress(key);
-        }
         /// <summary>
         /// Increase the motion speed with keyboard
         /// </summary>
@@ -740,7 +687,6 @@ namespace VDLaser.ViewModels.Controls
             _log.Information("[JOG]|F{0}", ManualFeedRate);
         }
         #endregion
-
 
         protected override void Dispose(bool disposing)
         {

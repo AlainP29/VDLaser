@@ -66,7 +66,7 @@ namespace VDLaser.Tests.UnitTests
 
             // Assert
             core.Verify(
-                c => c.SendRealtimeCommandAsync((byte)'?'),
+                c => c.SendRealtimeCommand((byte)'?'),
                 Times.Once);
         }
         /// <summary>
@@ -94,7 +94,7 @@ namespace VDLaser.Tests.UnitTests
 
             // Assert
             core.Verify(
-                c => c.SendRealtimeCommandAsync((byte)'?'),
+                c => c.SendRealtimeCommand((byte)'?'),
                 Times.Exactly(2));
         }
         /// <summary>
@@ -120,7 +120,7 @@ namespace VDLaser.Tests.UnitTests
 
             // Assert
             core.Verify(
-                c => c.SendRealtimeCommandAsync(It.IsAny<byte>()),
+                c => c.SendRealtimeCommand(It.IsAny<byte>()),
                 Times.Never);
         }
 

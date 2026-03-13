@@ -16,6 +16,7 @@ namespace VDLaser.Views.Controls
         private bool _isLongPressTriggered;
         private string _currentDirection;
         private const int LongPressDelayMs = 200;
+        private bool _isMoving = false;
         public JoggingView()
         {
             InitializeComponent();
@@ -44,19 +45,23 @@ namespace VDLaser.Views.Controls
             switch (e.Key)
             {
                 case Key.Up:
-                    await vm.JogUpStartCommand.ExecuteAsync(null);
+                    _isMoving = true;
+                    vm.JogUpStartCommand.Execute(null);
                     e.Handled = true;
                     break;
                 case Key.Down:
-                    await vm.JogDownStartCommand.ExecuteAsync(null);
+                    _isMoving = true;
+                    vm.JogDownStartCommand.Execute(null);
                     e.Handled = true;
                     break;
                 case Key.Left:
-                    await vm.JogLeftStartCommand.ExecuteAsync(null);
+                    _isMoving = true;
+                    vm.JogLeftStartCommand.Execute(null);
                     e.Handled = true;
                     break;
                 case Key.Right:
-                    await vm.JogRightStartCommand.ExecuteAsync(null);
+                    _isMoving = true;
+                    vm.JogRightStartCommand.Execute(null);
                     e.Handled = true;
                     break;
             }
@@ -65,15 +70,11 @@ namespace VDLaser.Views.Controls
         {
             if (DataContext is not JoggingViewModel vm)
                 return;
-
-            switch (e.Key)
+            if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right)
             {
-                case Key.Up:
-                case Key.Down:
-                case Key.Left:
-                case Key.Right:
-                    await vm.JogUpStopCommand.ExecuteAsync(null);
-                    break;
+                vm.JogStopCommand.Execute(null);
+                _isMoving = false;
+                e.Handled = true;
             }
         }
         private async void OnLaserPreviewDown(object sender, MouseButtonEventArgs e)
@@ -82,16 +83,14 @@ namespace VDLaser.Views.Controls
             {
                 try
                 {
-                    await vm.StartLaserPreview();  // Appel async pour activer le laser (M4 S{power})
-                    //await vm.StartLaserPreviewCommand.ExecuteAsync(null);
+                    await vm.StartLaserPreview();
                 }
                 catch (Exception ex)
                 {
-                    // Gestion d'erreur mise à jour : Affiche un message utilisateur-friendly
                     MessageBox.Show($"Erreur lors de l'activation preview : {ex.Message}", "Erreur VDLaser", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-            e.Handled = true;  // Empêche la propagation de l'événement
+            e.Handled = true;
         }
         private async void OnLaserPreviewUp(object sender, MouseButtonEventArgs e)
         {
@@ -132,10 +131,8 @@ namespace VDLaser.Views.Controls
             if (DataContext is JoggingViewModel vm && sender is Button btn && e.LeftButton == MouseButtonState.Pressed)
             {
                 _isLongPressTriggered = false;
-                _currentDirection = btn.Tag as string;  // Stocke la direction (e.g., "Up")
-                _longPressTimer.Start();  // Démarre le timer
-
-                System.Diagnostics.Debug.WriteLine($"[Debug VDLaser] MouseDown sur {_currentDirection} - Timer démarré.");
+                _currentDirection = btn.Tag as string;
+                _longPressTimer.Start();
 
                 e.Handled = true;
             }
@@ -146,11 +143,10 @@ namespace VDLaser.Views.Controls
             if (!_isLongPressTriggered && DataContext is JoggingViewModel vm)
             {
                 _isLongPressTriggered = true;
-                System.Diagnostics.Debug.WriteLine($"[Debug VDLaser] Appui long détecté sur {_currentDirection} - Démarrage jog continu.");
 
                 switch (_currentDirection)
                 {
-                    case "Up": vm.JogUpStartCommand.Execute(null); break;  // Démarre continu (appel à StartContinuousJogAsync)
+                    case "Up": vm.JogUpStartCommand.Execute(null); break;
                     case "Down": vm.JogDownStartCommand.Execute(null); break;
                     case "Left": vm.JogLeftStartCommand.Execute(null); break;
                     case "Right": vm.JogRightStartCommand.Execute(null); break;
@@ -166,22 +162,20 @@ namespace VDLaser.Views.Controls
             _longPressTimer.Stop();
             if (DataContext is JoggingViewModel vm && e.LeftButton == MouseButtonState.Released)
             {
-                System.Diagnostics.Debug.WriteLine($"[Debug VDLaser] MouseUp - LongPress: {_isLongPressTriggered}");
 
                 if (_isLongPressTriggered)
                 {
-                    vm.JogUpStopCommand.Execute(null);  // Arrête continu (appel à StopContinuousJogAsync)
+                    vm.JogStopCommand.Execute(null);
                 }
                 else
                 {
-                    // Clic court : Exécute jog incrémental
                     if (sender is Button btn)
                     {
                         vm.JogCommand.Execute(btn.CommandParameter);
                     }
                 }
                 _isLongPressTriggered = false;
-                _currentDirection = null;  // Reset
+                _currentDirection = null;
                 e.Handled = true;
             }
         }
@@ -190,8 +184,7 @@ namespace VDLaser.Views.Controls
             _longPressTimer.Stop();
             if (e.LeftButton == MouseButtonState.Pressed && DataContext is JoggingViewModel vm)
             {
-                System.Diagnostics.Debug.WriteLine("[Debug VDLaser] MouseLeave pendant appui - Arrêt forcé.");
-                vm.JogUpStopCommand.Execute(null);  // Sécurité : Arrêt continu
+                vm.JogStopCommand.Execute(null);
                 _isLongPressTriggered = false;
                 _currentDirection = null;
                 e.Handled = true;

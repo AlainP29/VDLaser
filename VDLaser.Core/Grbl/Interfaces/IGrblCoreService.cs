@@ -26,6 +26,7 @@ namespace VDLaser.Core.Grbl.Interfaces
         Task DisconnectAsync();
         Task SendCommandAsync(string command);         // Envoi de commandes G-code ou $
         Task SendRealtimeCommandAsync(byte command);   // Pour ? (status), ! (hold), ~ (resume), etc.
+        void SendRealtimeCommand(byte command);
         Task HomeAsync();                              // $H
         Task UnlockAsync();                            // $X
         Task GetSettingsAsync();                      // $$$

@@ -66,11 +66,10 @@ namespace VDLaser.ViewModels.Controls
             _coreService.PropertyChanged += OnCoreServicePropertyChanged;
             _coreService.SettingsUpdated += OnSettingsUpdated;
 
-            _log.Information("[SETTINGS] Initialized (Queued enabled");
+            LogContextual(_log, "GrblSettingsViewModel", "Initialized and event handlers registered");
         }
-        /// <summary>
-        /// Gestion des données reçues du GRBL. Parse seulement les lignes de settings.
-        /// </summary>
+
+        #region Event Handlers
         private void OnGrblDataReceived(object? sender, DataReceivedEventArgs e)
         {
             var line = e.Text;
@@ -79,7 +78,6 @@ namespace VDLaser.ViewModels.Controls
             if (_infoParser.CanParse(line))
             {
                 _infoParser.Parse(line, _grblInfo);
-                // Marshal vers UI et met à jour les propriétés observables
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     GrblVersion = _grblInfo.GrblVersion ?? string.Empty;
@@ -87,7 +85,7 @@ namespace VDLaser.ViewModels.Controls
                     CompileOptions = _grblInfo.CompileOptions ?? string.Empty;
                     BlockBufferSize = _grblInfo.BlockBufferSize ?? string.Empty;
                     RxBufferSize = _grblInfo.RxBufferSize ?? string.Empty;
-                    _log.Information("[SettingViewModel] GRBL Info parsed: Version={Version}, Build={Build}, Options={Options}", GrblVersion, GrblBuild, CompileOptions + "," + BlockBufferSize + "," + RxBufferSize);
+                    LogContextual(_log, "OnGrblDataReceived", $"GRBL Info parsed and properties updated: Version={GrblVersion}, Build={GrblBuild}, Options={CompileOptions + "," + BlockBufferSize + "," + RxBufferSize}");
                 });
             }
             else if (_settingsParser.CanParse(line))
@@ -96,11 +94,10 @@ namespace VDLaser.ViewModels.Controls
                 var parsedSetting = _grblState.LastParsedSetting;
                 if (parsedSetting != null)
                 {
-                    // Marshal vers le thread UI
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         Settings.Add(parsedSetting);
-                        _log.Information("[SettingViewModel] Setting added: {Setting}", parsedSetting.ToString());
+                        LogContextual(_log, "OnGrblDataReceived", $"Setting parsed and added to collection: {parsedSetting.ToString()}");
                     });
                 }
             }
@@ -112,7 +109,7 @@ namespace VDLaser.ViewModels.Controls
 
             if (_coreService.IsConnected && !_coreService.HasLoadedSettings)
             {
-                _log.Information("[SettingViewModel] Début chargement unique des settings sur connexion");
+                LogContextual(_log, "OnCoreServicePropertyChanged", "Connected - Triggering initial settings load");
             }
             NotifyAllCommands();
         }
@@ -156,6 +153,8 @@ namespace VDLaser.ViewModels.Controls
                 // }
             });
         }
+
+        #endregion
 
         #region Commands
         [RelayCommand(CanExecute = nameof(CanExecuteGrblCommand))]

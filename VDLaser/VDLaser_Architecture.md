@@ -114,9 +114,11 @@ VDLaser (Projet principal WPF): Contient les éléments UI (Views, Converters, B
 │     │     ├── JoggingItems.cs
 │     │     ├── SettingItems.cs
 │     ├── Services              # Services généraux (non GRBL)
+│     │     ├── ConsoleParserService.cs
+│     │     ├── KeyboardShortcutManager.cs
+│     │     ├── LaserStateService.cs
 │     │     ├── SerialPortConnection.cs
 │     │     ├── SerialPortService.cs
-│     │     ├── SerilogLogService
 │     │     ├── SettingService.cs
 │     │     ├── StatusPollingService.cs
 │     │     ├── WpfDialogService.cs
@@ -146,16 +148,23 @@ VDLaser (Projet principal WPF): Contient les éléments UI (Views, Converters, B
 │     │     ├── ControleViewModel.cs
 │     │     ├── GcodeFileViewModel.cs
 │     │     ├── GcodeItemViewModel.cs
+│     │     ├── GcodeSettingsViewModel.cs
+│     │     ├── GraphicViewModel.cs
+│     │     ├── GrblSettingsViewModel.cs
 │     │     ├── JoggingViewModel.cs
+│     │     ├── LoggingSettingsViewModel.cs
 │     │     ├── MachinbeStateViewModel.cs
 │     │     ├── SerialPortSettingViewModel.cs
-│     │     ├── SettingViewModel.cs
 │     ├── Main              # VM principal
 │     │     ├── MainWindowViewModel.cs
 │     ├── Plotter
 │     │     ├── PlotterViewModel.cs
 │     │     ├── ViewportController.cs
 │     │     ├── ViewportState.cs
+│     ├── Settings
+│     │     ├── LanguageSelectorViewModel.cs
+│     │     ├── SoftwareSettingViewModel.cs
+
 
 ```
 
@@ -258,19 +267,34 @@ VDLaser (Projet principal WPF): Contient les éléments UI (Views, Converters, B
 ---
 ### 3.6. ViewModels
 #### 3.6.1 Base
-- `ViewModelBase` : objet observable commun
+- ViewModelBase : Abstract base class implementing INotifyPropertyChanged and common utility methods for all ViewModels
 
-#### 3.6.2 Controls
-- ConsoleViewModel
-- ControleViewModel
-- GCodeFileViewModel
-- JoggingViewModel
-- MachineStateViewModel
-- SerialPortSettingViewModel
-- SettingViewModel
+#### 3.6.2 Controls (Component-level VMs)
+- ConsoleViewModel : Handles real-time terminal output and user command input history.
+- ControleViewModel : Orchestrates high-level machine operations and execution flow.
+- GCodeFileViewModel : Manages GCode file loading, parsing, and job control (start/pause/resume/stop).
+- GCodeItemViewModel : Represents individual GCode lines with status and error info for UI display.
+- GcodeSettingsViewModel.cs : Configures G-code specific execution parameters (e.g., scaling, offsets).
+- GrblSettingsViewModel.cs : Provides an interface to read and write GRBL-specific configuration commands ($$).
+- JoggingViewModel : Controls manual axis movement and step increments for machine positioning.
+- LoggingSettingsViewModel : Manages logging configuration (log levels, file paths) for diagnostics.
+- MachineStateViewModel : Monitors and reports real-time machine status (Position, WCO, Pin states).
+- SerialPortSettingViewModel : Handles connectivity parameters (COM port, Baud rate) and port lifecycle.
 
-#### 3.6.3 Main
-- MainWindowViewModel
+#### 3.6.3 Enums
+- MachineUiState.cs: Defines the global visual and operational states of the machine (e.g., Connected, Homing, Alarm) to synchronize UI behavior across all ViewModels.
+
+#### 3.6.4 Main (App Entry Point)
+- MainWindowViewModel : Central ViewModel for MainWindow, coordinating sub-ViewModels and application state.
+
+#### 3.6.5 Plotter (Rendering Engine)
+- PlotterViewModel.cs: High-level logic for the 2D/3D visualization of the laser path.
+- ViewportController.cs: Handles user interactions within the viewport (Zoom, Pan, Rotate).
+- ViewportState.cs: Stores the current camera and view configuration for persistence or sync.
+
+#### 3.6.6 Settings (App Configuration)
+- LanguageSelectorViewModel.cs: Manages UI localization and runtime language switching.
+- SoftwareSettingViewModel.cs: Persists general application preferences and user-defined defaults.
 
 ---
 ## 4. Arbre de syntaxe abstrait (AST)

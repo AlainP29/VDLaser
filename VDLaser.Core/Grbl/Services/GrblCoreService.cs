@@ -338,20 +338,40 @@ namespace VDLaser.Core.Grbl.Services
         {
             if (!IsConnected)
                 throw new InvalidOperationException("[CORE] Not connected.");
-
             await _serialSemaphore.WaitAsync();
-            try { 
+            try 
+            { 
             if (command != 0x3F)
             {
                 _log.Information("[CORE][TX RT] 0x{Cmd:X2}", command);
             }
-
-            await Task.Run(() => _serial?.Write(new[] { command }, 0, 1));
-        }
+                await Task.Run(() => _serial?.Write(new[] { command }, 0, 1));
+            }
             finally
             {
                 _serialSemaphore.Release();
             }
+
+        }
+        public void SendRealtimeCommand(byte command)
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("[CORE] Not connected.");
+
+            try
+            {
+                if (command != 0x3F)
+                {
+                    _log.Information("[CORE][TX RT] 0x{Cmd:X2}", command);
+                }
+                _serial?.Write(new[] { command }, 0, 1);
+            }
+            catch (Exception ex)
+            {
+                _log.Error("[CORE] Failed to send realtime command: {Message}", ex.Message);
+                throw;
+            }
+
         }
 
         /// <summary>

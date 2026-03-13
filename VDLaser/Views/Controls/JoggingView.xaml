@@ -8,14 +8,6 @@
              xmlns:local="clr-namespace:VDLaser.Converters"
              mc:Ignorable="d" 
              PreviewKeyDown="OnPreviewKeyDown" PreviewKeyUp="OnPreviewKeyUp">
-    <UserControl.InputBindings>
-        <KeyBinding Key="Up" Command="{Binding JogUpStartCommand, Mode=OneWay}"/>
-        <KeyBinding Key="Down" Command="{Binding JogDownStartCommand, Mode=OneWay}"/>
-        <KeyBinding Key="Left" Command="{Binding JogLeftStartCommand, Mode=OneWay}"/>
-        <KeyBinding Key="Right" Command="{Binding JogRightStartCommand, Mode=OneWay}"/>
-        <KeyBinding Key="Next" Command="{Binding DecreaseFeedRateCommand, Mode=OneWay}"/>
-        <KeyBinding Key="PageUp" Command="{Binding IncreaseFeedRateCommand, Mode=OneWay}"/>
-    </UserControl.InputBindings>
     <UserControl.Resources>
         <local:InverseBooleanConverter x:Key="ConvertBool"/>
         <local:PercentageConverter x:Key="ConvertPercentage"/>

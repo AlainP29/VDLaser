@@ -1,4 +1,4 @@
-﻿namespace VDLaser.ViewModels
+﻿namespace VDLaser.ViewModels.Enums
 {
     public enum MachineUiState
     {

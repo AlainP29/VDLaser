@@ -71,7 +71,7 @@ namespace VDLaser.Core.Grbl.Services
         public Task SendRealtimeAsync(byte realtimeCommand, string? source = null)
         {
             _log.Debug("[GrblCommandQueueService] [RT:{Source}] 0x{Cmd:X2}", source, realtimeCommand);
-            _core.SendRealtimeCommandAsync(realtimeCommand);
+            _core.SendRealtimeCommand(realtimeCommand);
             return Task.CompletedTask;
         }
         private async Task ProcessQueueAsync()

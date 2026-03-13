@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
-using VDLaser.ViewModels;
+using VDLaser.ViewModels.Enums;
 
 namespace VDLaser.Converters
 {
